@@ -1,0 +1,91 @@
+meta:
+  name: NOVU Mobile Design System
+  version: 1.0.0
+  updated: 2026-08-14
+  locale: es-GT
+
+color:
+  primitive:
+    brand:
+      gt_blue: "#0058A4"
+      novu_blue: "#1E4393"
+      novu_purple: "#5B3986"
+      novu_red: "#D51A30"
+      gt_yellow: "#FDBB33"
+    neutral:
+      white: "#FFFFFF"
+      ink: "#111827"
+      slate: "#334155"
+      mid: "#64748B"
+      border: "#D8DEE8"
+      surface: "#FFFFFF"
+      soft_blue: "#EAF4FF"
+      soft_purple: "#F3EEFF"
+      soft_red: "#FFF0F2"
+      black: "#000000"
+    status:
+      success: "#138A36"
+      warning: "#A36B00"
+      danger: "#C9133B"
+  semantic:
+    background:
+      app: "{color.primitive.neutral.white}"
+      surface: "{color.primitive.neutral.surface}"
+      subtle: "{color.primitive.neutral.soft_blue}"
+      brand: "{color.primitive.brand.novu_blue}"
+      accent: "{color.primitive.brand.novu_purple}"
+    text:
+      primary: "{color.primitive.neutral.ink}"
+      secondary: "{color.primitive.neutral.slate}"
+      muted: "{color.primitive.neutral.mid}"
+      brand: "{color.primitive.brand.gt_blue}"
+      inverse: "{color.primitive.neutral.white}"
+      accent: "{color.primitive.brand.novu_purple}"
+    border:
+      default: "{color.primitive.neutral.border}"
+      focus: "{color.primitive.brand.gt_blue}"
+    action:
+      primary_background: "{color.primitive.brand.novu_blue}"
+      primary_text: "{color.primitive.neutral.white}"
+      secondary_background: "{color.primitive.neutral.white}"
+      secondary_text: "{color.primitive.brand.gt_blue}"
+
+typography:
+  heading_family: Montserrat
+  body_family: Inter
+  display_xl: {size: 64, line_height: 72, weight: 700}
+  heading_h1: {size: 36, line_height: 44, weight: 700}
+  heading_h2: {size: 28, line_height: 36, weight: 700}
+  title_medium: {size: 20, line_height: 26, weight: 700}
+  body_base: {size: 15, line_height: 23, weight: 400}
+  body_small: {size: 13, line_height: 19, weight: 400}
+  label_medium: {size: 12, line_height: 16, weight: 500}
+  button_label: {size: 15, line_height: 20, weight: 600}
+
+spacing:
+  0: 0
+  1: 4
+  2: 8
+  3: 12
+  4: 16
+  5: 20
+  6: 24
+  8: 32
+
+radius:
+  sm: 6
+  md: 8
+  lg: 12
+  xl: 20
+  full: 999
+
+size:
+  touch_target: 48
+
+stroke:
+  thin: 1
+
+effects:
+  card: "0 8px 24px rgba(15, 23, 42, 0.08)"
+  floating: "0 16px 40px rgba(15, 23, 42, 0.14)"
+  brand_gradient: "linear-gradient(135deg, #1E4393 0%, #5B3986 55%, #D51A30 100%)"
