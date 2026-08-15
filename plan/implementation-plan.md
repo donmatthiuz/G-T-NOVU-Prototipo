@@ -27,6 +27,8 @@ Replicar pantalla por pantalla el flujo original testeado, conservar su lógica 
 - [x] Eliminación de tokens visuales G&T y migración completa a Poppins.
 - [x] Ampliación de 67 objetivos táctiles a 48 px.
 - [x] Sustitución de placeholders por 99 iconos vectoriales en las pantallas y 25 en Bottom Navigation.
+- [x] Header común con progreso de seis fases en Chat, Ingresos, Plan generado y KYC.
+- [x] Sustitución del bitmap principal de Plan personal por un componente editable.
 - [x] QA final de componentes, pantallas y documentación.
 
 ## Criterios de terminación
@@ -45,6 +47,8 @@ Replicar pantalla por pantalla el flujo original testeado, conservar su lógica 
 - 31 pantallas funcionales en la página `63:431`.
 - 101 reacciones sin destinos rotos.
 - 99 instancias de icono en la réplica, 25 en el componente maestro y 0 placeholders funcionales vacíos.
+- Process Header con variantes 3/6–6/6 aplicado al onboarding sin modificar sus destinos.
+- Personal Goal Hero editable en Plan personal; el bitmap anterior fue eliminado.
 - `01 · Bienvenida` (`63:432`) registrado por Figma como `Flow 1`.
 - Flujo probado preservado: Bienvenida → Meta → Detalle → NOVU → Ingresos → Plan → Registro → Meta personal.
 - Ramas originales preservadas: reto grupal, fondo familiar, aportes, retiros, votación, copiloto, ritmo y oportunidades.

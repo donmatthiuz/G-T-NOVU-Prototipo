@@ -60,6 +60,14 @@ Siempre muestra monto actual y meta junto con la barra. Al 100% cambia al color 
 
 Resume una meta personal, reto grupal o fondo familiar. La tarjeta completa es táctil y contiene una sola acción final.
 
+### Process Header
+
+Unifica las fases 3–6 del onboarding con el gradiente NOVU, una etiqueta textual del paso y seis segmentos de progreso. Debe ocupar el borde superior completo, conservar el radio de la pantalla y dejar 16 px antes del contenido.
+
+### Personal Goal Hero
+
+Presenta el avance principal de una meta con porcentaje escrito, anillo, barra, saldo restante y fecha estimada. Todos los datos son propiedades editables; no usar capturas raster para esta tarjeta.
+
 ### Iconografía
 
 - Usar una sola familia vectorial de trazo regular; la implementación actual reutiliza Simple Design System.

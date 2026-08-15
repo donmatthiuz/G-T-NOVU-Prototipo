@@ -77,6 +77,27 @@ Páginas y nodos principales:
 - Estados activos ligados a `color/icon/brand`; estados inactivos ligados a `color/icon/default`
 - Validación estructural y visual: aprobada
 
+### Process Header
+
+- Página `94:2`
+- Documentación `94:76`
+- Component set `94:75`
+- 4 variantes: Step 3 of 6, 4 of 6, 5 of 6 y 6 of 6
+- Barra segmentada de seis fases; el paso también se expresa como texto
+- Gradiente oficial NOVU, Poppins y geometría del header de Verificación/KYC
+- Instancias aplicadas en Chat `96:246`, Ingresos `96:264`, Plan generado `96:282` y KYC `96:300`
+- Validación estructural y visual: aprobada
+
+### Personal Goal Hero
+
+- Página `99:2`
+- Documentación `99:19`
+- Componente `99:3`
+- Propiedades editables: Progress, Goal, Remaining y Estimate
+- Anillo de avance, barra, divisor e icono de motocicleta reconstruidos como vectores editables
+- Instancia en Plan personal `99:341`; reemplaza el bitmap `63:723`
+- Validación estructural y visual: aprobada
+
 ## Exploración V2 anterior
 
 Página `07 · NOVU V2 Screens`: `43:2`.
@@ -138,6 +159,15 @@ Página `08 · NOVU · Flujo original + Presentación`: `63:431`.
 - 25 instancias en el component set `Bottom Navigation` (`42:163`).
 - 101 acciones preservadas, 30 destinos internos únicos, 0 destinos rotos y 0 controles interactivos menores de 48 × 48 px.
 - Auditoría final: solo quedan sin instancia añadida los checkboxes KYC, botones con flecha existente y vectores originales ya visibles.
+
+### Progreso del onboarding y tarjeta personal editable
+
+- `04 · Chat con el copiloto`, `05 · Ingresos`, `06 · Plan generado` y `07 · Verificación (KYC)` comparten el component set `Process Header`.
+- Las variantes muestran 3/6, 4/6, 5/6 y 6/6 mediante texto y seis segmentos; el color no es el único indicador.
+- El área conversacional de Chat conserva su contenido completo mediante scroll vertical dentro de un viewport recortado.
+- Los CTA y destinos del recorrido original no cambiaron.
+- En `08 · Plan (Personal)`, la antigua captura raster fue sustituida por `Personal Goal Hero`, con datos y proporciones editables.
+- Auditoría posterior: 31 pantallas, 101 reacciones, 30 destinos únicos y 0 destinos rotos.
 
 ## Estado recuperable
 

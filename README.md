@@ -22,8 +22,8 @@ NOVU es un copiloto de ahorro para jóvenes guatemaltecos, respaldado por G&T Co
 
 El recorrido, la arquitectura de información y las decisiones de interacción se replican pantalla por pantalla desde el prototipo original testeado. El estilo se toma exclusivamente de `referencias/novu_templates/Reinvención Grupo 3.pdf`: Poppins, superficies blancas, índigo, violeta, magenta, coral y el gradiente NOVU. No se usan colores G&T como parte del sistema visual.
 
-Los componentes nuevos se conservan cuando no cambian el flujo: Button, Badge, Progress, Goal Card y Bottom Navigation. En la réplica se insertaron 29 instancias de Button, una de Badge y 99 iconos vectoriales; los demás componentes siguen disponibles para extensiones compatibles.
+Los componentes nuevos se conservan cuando no cambian el flujo: Button, Badge, Progress, Goal Card, Bottom Navigation, Process Header y Personal Goal Hero. En la réplica se insertaron 29 instancias de Button, una de Badge, cuatro headers de proceso, una tarjeta personal editable y 99 iconos vectoriales; los demás componentes siguen disponibles para extensiones compatibles.
 
 ## Estado
 
-Al 14 de agosto de 2026 están terminados y validados los foundations, cinco familias de componentes y la réplica funcional: 31 pantallas, 101 reacciones, dos puntos de inicio detectados por Figma, cero destinos rotos, 67 zonas táctiles ampliadas a un mínimo de 48 px y cero placeholders funcionales vacíos.
+Al 14 de agosto de 2026 están terminados y validados los foundations, siete familias de componentes y la réplica funcional: 31 pantallas, 101 reacciones, dos puntos de inicio detectados por Figma, cero destinos rotos, 67 zonas táctiles ampliadas a un mínimo de 48 px y cero placeholders funcionales vacíos. Las fases 3–6 comparten un header con progreso y la tarjeta principal de Plan personal ya no depende de un bitmap.

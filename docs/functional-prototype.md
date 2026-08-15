@@ -17,6 +17,8 @@ Punto de inicio principal: `01 · Bienvenida` (`63:432`, `Flow 1`)
 - Poppins es la única familia tipográfica de la réplica.
 - No quedan emojis como iconos funcionales.
 - El registro/KYC forma parte del recorrido principal.
+- Chat, Ingresos, Plan generado y KYC comparten un header con progreso visible de seis fases.
+- La tarjeta principal de Plan personal es un componente editable, no una imagen raster.
 - El original permanece intacto en `Legacy · Prototipo original` (`0:1`).
 
 ## Secuencia principal testeada
@@ -68,6 +70,8 @@ El acceso para una persona con cuenta existente conserva el atajo de Bienvenida 
 - Progress: 4 niveles con monto editable, disponible para evoluciones sin alterar el flujo.
 - Goal Card: 6 variantes para personal, grupo y familia.
 - Bottom Navigation: 5 estados activos.
+- Process Header: 4 variantes para las fases 3/6, 4/6, 5/6 y 6/6; aplicado en las pantallas 04–07.
+- Personal Goal Hero: porcentaje, nombre, saldo y fecha editables; anillo, barra e icono vectoriales.
 - Iconografía: familia vectorial consistente de Simple Design System en tamaños 16, 20 y 24 px, enlazada a `color/icon/default` y `color/icon/brand`.
 
 Los componentes se reutilizan solo cuando caben en la composición original. No se fuerza una sustitución si cambia el orden, el tamaño útil o la lógica testeada.
@@ -87,5 +91,7 @@ Los componentes se reutilizan solo cuando caben en la composición original. No 
 - La pantalla comunica su función mediante jerarquía, controles y estados; no mediante texto que explique la propia pantalla.
 - Se conservan aclaraciones únicamente cuando previenen una decisión financiera equivocada.
 - Color nunca es el único indicador de estado.
+- El avance del onboarding se comunica con texto y una barra segmentada de seis fases.
+- La conversación de la pantalla 04 usa scroll vertical para conservar el contenido bajo el header común.
 - Los CTAs principales usan el gradiente de la presentación y un alto mínimo de 48 px.
 - Las zonas táctiles de navegación, iconos y acciones compactas miden al menos 48 px sin alterar la composición visible.

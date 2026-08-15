@@ -70,3 +70,17 @@
 **Problema:** 67 capas interactivas originales medían menos de 48 px en alguno de sus ejes.
 
 **Solución:** trasladar cada reacción a un hotspot invisible de al menos 48 × 48 px, centrado sobre el control original, sin cambiar la composición visible.
+
+## Instancias nuevas dentro de frames con Auto Layout
+
+**Error:** al añadir el header común a las pantallas 04–07, Figma lo colocó al final del contenido aunque se asignó `y = 0`.
+
+**Causa:** las pantallas usan Auto Layout vertical; una instancia con `layoutPositioning = AUTO` ignora la coordenada libre y participa en el orden normal.
+
+**Solución:** usar `layoutPositioning = ABSOLUTE` para el header, fijarlo en `x = 0`, `y = 0` e insertar un spacer de layout de 166 px antes del contenido. Así se conserva el header de borde a borde y el contenido empieza a 206 px.
+
+## Opacidad en pinturas vinculadas a variables
+
+**Problema:** la opacidad declarada dentro de una pintura blanca se perdió visualmente al vincular su color a `color/text/inverse`.
+
+**Solución:** mantener el color vinculado a la variable y aplicar la transparencia mediante `SceneNode.opacity`. Esto se usa en el halo del paso y en los segmentos pendientes del Process Header.
