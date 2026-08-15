@@ -6,6 +6,24 @@ File key: `vFm8Z8NqINCaW8YDb23hz5`
 
 Última actualización: 2026-08-15
 
+## COMPLETADO — Migración a la paleta v3.0.0 (`segundoprototipo`)
+
+Migración completa a partir de `referencias/segundoprototipo/` (ver `style/novu-tokens.yaml` v3.0.0 y `style/novu-style-guide.md` para la especificación). Resumen de lo hecho, en orden:
+
+- [x] Extracción de paleta, tipografía y patrones de componente → `style/novu-tokens.yaml` + `style/novu-style-guide.md` v3.0.0.
+- [x] Variables primitivas de color actualizadas en Figma (`NOVU · Presentación · Primitives`, `VariableCollectionId:30:88`) — cascada automática a todo lo que ya estaba correctamente ligado a variable.
+- [x] Gradiente del componente `Button` (`36:2` Primary/Default, `36:6` Primary/Pressed) actualizado al nuevo gradiente de 3 paradas; borde y texto de `Button/Secondary` (`36:14`, `36:18`, `36:22`) corregidos en una segunda pasada — cascada automática a las 36+ instancias.
+- [x] `01 · Portada` (antes `01 · Bienvenida`, mismo nodo `63:432`) reconstruida 1:1 desde `portada.jpeg`: tema oscuro, logo N flotante (reutiliza el asset raster ya canónico del badge de Bottom Nav, sin el fondo blanco circular), grilla 2×2 de tarjetas de feature, botones reposicionados.
+- [x] `01a · Inicio de sesión` (nueva, `210:440`) construida 1:1 desde `iniciosesion/`: formulario, biometría (Huella/Face ID — sin ícono de huella dactilar disponible en la librería conectada, se usó Lock como aproximación), enlaces, insignia G&T.
+- [x] Navegación Portada ⇄ Login conectada: "Ya tengo cuenta" va a Login (antes iba directo a Plan personal); "Ingresar" preserva el destino original (Plan personal); "Creala" salta a `02 · Elegí tu meta`.
+- [x] `02 · Elegí tu meta`–`06 · Plan generado` reemplazadas por completo con `flujometa/1-5.jpeg` (secuencia "Paso X de 5"). `flujometa/6-7.jpeg` (segunda secuencia "Paso X de 4", incompleta) se usó como referencia de patrón de formulario, no como pantallas insertadas. `06` no tiene imagen fuente de "plan generado" con montos — se diseñó como transición al coach ("¡Genial, ya casi estamos listos!"), CTA hacia `07 · KYC`. Progreso propio (fila de píldoras + texto) reemplaza a `Process Header` en estas 5 pantallas; `Process Header` sigue en uso solo en `07 · KYC`.
+- [x] Navegación interna `02→03→04→05→06→07` recableada de cero (los `remove()` de contenido viejo también borraron sus reacciones): back de cada pantalla a la anterior, Continuar a la siguiente, `06` con dos salidas ("Ver mi plan" y "Omitir por ahora") ambas a `07 · KYC`.
+- [x] Restyle masivo de `07`–`31` + `07a`–`07h` (33 pantallas, construidas antes de que existiera la paleta v3): barrido de 1.464 nodos, remapeo tolerante (±0.01 por canal) de cada hex 2.0.0 a su equivalente v3 en fills, strokes y paradas de gradiente. Primera pasada: 488 fills + 110 strokes. Segunda pasada (gradientes de 4 paradas que la primera no tocó, más el borde de `Button/Secondary`): 6 fills + 1 stroke + 3 nodos de Secondary. Verificación final: 0 coincidencias de paleta vieja en las 40 pantallas.
+- [x] Verificación estructural final: 40 pantallas, 141 reacciones, 0 destinos rotos.
+- [x] `docs/functional-prototype.md`, `plan/implementation-plan.md` y `README.md` actualizados con el resultado final.
+
+**Nota de alcance**: la migración es de color/tipografía/tratamiento visual sobre la estructura y navegación ya probadas — no se tocó la arquitectura de información de `07` en adelante, solo su paleta. El contenido de `02`–`06` sí cambió por instrucción explícita (reemplazo completo con `flujometa`).
+
 ## Foundations completados
 
 Colecciones de variables:

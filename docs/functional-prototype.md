@@ -4,32 +4,36 @@ Archivo: [NOVU en Figma](https://www.figma.com/design/vFm8Z8NqINCaW8YDb23hz5/NOV
 
 Página: `08 · NOVU · Flujo original + Presentación` (`63:431`)
 
-Punto de inicio principal: `01 · Bienvenida` (`63:432`, `Flow 1`)
+Punto de inicio principal: `01 · Portada` (`63:432`, `Flow 1`)
 
 ## Resultado validado
 
-- 39 pantallas de 375 × 812 px: las 31 de la réplica principal más 8 pantallas de los sub-flujos de Verificación (KYC).
-- 130 capas interactivas, 132 reacciones y 132 acciones.
-- 0 destinos externos o rotos: todas las acciones apuntan a pantallas de la página nueva.
-- 71 controles pequeños conservan su apariencia pero usan hotspots de al menos 48 × 48 px (67 del flujo original + 4 botones "Volver" de las nuevas pantallas de cámara).
-- 107 instancias vectoriales de icono están integradas en las pantallas: 40 en las 10 barras inferiores y 67 en contexto.
-- El componente maestro de Bottom Navigation contiene 25 instancias adicionales, distribuidas en sus 5 estados.
-- Poppins es la única familia tipográfica de la réplica.
-- No quedan emojis como iconos funcionales.
-- El registro/KYC forma parte del recorrido principal y ahora abre cuatro sub-flujos independientes con pantallas propias: DPI, selfie, contacto/contraseña y comprobante de domicilio.
-- Chat, Ingresos, Plan generado y KYC comparten un header con progreso visible de seis fases.
-- La tarjeta principal de Plan personal es un componente editable, no una imagen raster.
-- El resumen y la tabla del Plan (Reto Grupal) son componentes editables; sus acciones conservan los destinos testeados.
-- Las 31 pantallas de la réplica principal tienen nombres de frame únicos (`01`–`31`); no quedan duplicados como los antiguos `10 · Candado (Votar solicitud)` o `08 · Plan (Fondo Grupal - Aportes)`. Las 8 pantallas de sub-flujos KYC usan el prefijo `07a`–`07h` para dejar explícita su relación con la pantalla 7 sin renumerar el resto.
-- Historial del reto, Historial de aportaciones y Fondo familiar (aportes) — pantallas 18, 29 y 27 — no contienen fills `IMAGE`: sus listas, tarjetas de estadística e íconos son capas vectoriales y de texto editables.
-- Las 10 pantallas con Bottom Navigation (8, 10, 11, 12, 13, 18, 19, 27, 28, 29) comparten exactamente la misma posición, tamaño e insignia NOVU central; ver [Consistencia de Bottom Navigation](#consistencia-de-bottom-navigation).
+- 40 pantallas de 375 × 812 px: 31 de la réplica principal (`01`–`31`, con `01`–`06` reconstruidas en la paleta v3) + 8 sub-flujos de Verificación (KYC) (`07a`–`07h`) + `01a · Inicio de sesión`, pantalla nueva.
+- 141 reacciones, 0 destinos externos o rotos.
+- Paleta, tipografía y patrones de componente migrados por completo a la v3.0.0 extraída de `referencias/segundoprototipo/` — ver [Migración a la paleta v3](#migración-a-la-paleta-v3-segundoprototipo) y `style/novu-tokens.yaml` / `style/novu-style-guide.md`. No queda ningún fill ni gradiente de la paleta 2.0.0 en el archivo (verificado nodo por nodo).
+- 71 controles pequeños conservan su apariencia pero usan hotspots de al menos 48 × 48 px.
+- El registro/KYC (pantalla 7) abre cuatro sub-flujos independientes con pantallas propias: DPI, selfie, contacto/contraseña y comprobante de domicilio.
+- La tarjeta principal de Plan personal y el resumen/tabla del Plan (Reto Grupal) son componentes editables, no imágenes raster.
+- Historial del reto, Historial de aportaciones y Fondo familiar (aportes) — pantallas 18, 29 y 27 — no contienen fills `IMAGE`.
+- Las 10 pantallas con Bottom Navigation comparten exactamente la misma posición, tamaño e insignia NOVU central; ver [Consistencia de Bottom Navigation](#consistencia-de-bottom-navigation).
 - El original permanece intacto en `Legacy · Prototipo original` (`0:1`).
+
+## Migración a la paleta v3 (`segundoprototipo`)
+
+Origen: `referencias/segundoprototipo/portada.jpeg`, `iniciosesion/`, `flujometa/1-7.jpeg`. Especificación completa en `style/novu-tokens.yaml` y `style/novu-style-guide.md`.
+
+- **Fundamentos**: los valores de las variables primitivas de color (`NOVU · Presentación · Primitives`) se actualizaron a la paleta v3 (índigo `#4B2FE0`, violeta `#8B2FE0`, magenta `#E91C7A`; se retiró el coral, sin equivalente en la referencia nueva). Esto propagó el cambio automáticamente a todo lo que ya estaba bien ligado a variable en las 39 pantallas existentes al momento de la migración.
+- **Gradiente de marca**: de 4 paradas (índigo/violeta/magenta/coral) a 3 (índigo/violeta/magenta), actualizado en el componente `Button` y luego barrido en todas las pantallas — ningún fill ni parada de gradiente de la paleta vieja sobrevive en el archivo.
+- **`01 · Portada`** (mismo nodo que la antigua `01 · Bienvenida`, `63:432`) y **`01a · Inicio de sesión`** (nueva, `210:440`): reconstruidas 1:1 desde la referencia, tema oscuro (`#0E0B22`), logo N flotante, sin el fondo blanco que traía el asset original del badge de Bottom Nav.
+- **`02`–`06`**: reemplazadas por completo con el contenido de `flujometa/1-5.jpeg` (secuencia "Paso X de 5"). Las imágenes `flujometa/6-7.jpeg` muestran una segunda secuencia incompleta ("Paso X de 4", sin pasos 3-4) — se usaron como referencia del patrón de formulario largo, no como pantallas nuevas insertadas. Ninguna imagen de referencia cubre un resultado de "plan generado" con montos; `06` se diseñó como pantalla de transición al coach ("¡Genial, ya casi estamos listos!") extendiendo el lenguaje v3, y su CTA lleva directo a `07 · Verificación (KYC)`.
+- **Resto del archivo (`07`–`31`, `07a`–`07h`)**: barrido masivo de recoloreo (fills, strokes y paradas de gradiente) de cada hex de la paleta 2.0.0 a su equivalente v3 más cercano, más una corrección puntual del componente `Button/Secondary` (su borde seguía en índigo viejo). 1.464 nodos visitados, 494 fills y 111 strokes corregidos en total entre las dos pasadas.
+- Iconografía, componentes (Button, Badge, Progress, Goal Card, Bottom Navigation, Process Header, Personal Goal Hero, Group Plan Components) y estructura de navegación **no cambiaron** — la migración es de color/tipografía/tratamiento visual, no de arquitectura de información, salvo el contenido explícitamente reemplazado en `02`–`06`.
 
 ## Secuencia principal testeada
 
-`Bienvenida → Elegí tu meta → Detalle → Chat → Ingresos → Plan generado → Verificación/KYC → Plan personal`
+`Portada → Elegí tu meta → Motivación → Situación financiera → Horizonte → Coach (plan) → Verificación/KYC → Plan personal`
 
-El acceso para una persona con cuenta existente conserva el atajo de Bienvenida a Plan personal.
+`01 · Portada` tiene dos salidas: "Empezar" hacia `02 · Elegí tu meta`, y "Ya tengo cuenta" hacia `01a · Inicio de sesión`, cuyo botón "Ingresar" conserva el atajo original directo a `08 · Plan personal`.
 
 Dentro del paso Verificación/KYC, cada una de las cuatro filas abre y cierra su propio sub-flujo (ver [Sub-flujos de Verificación (KYC)](#sub-flujos-de-verificación-kyc)) antes de volver a la pantalla 7; la secuencia principal no cambia de destino final.
 
@@ -37,12 +41,13 @@ Dentro del paso Verificación/KYC, cada una de las cuatro filas abre y cierra su
 
 | # | Pantalla | Nodo | Funcionalidad conservada |
 |---:|---|---|---|
-| 1 | Bienvenida | `63:432` | Inicia una meta o entra con una cuenta existente. |
-| 2 | Elegí tu meta | `63:438` | Selecciona una categoría de meta y continúa. |
-| 3 | Detalle de la meta | `63:482` | Define nombre, monto y prioridad. |
-| 4 | Chat con el copiloto | `63:513` | Completa la configuración mediante preguntas y respuestas. |
-| 5 | Ingresos | `63:555` | Registra ingreso, variabilidad y horizonte. |
-| 6 | Plan generado | `63:581` | Revisa el aporte sugerido, plazo y Modo Temporada. |
+| 1 | Portada | `63:432` | Presenta NOVU (tema oscuro) e inicia una meta o entra con cuenta existente. |
+| 1a | Inicio de sesión | `210:440` | Correo/teléfono + contraseña, biometría, enlace a registro. |
+| 2 | Elegí tu meta | `63:438` | Selecciona una categoría de meta entre 6 opciones y continúa. |
+| 3 | Detalle de la meta | `63:482` | Selección múltiple de motivaciones para el objetivo elegido. |
+| 4 | Chat con el copiloto | `63:513` | Radio de situación financiera actual (base para el plan). |
+| 5 | Ingresos | `63:555` | Radio de horizonte temporal para lograr la meta. |
+| 6 | Plan generado | `63:581` | Transición al coach NOVU antes de continuar a verificación. |
 | 7 | Verificación (KYC) | `63:618` | Abre cuatro sub-flujos independientes para identidad, rostro, contacto y comprobante — ver detalle abajo. |
 | 8 | Plan personal | `63:662` | Consulta progreso y abre el retiro personal. |
 | 9 | Retiro personal | `63:724` | Confirma o cancela el retiro sin perder contexto de impacto. |
@@ -71,7 +76,7 @@ Dentro del paso Verificación/KYC, cada una de las cuatro filas abre y cierra su
 
 ## Sub-flujos de Verificación (KYC)
 
-Las cuatro filas de `07 · Verificación (KYC)` (`63:618`) son táctiles: cada una abre su propio sub-flujo en vez de aparecer pre-marcada como "Listo" sin acción detrás. Cada sub-flujo termina con un botón que regresa a la pantalla 7. Las pantallas de cámara usan un visor de pantalla completa (fondo oscuro inmersivo, igual que el scrim de las hojas inferiores) con botón "Volver" y obturador circular; las de confirmación reutilizan el patrón de tarjeta con ícono, título y botones Primary/Secondary ya usado en pantallas como `09 · Retiro personal`.
+Las cuatro filas de `07 · Verificación (KYC)` (`63:618`) son táctiles: cada una abre su propio sub-flujo en vez de aparecer pre-marcada como "Listo" sin acción detrás. Cada sub-flujo termina con un botón que regresa a la pantalla 7. Las pantallas de cámara usan un visor de pantalla completa (fondo oscuro inmersivo) con botón "Volver" y obturador circular; las de confirmación reutilizan el patrón de tarjeta con ícono, título y botones Primary/Secondary ya usado en pantallas como `09 · Retiro personal`.
 
 | # | Pantalla | Nodo | Función | Destino(s) |
 |---:|---|---|---|---|
@@ -91,45 +96,45 @@ Las pantallas usan el prefijo `07a`–`07h` en vez de correrse dentro de la nume
 Las 10 pantallas que muestran la barra inferior — `08 · Plan personal`, `10 · Tu ritmo`, `11 · Copiloto`, `12 · Oportunidades`, `13 · Inicio`, `18 · Historial del reto`, `19 · Plan del reto`, `27 · Fondo familiar (aportes)`, `28 · Solicitudes del fondo` y `29 · Historial de aportaciones` — comparten:
 
 - La misma caja: `x:20, y:745, 335 × 46 px`.
-- Los mismos cinco destinos (Inicio, Metas, Copiloto, Ritmo, Menú) con sus hotspots de navegación centrados sobre el ícono real de cada uno, no sobre una posición aproximada.
+- Los mismos cinco destinos (Inicio, Metas, Copiloto, Ritmo, Menú) con sus hotspots de navegación centrados sobre el ícono real de cada uno.
 - La misma insignia circular NOVU del centro (mismo asset de imagen, mismo trazo blanco de 3 px y la misma sombra) en las 10 pantallas.
 
-Antes de esta revisión, tres pantallas (Copiloto, Oportunidades, Inicio) anclaban la barra según la altura de su propio contenido en vez de a una posición fija, dejando hasta 201 px de espacio muerto debajo en la más corta; una cuarta (Plan del reto) tenía los cinco íconos comprimidos y la insignia NOVU descentrada; y esa misma insignia de Plan del reto resultó ser un asset distinto (una reconstrucción vectorial de una sesión anterior) en vez del mismo círculo con imagen que usan las otras nueve. Detalle de la causa y la corrección en `plan/figma-progress.md` y `errors/figma-lessons.md`.
+Detalle de la causa y la corrección original en `plan/figma-progress.md` y `errors/figma-lessons.md`.
 
 ## Componentes del sistema
 
-- Button: 6 variantes; 36 instancias presentes en la réplica (29 del flujo principal + 7 en los sub-flujos KYC: Primary/Secondary en las tres confirmaciones y un Primary en Contacto y contraseña).
-- Badge: 8 variantes; una instancia presente en la réplica.
-- Progress: 4 niveles con monto editable, disponible para evoluciones sin alterar el flujo.
+- Button: 6 variantes; gradiente Primary y borde Secondary migrados a la paleta v3, cascada automática a todas las instancias del componente.
+- Badge: 8 variantes.
+- Progress: 4 niveles con monto editable.
 - Goal Card: 6 variantes para personal, grupo y familia.
 - Bottom Navigation: 5 estados activos; posición, tamaño e insignia central verificados idénticos en las 10 pantallas que la usan.
-- Process Header: 4 variantes para las fases 3/6, 4/6, 5/6 y 6/6; aplicado en las pantallas 04–07.
-- Personal Goal Hero: porcentaje, nombre, saldo y fecha editables; anillo, barra e icono vectoriales.
-- Group Challenge Hero: progreso y detalle editables; anillo y bandera vectoriales.
+- Process Header: 4 variantes (3/6–6/6); tras el reemplazo de `04`–`06` con contenido nuevo, su única instancia en uso queda en `07 · Verificación (KYC)` (paso 6 de 6). Las pantallas `02`–`06` usan un indicador de progreso propio (fila de píldoras + "Paso X de 5") acorde a la referencia v3.
+- Personal Goal Hero: porcentaje, nombre, saldo y fecha editables; anillo, barra e icono vectoriales, gradiente v3.
+- Group Challenge Hero: progreso y detalle editables; gradiente v3.
 - Group Member Progress Table: aportes, avance y puntos de cada integrante representados por capas editables.
-- Input Field (Simple Design System, reutilizado): 4 instancias en `07f · Contacto y contraseña` (Teléfono, Correo electrónico, Contraseña, Confirmar contraseña).
-- Iconografía: familia vectorial consistente de Simple Design System en tamaños 16, 20 y 24 px, enlazada a `color/icon/default` y `color/icon/brand`.
+- Input Field (Simple Design System, reutilizado): usado en `07f · Contacto y contraseña`.
+- Iconografía: familia vectorial consistente de Simple Design System en tamaños 16, 20 y 24 px.
 
 Los componentes se reutilizan solo cuando caben en la composición original. No se fuerza una sustitución si cambia el orden, el tamaño útil o la lógica testeada.
 
 ## Iconografía funcional
 
 - Navegación: Home, Target, Message circle, Trending up y Menu. El logo central NOVU se conserva en las barras de la réplica.
-- Metas: Navigation, Book open, Briefcase, Home, Shield y Plus distinguen cada categoría sin depender del color.
-- Copiloto: Message circle identifica las intervenciones de NOVU en los tres recorridos conversacionales.
+- Metas (`02 · Elegí tu meta`): Navigation, Book open, Briefcase, Home, Shield y Plus — reutilizados de la réplica original, sin reimportar.
+- Motivación/situación financiera/horizonte (`03`–`05`): Briefcase, Target, Users, Clock, Trending up, More horizontal, Flag, Calendar, Star, Help circle.
+- Copiloto: Message circle identifica las intervenciones de NOVU; el logo N reemplaza al mascot ilustrado de la referencia como insignia de "Tu coach NOVU" en `06 · Plan generado`.
 - Progreso: Clock, Dollar sign y Award reemplazan los indicadores vacíos de racha, ahorro y nivel.
 - Grupos y familia: User, File text, Check circle y Dollar sign identifican integrantes, solicitudes, liberación de dinero y aportes.
-- Verificación (KYC): Credit card identifica el DPI (insignia y las dos miniaturas frente/reverso), User la selfie, Lock el paso de contraseña y File text el comprobante de domicilio; Credit card y Camera se importaron nuevas a la librería local del archivo, las demás reutilizan componentes ya presentes.
+- Verificación (KYC): Credit card identifica el DPI, User la selfie, Lock el paso de contraseña y File text el comprobante de domicilio.
 - Los contenedores de fondo originales permanecen para conservar jerarquía, contraste y composición; el vector se inserta centrado dentro de ellos.
-- No se sustituyeron checkboxes KYC, flechas de regreso ni vectores que ya comunicaban correctamente. Los checkboxes de la pantalla 7 se dejaron intactos: la fila completa ahora navega al sub-flujo correspondiente, pero su apariencia (incluida la insignia "Listo") no cambió.
+- No se usan íconos ilustrados/a color mezclados con la familia de línea, aunque la referencia v3 los incluya en algunas tarjetas — se estandarizó en una sola familia por consistencia (ver `style/novu-style-guide.md`).
 
 ## Reglas UX aplicadas
 
 - La pantalla comunica su función mediante jerarquía, controles y estados; no mediante texto que explique la propia pantalla.
 - Se conservan aclaraciones únicamente cuando previenen una decisión financiera equivocada.
 - Color nunca es el único indicador de estado.
-- El avance del onboarding se comunica con texto y una barra segmentada de seis fases.
-- La conversación de la pantalla 04 usa scroll vertical para conservar el contenido bajo el header común.
-- Los CTAs principales usan el gradiente de la presentación y un alto mínimo de 48 px.
+- El avance de `02`–`06` se comunica con una fila de píldoras y texto ("Paso X de 5"); `07 · Verificación (KYC)` conserva el header de progreso de seis fases (Process Header).
+- Los CTAs principales usan el gradiente v3 y un alto de 52 px (mínimo táctil 48 px).
 - Las zonas táctiles de navegación, iconos y acciones compactas miden al menos 48 px sin alterar la composición visible.
-- Las cuatro pantallas de captura de cámara (DPI × 2, selfie, comprobante) usan un fondo oscuro inmersivo de borde a borde — la única desviación intencional del lienzo claro — porque replica cómo se ve un visor de cámara real; las pantallas de confirmación que siguen vuelven de inmediato al fondo claro del resto del sistema.
+- Las cuatro pantallas de captura de cámara del sub-flujo KYC (DPI × 2, selfie, comprobante) y las dos pantallas de entrada (`01 · Portada`, `01a · Inicio de sesión`) usan fondo oscuro de borde a borde — las únicas desviaciones intencionales del lienzo claro, replicando cómo se ven un visor de cámara real y la referencia de entrada v3 respectivamente.
