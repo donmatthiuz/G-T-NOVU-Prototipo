@@ -2,7 +2,7 @@
 
 ## Propósito
 
-NOVU debe sentirse cercano sin ser infantil, tecnológico sin ser críptico y bancario sin ser frío. Cada pantalla explica el siguiente paso, pone los montos en contexto y hace visible el progreso.
+NOVU debe sentirse cercano sin ser infantil, tecnológico sin ser críptico y financiero sin ser frío. La interfaz conserva la estructura del prototipo original y adopta el lenguaje editorial de `Reinvención Grupo 3.pdf`.
 
 ## Principios
 
@@ -18,18 +18,20 @@ Mostrar avances, próximos hitos y acciones pequeñas. El ahorro se comunica com
 
 Explicar por qué se solicita información, respaldar cada decisión financiera y distinguir claramente acciones personales, grupales y familiares.
 
-## Identidad
+## Identidad extraída de la presentación
 
-- Azul G&T `#0058A4`: confianza, navegación y acciones secundarias.
-- Azul NOVU `#1E4393`: acción principal y marca.
-- Púrpura NOVU `#5B3986`: acento y momentos de inteligencia/copiloto.
-- Rojo NOVU `#D51A30`: identidad y celebraciones puntuales; no usar como error por defecto.
-- Amarillo G&T `#FDBB33`: advertencias y énfasis limitados.
-- Gradiente NOVU: reservado para portada, marca, progreso destacado o celebración.
+- Índigo `#22229F`: acción principal, navegación y titulares.
+- Azul `#134294`: profundidad y marca.
+- Violeta `#5D3E9F`: copiloto, progreso y acento secundario.
+- Magenta `#B43461`: transición y énfasis.
+- Coral `#D51A30`: cierre del gradiente y llamadas puntuales.
+- Tinta `#171C23`, lienzo `#F8F8FC` y borde `#DED9EE` sostienen las superficies.
+- Gradiente NOVU: `#22229F → #5D3E9F → #B43461 → #D51A30`.
+- No usar la paleta de G&T como identidad de interfaz.
 
 ## Tipografía
 
-Montserrat se usa en títulos y cifras protagonistas. Inter se usa en interfaz, párrafos, etiquetas y botones. El texto funcional nunca baja de 12 px; el cuerpo recomendado es 15 px.
+Poppins es la única familia tipográfica. Bold se usa en títulos, cifras y botones; Medium en etiquetas; Regular en texto funcional. El texto funcional nunca baja de 12 px y el cuerpo base es 16 px.
 
 ## Layout móvil
 
@@ -37,14 +39,14 @@ Montserrat se usa en títulos y cifras protagonistas. Inter se usa en interfaz, 
 - Margen lateral: 20 px.
 - Escala de espaciado: múltiplos de 4 px.
 - Objetivo táctil mínimo: 48 × 48 px.
-- Tarjetas: radio de 20 px, borde sutil y sombra ligera solo cuando ayuda a separar niveles.
+- Tarjetas: radios de 16–24 px, borde violeta muy sutil y sombra ligera solo cuando ayuda a separar niveles.
 - Navegación inferior: cinco destinos como máximo, con icono SVG y etiqueta visible.
 
 ## Componentes
 
 ### Button
 
-Primary aparece una sola vez por pantalla. Secondary acompaña o permite volver. Estados móviles: Default, Pressed y Disabled. Altura mínima: 48 px.
+Primary aparece una sola vez por pantalla y usa el gradiente NOVU. Secondary acompaña o permite volver. Estados móviles: Default, Pressed y Disabled. Altura mínima: 48 px.
 
 ### Badge
 
@@ -72,6 +74,7 @@ Resume una meta personal, reto grupal o fondo familiar. La tarjeta completa es t
 
 - Más de una acción primaria por vista.
 - Gradientes en todas las tarjetas.
+- Colores o nombres de token G&T dentro del sistema visual.
 - Sombras pesadas, bordes negros o exceso de píldoras.
 - Texto menor de 12 px.
 - Mensajes genéricos como “algo salió mal” sin explicar recuperación.

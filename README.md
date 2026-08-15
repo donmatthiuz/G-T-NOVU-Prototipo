@@ -4,9 +4,10 @@ NOVU es un copiloto de ahorro para jóvenes guatemaltecos, respaldado por G&T Co
 
 ## Entregable principal
 
-- [Archivo NOVU en Figma](https://www.figma.com/design/vFm8Z8NqINCaW8YDb23hz5/NOVU?node-id=0-1)
-- El prototipo original se conserva como referencia.
-- La nueva dirección visual vive en páginas separadas de foundations, componentes y pantallas V2.
+- [Prototipo funcional: flujo original + estilo de la presentación](https://www.figma.com/design/vFm8Z8NqINCaW8YDb23hz5/NOVU?node-id=63-432)
+- Página de trabajo: `08 · NOVU · Flujo original + Presentación` (`63:431`).
+- El prototipo original se conserva sin cambios en `Legacy · Prototipo original`.
+- `07 · NOVU V2 Screens` permanece como exploración anterior, no como entregable principal.
 
 ## Documentación local
 
@@ -19,8 +20,10 @@ NOVU es un copiloto de ahorro para jóvenes guatemaltecos, respaldado por G&T Co
 
 ## Dirección visual
 
-La interfaz abandona el uso de emojis como iconografía funcional, sombras pesadas y gradientes indiscriminados. La nueva propuesta usa azul G&T para confianza, azul/púrpura/rojo NOVU para identidad, superficies claras, tipografía Montserrat + Inter y objetivos táctiles mínimos de 48 px.
+El recorrido, la arquitectura de información y las decisiones de interacción se replican pantalla por pantalla desde el prototipo original testeado. El estilo se toma exclusivamente de `referencias/novu_templates/Reinvención Grupo 3.pdf`: Poppins, superficies blancas, índigo, violeta, magenta, coral y el gradiente NOVU. No se usan colores G&T como parte del sistema visual.
+
+Los componentes nuevos se conservan cuando no cambian el flujo: Button, Badge, Progress, Goal Card y Bottom Navigation. En la réplica se insertaron 29 instancias de Button y una de Badge; los demás componentes siguen disponibles para extensiones compatibles.
 
 ## Estado
 
-Al 14 de agosto de 2026 están terminados y validados los foundations, cinco familias de componentes y el prototipo V2 funcional: 18 pantallas, 74 interacciones, Flow 1 y cero enlaces rotos.
+Al 14 de agosto de 2026 están terminados y validados los foundations, cinco familias de componentes y la réplica funcional: 31 pantallas, 101 reacciones, dos puntos de inicio detectados por Figma, cero destinos rotos y 67 zonas táctiles ampliadas a un mínimo de 48 px.

@@ -1,66 +1,67 @@
 meta:
   name: NOVU Mobile Design System
-  version: 1.0.0
+  version: 2.0.0
   updated: 2026-08-14
   locale: es-GT
 
 color:
   primitive:
     brand:
-      gt_blue: "#0058A4"
-      novu_blue: "#1E4393"
-      novu_purple: "#5B3986"
-      novu_red: "#D51A30"
-      gt_yellow: "#FDBB33"
+      indigo: "#22229F"
+      blue: "#134294"
+      violet: "#5D3E9F"
+      magenta: "#B43461"
+      coral: "#D51A30"
     neutral:
       white: "#FFFFFF"
-      ink: "#111827"
-      slate: "#334155"
-      mid: "#64748B"
-      border: "#D8DEE8"
+      ink: "#171C23"
+      navy: "#161B75"
+      muted: "#625C72"
+      border: "#DED9EE"
+      canvas: "#F8F8FC"
       surface: "#FFFFFF"
-      soft_blue: "#EAF4FF"
-      soft_purple: "#F3EEFF"
-      soft_red: "#FFF0F2"
-      black: "#000000"
+      soft_blue: "#EEF0FC"
+      soft_violet: "#F3EFFA"
+      soft_coral: "#FCEBED"
+      black: "#0F0E0F"
     status:
-      success: "#138A36"
-      warning: "#A36B00"
-      danger: "#C9133B"
+      success: "#2E7D4F"
+      warning: "#9A6500"
+      danger: "#C21F5B"
   semantic:
     background:
-      app: "{color.primitive.neutral.white}"
+      app: "{color.primitive.neutral.canvas}"
       surface: "{color.primitive.neutral.surface}"
-      subtle: "{color.primitive.neutral.soft_blue}"
-      brand: "{color.primitive.brand.novu_blue}"
-      accent: "{color.primitive.brand.novu_purple}"
+      subtle: "{color.primitive.neutral.soft_violet}"
+      brand: "{color.primitive.brand.indigo}"
+      accent: "{color.primitive.brand.magenta}"
     text:
       primary: "{color.primitive.neutral.ink}"
-      secondary: "{color.primitive.neutral.slate}"
-      muted: "{color.primitive.neutral.mid}"
-      brand: "{color.primitive.brand.gt_blue}"
+      secondary: "{color.primitive.neutral.navy}"
+      muted: "{color.primitive.neutral.muted}"
+      brand: "{color.primitive.brand.indigo}"
       inverse: "{color.primitive.neutral.white}"
-      accent: "{color.primitive.brand.novu_purple}"
+      accent: "{color.primitive.brand.magenta}"
     border:
       default: "{color.primitive.neutral.border}"
-      focus: "{color.primitive.brand.gt_blue}"
+      focus: "{color.primitive.brand.indigo}"
     action:
-      primary_background: "{color.primitive.brand.novu_blue}"
+      primary_background: "{color.primitive.brand.indigo}"
       primary_text: "{color.primitive.neutral.white}"
       secondary_background: "{color.primitive.neutral.white}"
-      secondary_text: "{color.primitive.brand.gt_blue}"
+      secondary_text: "{color.primitive.brand.indigo}"
 
 typography:
-  heading_family: Montserrat
-  body_family: Inter
-  display_xl: {size: 64, line_height: 72, weight: 700}
-  heading_h1: {size: 36, line_height: 44, weight: 700}
-  heading_h2: {size: 28, line_height: 36, weight: 700}
-  title_medium: {size: 20, line_height: 26, weight: 700}
-  body_base: {size: 15, line_height: 23, weight: 400}
-  body_small: {size: 13, line_height: 19, weight: 400}
+  heading_family: Poppins
+  body_family: Poppins
+  display_xl: {size: 32, line_height: 38, weight: 700}
+  heading_h1: {size: 24, line_height: 30, weight: 700}
+  heading_h2: {size: 20, line_height: 26, weight: 700}
+  title_medium: {size: 18, line_height: 24, weight: 700}
+  body_base: {size: 16, line_height: 24, weight: 400}
+  body_small: {size: 14, line_height: 20, weight: 400}
   label_medium: {size: 12, line_height: 16, weight: 500}
-  button_label: {size: 15, line_height: 20, weight: 600}
+  button_label: {size: 15, line_height: 20, weight: 700}
 
 spacing:
   0: 0
@@ -73,10 +74,10 @@ spacing:
   8: 32
 
 radius:
-  sm: 6
-  md: 8
-  lg: 12
-  xl: 20
+  sm: 8
+  md: 12
+  lg: 16
+  xl: 24
   full: 999
 
 size:
@@ -86,6 +87,6 @@ stroke:
   thin: 1
 
 effects:
-  card: "0 8px 24px rgba(15, 23, 42, 0.08)"
-  floating: "0 16px 40px rgba(15, 23, 42, 0.14)"
-  brand_gradient: "linear-gradient(135deg, #1E4393 0%, #5B3986 55%, #D51A30 100%)"
+  card: "0 4px 16px rgba(34, 34, 159, 0.08)"
+  floating: "0 10px 30px -4px rgba(23, 28, 35, 0.14)"
+  brand_gradient: "linear-gradient(115deg, #22229F 0%, #5D3E9F 38%, #B43461 72%, #D51A30 100%)"

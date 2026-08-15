@@ -10,11 +10,11 @@ File key: `vFm8Z8NqINCaW8YDb23hz5`
 
 Colecciones de variables:
 
-- `NOVU · Primitives` — `VariableCollectionId:30:88`
-- `NOVU · Color` — `VariableCollectionId:30:89`
+- `NOVU · Presentación · Primitives` — `VariableCollectionId:30:88`
+- `NOVU · Presentación · Color` — `VariableCollectionId:30:89`
 - `NOVU · Size` — `VariableCollectionId:30:90`
 
-Se crearon 55 variables locales, 8 estilos tipográficos, 2 estilos de efectos y 2 estilos de gradiente. Todos los tokens semánticos de color usan alias a primitivas y cuentan con sintaxis WEB.
+Se crearon 55 variables locales, 8 estilos tipográficos Poppins, 2 estilos de efectos y 2 estilos de gradiente. La paleta usa exclusivamente los colores extraídos de la presentación; se eliminaron los nombres y valores G&T del sistema visual.
 
 Páginas y nodos principales:
 
@@ -75,7 +75,7 @@ Páginas y nodos principales:
 - Cinco iconos SVG con etiqueta visible
 - Validación estructural y visual: aprobada
 
-## Prototipo V2 completado
+## Exploración V2 anterior
 
 Página `07 · NOVU V2 Screens`: `43:2`.
 
@@ -112,6 +112,21 @@ Validación final:
 - 74 reacciones.
 - 0 enlaces rotos.
 - `Legacy · Prototipo original` conservado en la página `0:1`.
+
+## Réplica del flujo original con estilo de la presentación
+
+Página `08 · NOVU · Flujo original + Presentación`: `63:431`.
+
+- Punto de inicio principal: `01 · Bienvenida` (`63:432`, `Flow 1`).
+- 31 frames replicados pantalla por pantalla.
+- 99 capas interactivas, 101 reacciones y 101 acciones.
+- 0 destinos rotos; las 101 acciones apuntan a frames de la nueva página.
+- 29 instancias de Button y una instancia de Badge reutilizadas.
+- 67 zonas táctiles ampliadas a 48 px mediante hotspots invisibles.
+- Poppins Bold, Medium y Regular en toda la réplica.
+- 0 emojis funcionales y 0 nombres de token G&T.
+- Foundations sincronizados con índigo `#22229F`, azul `#134294`, violeta `#5D3E9F`, magenta `#B43461` y coral `#D51A30`.
+- Captura completa revisada sin pantallas faltantes ni contenido estructural roto.
 
 ## Estado recuperable
 

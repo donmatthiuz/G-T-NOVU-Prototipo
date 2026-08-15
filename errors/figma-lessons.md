@@ -48,3 +48,25 @@
 **Causa:** se intentó enlazar el tab activo de la navegación inferior consigo mismo.
 
 **Solución:** el tab activo queda intencionalmente sin reacción; los otros cuatro tabs sí navegan. Resultado final: 35 hotspots válidos.
+
+## Clonar frames no conserva interacciones
+
+**Error:** al clonar las 31 pantallas a una página nueva, Figma creó correctamente las capas visuales pero dejó `0` reacciones en los clones.
+
+**Causa:** `SceneNode.clone()` no replica de forma fiable las conexiones de prototipo entre páginas.
+
+**Solución:** recorrer en paralelo cada árbol de origen y clon por índice de hijo, copiar las reacciones con `setReactionsAsync()` y reemplazar cada `destinationId` legado por el frame equivalente de la réplica.
+
+**Resultado:** 99 capas interactivas, 101 reacciones, 101 destinos reescritos y 0 enlaces rotos.
+
+## Punto de inicio del prototipo
+
+**Error:** `PageNode.setFlowStartingPoint` no existe y `prototypeStartNode` es de solo lectura en la API disponible.
+
+**Solución:** no forzar propiedades no soportadas. Después de reconstruir las reacciones, Figma reconoció automáticamente `01 · Bienvenida` como `Flow 1` y la pantalla de votación como `Flow 2`.
+
+## Objetivos táctiles del flujo original
+
+**Problema:** 67 capas interactivas originales medían menos de 48 px en alguno de sus ejes.
+
+**Solución:** trasladar cada reacción a un hotspot invisible de al menos 48 × 48 px, centrado sobre el control original, sin cambiar la composición visible.
