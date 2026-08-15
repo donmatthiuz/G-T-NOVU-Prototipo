@@ -73,6 +73,8 @@ Páginas y nodos principales:
 - Component set `42:163`
 - 5 variantes: Active Home/Goals/Coach/Rhythm/Profile
 - Cinco iconos SVG con etiqueta visible
+- 25 instancias vectoriales reales en el componente maestro: 5 destinos × 5 estados
+- Estados activos ligados a `color/icon/brand`; estados inactivos ligados a `color/icon/default`
 - Validación estructural y visual: aprobada
 
 ## Exploración V2 anterior
@@ -127,6 +129,15 @@ Página `08 · NOVU · Flujo original + Presentación`: `63:431`.
 - 0 emojis funcionales y 0 nombres de token G&T.
 - Foundations sincronizados con índigo `#22229F`, azul `#134294`, violeta `#5D3E9F`, magenta `#B43461` y coral `#D51A30`.
 - Captura completa revisada sin pantallas faltantes ni contenido estructural roto.
+
+### Iconografía aplicada al flujo
+
+- Fuente: componentes vectoriales de la biblioteca conectada Simple Design System.
+- Tamaños usados: 16 px en tarjetas y avatares compactos, 20 px en navegación y acciones, 24 px en solicitudes y avatares destacados.
+- 99 instancias en la réplica: 40 iconos en 10 barras inferiores y 59 iconos semánticos en metas, chats, métricas, integrantes, aportes, retiros y votaciones.
+- 25 instancias en el component set `Bottom Navigation` (`42:163`).
+- 101 acciones preservadas, 30 destinos internos únicos, 0 destinos rotos y 0 controles interactivos menores de 48 × 48 px.
+- Auditoría final: solo quedan sin instancia añadida los checkboxes KYC, botones con flecha existente y vectores originales ya visibles.
 
 ## Estado recuperable
 

@@ -12,6 +12,8 @@ Punto de inicio principal: `01 · Bienvenida` (`63:432`, `Flow 1`)
 - 99 capas interactivas, 101 reacciones y 101 acciones.
 - 0 destinos externos o rotos: todas las acciones apuntan a pantallas de la página nueva.
 - 67 controles pequeños conservan su apariencia pero usan hotspots de al menos 48 × 48 px.
+- 99 instancias vectoriales de icono están integradas en las pantallas: 40 en las 10 barras inferiores y 59 en contexto.
+- El componente maestro de Bottom Navigation contiene 25 instancias adicionales, distribuidas en sus 5 estados.
 - Poppins es la única familia tipográfica de la réplica.
 - No quedan emojis como iconos funcionales.
 - El registro/KYC forma parte del recorrido principal.
@@ -66,8 +68,19 @@ El acceso para una persona con cuenta existente conserva el atajo de Bienvenida 
 - Progress: 4 niveles con monto editable, disponible para evoluciones sin alterar el flujo.
 - Goal Card: 6 variantes para personal, grupo y familia.
 - Bottom Navigation: 5 estados activos.
+- Iconografía: familia vectorial consistente de Simple Design System en tamaños 16, 20 y 24 px, enlazada a `color/icon/default` y `color/icon/brand`.
 
 Los componentes se reutilizan solo cuando caben en la composición original. No se fuerza una sustitución si cambia el orden, el tamaño útil o la lógica testeada.
+
+## Iconografía funcional
+
+- Navegación: Home, Target, Message circle, Trending up y Menu. El logo central NOVU se conserva en las barras de la réplica.
+- Metas: Navigation, Book open, Briefcase, Home, Shield y Plus distinguen cada categoría sin depender del color.
+- Copiloto: Message circle identifica las intervenciones de NOVU en los tres recorridos conversacionales.
+- Progreso: Clock, Dollar sign y Award reemplazan los indicadores vacíos de racha, ahorro y nivel.
+- Grupos y familia: User, File text, Check circle y Dollar sign identifican integrantes, solicitudes, liberación de dinero y aportes.
+- Los contenedores de fondo originales permanecen para conservar jerarquía, contraste y composición; el vector se inserta centrado dentro de ellos.
+- No se sustituyeron checkboxes KYC, flechas de regreso ni vectores que ya comunicaban correctamente.
 
 ## Reglas UX aplicadas
 

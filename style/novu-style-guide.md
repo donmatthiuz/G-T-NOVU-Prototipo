@@ -60,6 +60,15 @@ Siempre muestra monto actual y meta junto con la barra. Al 100% cambia al color 
 
 Resume una meta personal, reto grupal o fondo familiar. La tarjeta completa es táctil y contiene una sola acción final.
 
+### Iconografía
+
+- Usar una sola familia vectorial de trazo regular; la implementación actual reutiliza Simple Design System.
+- Tamaños base: 16 px para contenido compacto, 20 px para navegación y acciones, 24 px para avatares o estados destacados.
+- Usar `color/icon/default` en estado neutro y `color/icon/brand` para selección o énfasis.
+- Mantener etiqueta visible en navegación. En tarjetas, el texto cercano aporta el nombre accesible.
+- El icono se centra dentro del contenedor de color existente; el color de fondo no reemplaza el significado del vector.
+- No usar cajas vacías, emojis, caracteres de fuente ni mezclar familias de iconos.
+
 ## Accesibilidad y contenido
 
 - Contraste mínimo WCAG AA para texto normal.
