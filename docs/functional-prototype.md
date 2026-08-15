@@ -8,8 +8,8 @@ Punto de inicio principal: `01 · Portada` (`63:432`, `Flow 1`)
 
 ## Resultado validado
 
-- 40 pantallas de 375 × 812 px: 31 de la réplica principal (`01`–`31`, con `01`–`06` reconstruidas en la paleta v3) + 8 sub-flujos de Verificación (KYC) (`07a`–`07h`) + `01a · Inicio de sesión`, pantalla nueva.
-- 141 reacciones, 0 destinos externos o rotos.
+- 40 pantallas de 375 × 812 px: 31 de la réplica principal (`01`–`31`, con `01`–`07` reconstruidas en el header y contenido v3) + 8 sub-flujos de Verificación (KYC) (`07a`–`07h`) + `01a · Inicio de sesión`, pantalla nueva.
+- 142 reacciones, 0 destinos externos o rotos.
 - Paleta, tipografía y patrones de componente migrados por completo a la v3.0.0 extraída de `referencias/segundoprototipo/` — ver [Migración a la paleta v3](#migración-a-la-paleta-v3-segundoprototipo) y `style/novu-tokens.yaml` / `style/novu-style-guide.md`. No queda ningún fill ni gradiente de la paleta 2.0.0 en el archivo (verificado nodo por nodo).
 - 71 controles pequeños conservan su apariencia pero usan hotspots de al menos 48 × 48 px.
 - El registro/KYC (pantalla 7) abre cuatro sub-flujos independientes con pantallas propias: DPI, selfie, contacto/contraseña y comprobante de domicilio.
@@ -26,8 +26,9 @@ Origen: `referencias/segundoprototipo/portada.jpeg`, `iniciosesion/`, `flujometa
 - **Gradiente de marca**: de 4 paradas (índigo/violeta/magenta/coral) a 3 (índigo/violeta/magenta), actualizado en el componente `Button` y luego barrido en todas las pantallas — ningún fill ni parada de gradiente de la paleta vieja sobrevive en el archivo.
 - **`01 · Portada`** (mismo nodo que la antigua `01 · Bienvenida`, `63:432`) y **`01a · Inicio de sesión`** (nueva, `210:440`): reconstruidas 1:1 desde la referencia, tema oscuro (`#0E0B22`), logo N flotante, sin el fondo blanco que traía el asset original del badge de Bottom Nav.
 - **`02`–`06`**: reemplazadas por completo con el contenido de `flujometa/1-5.jpeg` (secuencia "Paso X de 5"). Las imágenes `flujometa/6-7.jpeg` muestran una segunda secuencia incompleta ("Paso X de 4", sin pasos 3-4) — se usaron como referencia del patrón de formulario largo, no como pantallas nuevas insertadas. Ninguna imagen de referencia cubre un resultado de "plan generado" con montos; `06` se diseñó como pantalla de transición al coach ("¡Genial, ya casi estamos listos!") extendiendo el lenguaje v3, y su CTA lleva directo a `07 · Verificación (KYC)`.
-- **Resto del archivo (`07`–`31`, `07a`–`07h`)**: barrido masivo de recoloreo (fills, strokes y paradas de gradiente) de cada hex de la paleta 2.0.0 a su equivalente v3 más cercano, más una corrección puntual del componente `Button/Secondary` (su borde seguía en índigo viejo). 1.464 nodos visitados, 494 fills y 111 strokes corregidos en total entre las dos pasadas.
-- Iconografía, componentes (Button, Badge, Progress, Goal Card, Bottom Navigation, Process Header, Personal Goal Hero, Group Plan Components) y estructura de navegación **no cambiaron** — la migración es de color/tipografía/tratamiento visual, no de arquitectura de información, salvo el contenido explícitamente reemplazado en `02`–`06`.
+- **Resto del archivo (`08`–`31`, `07a`–`07h`)**: barrido masivo de recoloreo (fills, strokes y paradas de gradiente) de cada hex de la paleta 2.0.0 a su equivalente v3 más cercano, más una corrección puntual del componente `Button/Secondary` (su borde seguía en índigo viejo). 1.464 nodos visitados, 494 fills y 111 strokes corregidos en total entre las dos pasadas.
+- **`07 · Verificación (KYC)`**: el restyle inicial solo recoloreó el `Process Header` (gradiente 6/6) que traía; en una corrección posterior se reemplazó ese header por el mismo patrón de `02`–`06` (fondo claro, flecha, wordmark en gradiente, titular y subtítulo centrados) para que la transición entre pantallas sea consistente. Copy original conservado ("Un último paso" + el texto de la Cuenta Digital G&T). El `Process Header` como componente sigue existiendo con sus 4 variantes, pero ya no tiene ninguna instancia activa en la réplica.
+- Iconografía, componentes (Button, Badge, Progress, Goal Card, Bottom Navigation, Personal Goal Hero, Group Plan Components) y estructura de navegación **no cambiaron** — la migración es de color/tipografía/tratamiento visual, no de arquitectura de información, salvo el contenido explícitamente reemplazado en `02`–`06` y el header de `07`.
 
 ## Secuencia principal testeada
 
@@ -108,7 +109,7 @@ Detalle de la causa y la corrección original en `plan/figma-progress.md` y `err
 - Progress: 4 niveles con monto editable.
 - Goal Card: 6 variantes para personal, grupo y familia.
 - Bottom Navigation: 5 estados activos; posición, tamaño e insignia central verificados idénticos en las 10 pantallas que la usan.
-- Process Header: 4 variantes (3/6–6/6); tras el reemplazo de `04`–`06` con contenido nuevo, su única instancia en uso queda en `07 · Verificación (KYC)` (paso 6 de 6). Las pantallas `02`–`06` usan un indicador de progreso propio (fila de píldoras + "Paso X de 5") acorde a la referencia v3.
+- Process Header: 4 variantes (3/6–6/6); componente conservado en el archivo pero sin instancias activas en la réplica — `02`–`07` usan ahora el mismo header propio (flecha, wordmark, titular, subtítulo) acorde a la referencia v3, y `02`–`06` además muestran una fila de píldoras + "Paso X de 5".
 - Personal Goal Hero: porcentaje, nombre, saldo y fecha editables; anillo, barra e icono vectoriales, gradiente v3.
 - Group Challenge Hero: progreso y detalle editables; gradiente v3.
 - Group Member Progress Table: aportes, avance y puntos de cada integrante representados por capas editables.
@@ -134,7 +135,7 @@ Los componentes se reutilizan solo cuando caben en la composición original. No 
 - La pantalla comunica su función mediante jerarquía, controles y estados; no mediante texto que explique la propia pantalla.
 - Se conservan aclaraciones únicamente cuando previenen una decisión financiera equivocada.
 - Color nunca es el único indicador de estado.
-- El avance de `02`–`06` se comunica con una fila de píldoras y texto ("Paso X de 5"); `07 · Verificación (KYC)` conserva el header de progreso de seis fases (Process Header).
+- `02`–`07` comparten el mismo header (fondo claro, flecha, wordmark, titular y subtítulo centrados); el avance de `02`–`06` además se comunica con una fila de píldoras y texto ("Paso X de 5") — `07` es la pantalla de verificación, no un sexto paso de esa misma secuencia, así que no lleva fracción numerada.
 - Los CTAs principales usan el gradiente v3 y un alto de 52 px (mínimo táctil 48 px).
 - Las zonas táctiles de navegación, iconos y acciones compactas miden al menos 48 px sin alterar la composición visible.
 - Las cuatro pantallas de captura de cámara del sub-flujo KYC (DPI × 2, selfie, comprobante) y las dos pantallas de entrada (`01 · Portada`, `01a · Inicio de sesión`) usan fondo oscuro de borde a borde — las únicas desviaciones intencionales del lienzo claro, replicando cómo se ven un visor de cámara real y la referencia de entrada v3 respectivamente.
