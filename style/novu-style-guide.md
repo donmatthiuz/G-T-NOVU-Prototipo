@@ -68,6 +68,10 @@ Unifica las fases 3–6 del onboarding con el gradiente NOVU, una etiqueta textu
 
 Presenta el avance principal de una meta con porcentaje escrito, anillo, barra, saldo restante y fecha estimada. Todos los datos son propiedades editables; no usar capturas raster para esta tarjeta.
 
+### Group Plan Components
+
+El plan de reto grupal usa un resumen de avance y una tabla de integrantes editables. Cada fila combina nombre, aporte, barra con porcentaje y puntos; el avance se expresa también como número. Las acciones Aportar, Retirar e Historial usan iconos SVG reales.
+
 ### Iconografía
 
 - Usar una sola familia vectorial de trazo regular; la implementación actual reutiliza Simple Design System.

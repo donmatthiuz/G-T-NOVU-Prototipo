@@ -98,6 +98,16 @@ Páginas y nodos principales:
 - Instancia en Plan personal `99:341`; reemplaza el bitmap `63:723`
 - Validación estructural y visual: aprobada
 
+### Group Plan Components
+
+- Página `103:2`
+- Documentación `103:3`
+- `Group Challenge Hero` `103:11`: progreso y detalle editables, anillo y bandera vectoriales.
+- `Group Member Progress Table` `104:2`: cuatro filas editables con monto, barra, porcentaje y puntos.
+- Instancias en Plan (Reto Grupal): hero `105:329` y tabla `105:342`.
+- Los iconos Retirar, Historial y las marcas NOVU de esa pantalla fueron sustituidos por SVG editables.
+- Validación estructural y visual: aprobada.
+
 ## Exploración V2 anterior
 
 Página `07 · NOVU V2 Screens`: `43:2`.
@@ -168,6 +178,13 @@ Página `08 · NOVU · Flujo original + Presentación`: `63:431`.
 - Los CTA y destinos del recorrido original no cambiaron.
 - En `08 · Plan (Personal)`, la antigua captura raster fue sustituida por `Personal Goal Hero`, con datos y proporciones editables.
 - Auditoría posterior: 31 pantallas, 101 reacciones, 30 destinos únicos y 0 destinos rotos.
+
+### Plan de reto grupal editable
+
+- `08 · Plan (Reto Grupal)` (`63:1101`) ya no contiene capas raster.
+- El resumen de 58 %, la tabla de Carlos, Ana, María y Diego, y los iconos de acción se reconstruyeron como capas editables.
+- Se preservan los 11 destinos de la pantalla: Aportar, Retirar, Historial y navegación inferior.
+- Auditoría final de la pantalla: 0 `IMAGE` fills, 0 destinos rotos y Poppins en todos los textos.
 
 ## Estado recuperable
 

@@ -29,6 +29,7 @@ Replicar pantalla por pantalla el flujo original testeado, conservar su lógica 
 - [x] Sustitución de placeholders por 99 iconos vectoriales en las pantallas y 25 en Bottom Navigation.
 - [x] Header común con progreso de seis fases en Chat, Ingresos, Plan generado y KYC.
 - [x] Sustitución del bitmap principal de Plan personal por un componente editable.
+- [x] Sustitución de todas las imágenes de Plan (Reto Grupal) por componentes y vectores editables.
 - [x] QA final de componentes, pantallas y documentación.
 
 ## Criterios de terminación
@@ -49,6 +50,7 @@ Replicar pantalla por pantalla el flujo original testeado, conservar su lógica 
 - 99 instancias de icono en la réplica, 25 en el componente maestro y 0 placeholders funcionales vacíos.
 - Process Header con variantes 3/6–6/6 aplicado al onboarding sin modificar sus destinos.
 - Personal Goal Hero editable en Plan personal; el bitmap anterior fue eliminado.
+- Plan (Reto Grupal) sin capas raster: resumen, tabla, acciones y marcas NOVU editables.
 - `01 · Bienvenida` (`63:432`) registrado por Figma como `Flow 1`.
 - Flujo probado preservado: Bienvenida → Meta → Detalle → NOVU → Ingresos → Plan → Registro → Meta personal.
 - Ramas originales preservadas: reto grupal, fondo familiar, aportes, retiros, votación, copiloto, ritmo y oportunidades.

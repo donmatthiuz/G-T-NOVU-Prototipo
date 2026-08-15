@@ -19,6 +19,7 @@ Punto de inicio principal: `01 · Bienvenida` (`63:432`, `Flow 1`)
 - El registro/KYC forma parte del recorrido principal.
 - Chat, Ingresos, Plan generado y KYC comparten un header con progreso visible de seis fases.
 - La tarjeta principal de Plan personal es un componente editable, no una imagen raster.
+- El resumen y la tabla del Plan (Reto Grupal) son componentes editables; sus acciones conservan los destinos testeados.
 - El original permanece intacto en `Legacy · Prototipo original` (`0:1`).
 
 ## Secuencia principal testeada
@@ -72,6 +73,8 @@ El acceso para una persona con cuenta existente conserva el atajo de Bienvenida 
 - Bottom Navigation: 5 estados activos.
 - Process Header: 4 variantes para las fases 3/6, 4/6, 5/6 y 6/6; aplicado en las pantallas 04–07.
 - Personal Goal Hero: porcentaje, nombre, saldo y fecha editables; anillo, barra e icono vectoriales.
+- Group Challenge Hero: progreso y detalle editables; anillo y bandera vectoriales.
+- Group Member Progress Table: aportes, avance y puntos de cada integrante representados por capas editables.
 - Iconografía: familia vectorial consistente de Simple Design System en tamaños 16, 20 y 24 px, enlazada a `color/icon/default` y `color/icon/brand`.
 
 Los componentes se reutilizan solo cuando caben en la composición original. No se fuerza una sustitución si cambia el orden, el tamaño útil o la lógica testeada.
