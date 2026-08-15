@@ -33,6 +33,7 @@ Replicar pantalla por pantalla el flujo original testeado, conservar su lógica 
 - [x] Sub-flujos independientes de captura y confirmación para los cuatro pasos de Verificación (KYC): DPI, selfie, contacto/contraseña y comprobante de domicilio.
 - [x] Consistencia de Bottom Navigation (posición, hotspots e insignia NOVU) en las 10 pantallas que la usan.
 - [x] Migración a la paleta v3.0.0 (`segundoprototipo`): fundamentos, `01 · Portada`, `01a · Inicio de sesión` nueva, `02`–`06` reemplazadas por completo, y restyle del resto del archivo (`07`–`31`, `07a`–`07h`).
+- [x] Logo e íconos de Portada/Inicio de sesión/Ingresos reemplazados por recortes reales de la referencia (antes aproximados con otra librería de íconos); biometría de Inicio de sesión ampliada a sus 3 métodos con pantallas propias (`01b`–`01d`).
 - [x] QA final de componentes, pantallas y documentación.
 
 ## Criterios de terminación
@@ -48,8 +49,9 @@ Replicar pantalla por pantalla el flujo original testeado, conservar su lógica 
 
 ## Resultado
 
-- 40 pantallas funcionales en la página `63:431` (31 de la réplica principal, con `01`–`06` reconstruidas en paleta v3 + 8 sub-flujos KYC + `01a · Inicio de sesión` nueva).
-- 142 reacciones sin destinos rotos.
+- 43 pantallas funcionales en la página `63:431` (31 de la réplica principal, con `01`–`06` reconstruidas en paleta v3 + 8 sub-flujos KYC + `01a`–`01d` nuevas: Inicio de sesión y sus 3 verificaciones biométricas).
+- 154 reacciones sin destinos rotos.
+- Logo e íconos de Portada, Inicio de sesión e Ingresos son recortes reales de la referencia (subidos como fills `IMAGE`), no una aproximación con otra librería.
 - Paleta v3.0.0 aplicada al 100% del archivo: 0 fills, strokes o paradas de gradiente de la paleta 2.0.0 sobreviven (verificado nodo por nodo tras dos pasadas de barrido sobre 1.464 nodos).
 - Process Header con variantes 3/6–6/6; tras el reemplazo de `02`–`06`, su única instancia en uso queda en `07 · Verificación (KYC)`. `02`–`06` usan un indicador de progreso propio ("Paso X de 5") acorde a la referencia v3.
 - Personal Goal Hero editable en Plan personal; el bitmap anterior fue eliminado.

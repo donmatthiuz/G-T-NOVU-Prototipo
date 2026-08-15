@@ -8,9 +8,10 @@ Punto de inicio principal: `01 · Portada` (`63:432`, `Flow 1`)
 
 ## Resultado validado
 
-- 40 pantallas de 375 × 812 px: 31 de la réplica principal (`01`–`31`, con `01`–`07` reconstruidas en el header y contenido v3) + 8 sub-flujos de Verificación (KYC) (`07a`–`07h`) + `01a · Inicio de sesión`, pantalla nueva.
-- 142 reacciones, 0 destinos externos o rotos.
+- 43 pantallas de 375 × 812 px: 31 de la réplica principal (`01`–`31`, con `01`–`07` reconstruidas en el header y contenido v3) + 8 sub-flujos de Verificación (KYC) (`07a`–`07h`) + 4 pantallas nuevas de entrada/biometría (`01a`–`01d`).
+- 154 reacciones, 0 destinos externos o rotos.
 - Paleta, tipografía y patrones de componente migrados por completo a la v3.0.0 extraída de `referencias/segundoprototipo/` — ver [Migración a la paleta v3](#migración-a-la-paleta-v3-segundoprototipo) y `style/novu-tokens.yaml` / `style/novu-style-guide.md`. No queda ningún fill ni gradiente de la paleta 2.0.0 en el archivo (verificado nodo por nodo).
+- El logo NOVU y los íconos de Portada, Inicio de sesión e Ingresos son recortes reales de las imágenes de referencia (subidos como fills `IMAGE` editables, no capturas de pantalla pegadas), no aproximaciones con otra librería de íconos — ver [Assets reales de referencia](#assets-reales-de-referencia).
 - 71 controles pequeños conservan su apariencia pero usan hotspots de al menos 48 × 48 px.
 - El registro/KYC (pantalla 7) abre cuatro sub-flujos independientes con pantallas propias: DPI, selfie, contacto/contraseña y comprobante de domicilio.
 - La tarjeta principal de Plan personal y el resumen/tabla del Plan (Reto Grupal) son componentes editables, no imágenes raster.
@@ -24,17 +25,26 @@ Origen: `referencias/segundoprototipo/portada.jpeg`, `iniciosesion/`, `flujometa
 
 - **Fundamentos**: los valores de las variables primitivas de color (`NOVU · Presentación · Primitives`) se actualizaron a la paleta v3 (índigo `#4B2FE0`, violeta `#8B2FE0`, magenta `#E91C7A`; se retiró el coral, sin equivalente en la referencia nueva). Esto propagó el cambio automáticamente a todo lo que ya estaba bien ligado a variable en las 39 pantallas existentes al momento de la migración.
 - **Gradiente de marca**: de 4 paradas (índigo/violeta/magenta/coral) a 3 (índigo/violeta/magenta), actualizado en el componente `Button` y luego barrido en todas las pantallas — ningún fill ni parada de gradiente de la paleta vieja sobrevive en el archivo.
-- **`01 · Portada`** (mismo nodo que la antigua `01 · Bienvenida`, `63:432`) y **`01a · Inicio de sesión`** (nueva, `210:440`): reconstruidas 1:1 desde la referencia, tema oscuro (`#0E0B22`), logo N flotante, sin el fondo blanco que traía el asset original del badge de Bottom Nav.
+- **`01 · Portada`** (mismo nodo que la antigua `01 · Bienvenida`, `63:432`) y **`01a · Inicio de sesión`** (nueva, `210:440`): reconstruidas 1:1 desde la referencia, tema oscuro (`#0E0B22`), logo N y todos sus íconos recortados directamente de la referencia — ver [Assets reales de referencia](#assets-reales-de-referencia).
+- **`01b`–`01d` · Verificación biométrica** (nuevas): los 3 métodos de biometría de Inicio de sesión (Huella, Reconocimiento facial, Face ID) abren cada uno su propia pantalla en vez de no hacer nada al tocarlos.
 - **`02`–`06`**: reemplazadas por completo con el contenido de `flujometa/1-5.jpeg` (secuencia "Paso X de 5"). Las imágenes `flujometa/6-7.jpeg` muestran una segunda secuencia incompleta ("Paso X de 4", sin pasos 3-4) — se usaron como referencia del patrón de formulario largo, no como pantallas nuevas insertadas. Ninguna imagen de referencia cubre un resultado de "plan generado" con montos; `06` se diseñó como pantalla de transición al coach ("¡Genial, ya casi estamos listos!") extendiendo el lenguaje v3, y su CTA lleva directo a `07 · Verificación (KYC)`.
 - **Resto del archivo (`08`–`31`, `07a`–`07h`)**: barrido masivo de recoloreo (fills, strokes y paradas de gradiente) de cada hex de la paleta 2.0.0 a su equivalente v3 más cercano, más una corrección puntual del componente `Button/Secondary` (su borde seguía en índigo viejo). 1.464 nodos visitados, 494 fills y 111 strokes corregidos en total entre las dos pasadas.
 - **`07 · Verificación (KYC)`**: el restyle inicial solo recoloreó el `Process Header` (gradiente 6/6) que traía; en una corrección posterior se reemplazó ese header por el mismo patrón de `02`–`06` (fondo claro, flecha, wordmark en gradiente, titular y subtítulo centrados) para que la transición entre pantallas sea consistente. Copy original conservado ("Un último paso" + el texto de la Cuenta Digital G&T). El `Process Header` como componente sigue existiendo con sus 4 variantes, pero ya no tiene ninguna instancia activa en la réplica.
 - Iconografía, componentes (Button, Badge, Progress, Goal Card, Bottom Navigation, Personal Goal Hero, Group Plan Components) y estructura de navegación **no cambiaron** — la migración es de color/tipografía/tratamiento visual, no de arquitectura de información, salvo el contenido explícitamente reemplazado en `02`–`06` y el header de `07`.
 
+## Assets reales de referencia
+
+El logo N y varios íconos se habían reconstruido a mano con componentes de Simple Design System — no coincidían con la referencia en forma ni color. Corrección: se recortaron los assets reales de los JPEG de `segundoprototipo` (ImageMagick, fondo vuelto transparente) y se subieron a Figma como fills `IMAGE` propios, editables en tamaño y posición igual que cualquier otro nodo — no son capturas de pantalla pegadas.
+
+- **Portada**: logo N y wordmark `NOVU` recortados (antes: logo reutilizado del badge de Bottom Nav, con un fondo blanco circular que no está en la referencia). Los 4 íconos de tarjeta (Metas, Plan, Progreso, Coach) recortados 1:1 en vez de Target/Clipboard/Trending up/Message circle de Simple Design System. Botón "Ya tengo cuenta": borde y texto corregidos a magenta (la referencia usa magenta ahí específicamente, no el violeta del resto de los botones Secondary).
+- **Inicio de sesión**: mismo logo recortado; fila de biometría ampliada de 2 a 3 columnas con los íconos reales (Huella, Reconocimiento facial, Face ID) en vez de una aproximación con Lock.
+- **`05 · Ingresos`**: los 5 íconos de radio (cohete, calendario, gráfico, bandera, reloj) reemplazados por los recortes reales de `flujometa/4.jpeg`.
+
 ## Secuencia principal testeada
 
 `Portada → Elegí tu meta → Motivación → Situación financiera → Horizonte → Coach (plan) → Verificación/KYC → Plan personal`
 
-`01 · Portada` tiene dos salidas: "Empezar" hacia `02 · Elegí tu meta`, y "Ya tengo cuenta" hacia `01a · Inicio de sesión`, cuyo botón "Ingresar" conserva el atajo original directo a `08 · Plan personal`.
+`01 · Portada` tiene dos salidas: "Empezar" hacia `02 · Elegí tu meta`, y "Ya tengo cuenta" hacia `01a · Inicio de sesión`, cuyo botón "Ingresar" conserva el atajo original directo a `08 · Plan personal`. Las tres opciones de biometría de `01a` llevan cada una a su propia pantalla (`01b`–`01d`), que "escanean" solas (`AFTER_TIMEOUT`, 1.4 s) y también terminan en `08 · Plan personal`.
 
 Dentro del paso Verificación/KYC, cada una de las cuatro filas abre y cierra su propio sub-flujo (ver [Sub-flujos de Verificación (KYC)](#sub-flujos-de-verificación-kyc)) antes de volver a la pantalla 7; la secuencia principal no cambia de destino final.
 
@@ -43,7 +53,10 @@ Dentro del paso Verificación/KYC, cada una de las cuatro filas abre y cierra su
 | # | Pantalla | Nodo | Funcionalidad conservada |
 |---:|---|---|---|
 | 1 | Portada | `63:432` | Presenta NOVU (tema oscuro) e inicia una meta o entra con cuenta existente. |
-| 1a | Inicio de sesión | `210:440` | Correo/teléfono + contraseña, biometría, enlace a registro. |
+| 1a | Inicio de sesión | `210:440` | Correo/teléfono + contraseña, biometría (Huella, Reconocimiento facial, Face ID), enlace a registro. |
+| 1b | Verificación — Huella | `239:374` | Escaneo simulado de huella; avanza sola a los 1.4 s. |
+| 1c | Verificación — Reconocimiento facial | `239:390` | Escaneo simulado facial; avanza sola a los 1.4 s. |
+| 1d | Verificación — Face ID | `239:406` | Escaneo simulado Face ID; avanza sola a los 1.4 s. |
 | 2 | Elegí tu meta | `63:438` | Selecciona una categoría de meta entre 6 opciones y continúa. |
 | 3 | Detalle de la meta | `63:482` | Selección múltiple de motivaciones para el objetivo elegido. |
 | 4 | Chat con el copiloto | `63:513` | Radio de situación financiera actual (base para el plan). |

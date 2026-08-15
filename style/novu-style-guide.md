@@ -48,6 +48,10 @@ Explicar por qué se solicita información, respaldar cada decisión financiera 
 - Botones: forma píldora completa (`radius.full`) en el 100% de los casos, alto `52px` (antes 48; el mínimo táctil de 48 px se mantiene como piso, no como altura por defecto).
 - No usar la paleta de G&T como identidad de interfaz — regla heredada, sigue vigente.
 
+## Logo e íconos de referencia: recorte real, no aproximación
+
+El logo NOVU y los íconos de `Portada`, `Inicio de sesión` y `05 · Ingresos` no se redibujan a mano ni se aproximan con una librería de íconos genérica — se recortan directamente de los JPEG en `referencias/segundoprototipo/` (ImageMagick, fondo vuelto transparente) y se suben a Figma con la herramienta de subida de assets, usando el `imageHash` resultante en fills `IMAGE` propios. Siguen siendo nodos editables en tamaño y posición; lo que no se aproxima es el color ni la forma del ícono en sí. Usar este método cuando la referencia trae un logo o ilustración con gradiente/detalle que una librería de íconos de línea no puede igualar — no para íconos genéricos (flecha, chevron, campana, etc.), donde reconstruir con la librería conectada sigue siendo preferible por quedar editable de verdad (color, trazo, tamaño vía variantes).
+
 ## Tipografía
 
 Poppins sigue siendo la única familia — no hay evidencia en la referencia de un tipo distinto; el efecto "chunky" de los titulares se logra con Bold/ExtraBold a tamaños mayores (`heading_h1` pasa de 24 a 26px/800). Medium en etiquetas, Regular en texto funcional. El texto funcional nunca baja de 12 px; el cuerpo base sigue en 16 px.

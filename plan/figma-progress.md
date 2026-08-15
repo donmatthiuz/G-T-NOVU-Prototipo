@@ -6,6 +6,28 @@ File key: `vFm8Z8NqINCaW8YDb23hz5`
 
 Última actualización: 2026-08-15
 
+## Assets reales de referencia (logo, íconos de Portada/Login/Ingresos)
+
+El logo N y los íconos de `Portada`, `Inicio de sesión` y `05 · Ingresos` (el que viene de `flujometa/4.jpeg`) se habían reconstruido a mano/aproximado con íconos de Simple Design System. No coincidían con la referencia en forma ni color. Corrección: en vez de seguir aproximando a mano, se recortaron los assets reales de los JPEG de referencia con ImageMagick (`identify`/`magick -crop -trim`, con flood-fill para volver transparente el fondo) y se subieron a Figma con `upload_assets`, usando el `imageHash` devuelto directamente en fills `IMAGE` propios — no capturas pegadas, siguen siendo nodos editables de tamaño y posición controlados por código.
+
+- **Portada**: logo N (`158×141`, recorte de `portada.jpeg`) sin el fondo blanco circular que traía el asset reutilizado del badge de Bottom Nav; wordmark `NOVU` como imagen (antes texto); los 4 íconos de tarjeta (Metas/target, Plan/clipboard, Progreso/trending-up, Coach/brain) recortados 1:1 en vez de Target/Clipboard/Trending up/Message circle de Simple Design System. Botón "Ya tengo cuenta" corregido a borde y texto magenta (antes violeta, por heredar el fix global de `Button/Secondary`) — la referencia usa magenta específicamente en ese botón sobre fondo oscuro.
+- **Inicio de sesión**: mismo logo N recortado; fila de biometría reconstruida de 2 a 3 columnas (Huella, Reconocimiento facial, Face ID — antes solo Huella/Face ID con Lock como aproximación) con los 3 íconos reales recortados de la referencia (huella magenta, dos íconos de escaneo facial violeta, prácticamente idénticos entre sí en la referencia).
+- **`05 · Ingresos`**: los 5 íconos de radio (cohete, calendario, gráfico, bandera, reloj) reemplazados por los recortes reales de `flujometa/4.jpeg` en vez de Star/Calendar/Trending up/Flag/Clock de Simple Design System.
+- Primer intento de recorte de los íconos "Plan" y "Coach" incluyó un borde de la tarjeta vecina que el flood-fill no alcanzó a limpiar (semillas solo en las 4 esquinas); se corrigió agregando semillas también en el punto medio de cada lado antes de recortar de nuevo.
+- Los 16 frames de colocación por defecto que `upload_assets` crea en la página actual (sin `nodeId`) quedaron en `00 · Cover`; se eliminaron una vez extraído el `imageHash` de cada uno — el hash en sí no depende de que ese nodo exista.
+
+## Sub-flujos de biometría en Inicio de sesión
+
+Los 3 íconos de biometría de `01a · Inicio de sesión` ahora abren pantallas propias en vez de no hacer nada:
+
+- `01b · Verificación — Huella` (`239:374`)
+- `01c · Verificación — Reconocimiento facial` (`239:390`)
+- `01d · Verificación — Face ID` (`239:406`)
+
+Cada una: fondo oscuro, flecha "Volver" (→ `01a · Inicio de sesión`), el ícono real recortado centrado dentro de 3 anillos concéntricos (efecto de escaneo), etiqueta "Verificando…", titular y subtítulo de instrucción. El anillo interior tiene una reacción `AFTER_TIMEOUT` (1400 ms) hacia `08 · Plan personal` — simula que el escaneo biométrico se completa solo, sin necesidad de un botón "Continuar". Es la primera vez que se usa un trigger por tiempo en este archivo; antes todo era `ON_CLICK`.
+
+Verificación final tras esta corrección: 43 pantallas, 154 reacciones, 0 destinos rotos.
+
 ## COMPLETADO — Migración a la paleta v3.0.0 (`segundoprototipo`)
 
 Migración completa a partir de `referencias/segundoprototipo/` (ver `style/novu-tokens.yaml` v3.0.0 y `style/novu-style-guide.md` para la especificación). Resumen de lo hecho, en orden:
