@@ -198,6 +198,58 @@ Página `08 · NOVU · Flujo original + Presentación`: `63:431`.
 - **`27 · Fondo familiar (aportes)`** (`63:1368`): dos fills `IMAGE` — el bloque de estadísticas (`Aportado este mes` / `Mi aporte total`) y la lista `Miembros del Fondo`. Se reconstruyeron con tarjetas editables (una con sparkline vectorial, otra con anillo de progreso `arcData` al 35 %, mismo patrón que `Personal Goal Hero`) y 4 filas de integrante con avatar, badge "Líder del fondo", monto y barra de progreso, siguiendo el patrón de `Group Member Progress Table`.
 - Las tres pantallas quedan en 0 fills `IMAGE`, con Poppins y los colores de `NOVU · Presentación · Color` en todas las capas nuevas.
 
+## Sub-flujos de Verificación (KYC)
+
+`07 · Verificación (KYC)` (`63:618`) mostraba cuatro filas — DPI, cámara, contacto/contraseña, comprobante — ya marcadas "Listo" sin ninguna pantalla detrás. Se agregaron 8 pantallas nuevas (375 × 812 px) para que cada fila abra un sub-flujo real, y se conectaron las 4 filas de la tarjeta (`63:632`, `63:639`, `63:646`, `63:652`) con reacciones `ON_CLICK` hacia el primer paso de cada uno. Ningún nodo de la pantalla 7 cambió de apariencia.
+
+Íconos: se importaron `Credit card` y `Camera` (nuevos en el archivo) desde Simple Design System; `Lock`, `User` y `File text` ya existían localmente de sesiones previas y se reutilizaron sin duplicar. `figma.importComponentSetByKeyAsync` deduplica por key — al importar `User`/`File text` de nuevo devolvió los component sets locales existentes en vez de crear copias.
+
+Pantallas nuevas, en una fila propia de la página (`x: 0–3017`, `y: 3648`) para no interferir con la cuadrícula de las 31 pantallas originales:
+
+- `07a · DPI — Frente` (`126:419`) y `07b · DPI — Reverso` (`126:420`): visor de cámara de pantalla completa (fondo `#1C1729`, el mismo tono que el scrim de las hojas inferiores existentes), marco guía punteado tipo tarjeta, obturador circular de 76 px.
+- `07c · DPI — Confirmación` (`126:421`): tarjeta blanca con dos miniaturas (Frente/Reverso) lado a lado, cada una con el ícono Credit card.
+- `07d · Selfie — Captura` (`126:422`): mismo visor, guía ovalada.
+- `07e · Selfie — Confirmación` (`126:423`): tarjeta con una miniatura centrada (ícono User).
+- `07f · Contacto y contraseña` (`126:424`): tarjeta con 4 instancias de `Input Field` (Teléfono, Correo electrónico, Contraseña, Confirmar contraseña — estas dos últimas con el valor enmascarado como `••••••••`, ya que el componente no tiene variante de contraseña) y un botón Primary.
+- `07g · Comprobante — Captura` (`126:425`): visor con guía rectangular vertical y enlace secundario "Subir desde galería".
+- `07h · Comprobante — Confirmación` (`126:426`): tarjeta con una miniatura ancha (ícono File text).
+
+Las pantallas de confirmación y el formulario reutilizan el patrón de tarjeta de `09 · Retiro personal` / `20 · Aportar al reto`: fondo `#1C1729` de borde a borde, tarjeta blanca de radio 24 con sombra (`DROP_SHADOW`, radio 16, offset y4), Auto Layout vertical, insignia de ícono 28×28 (fondo `#DED9EE`, ícono 20×20) y botones Primary/Secondary de 48 px.
+
+Navegación completa del sub-flujo: fila → captura 1 → captura 2 (solo DPI) → confirmación → `Usar foto(s)`/`Guardar y continuar` regresa a `07 · Verificación (KYC)`; `Tomar de nuevo` regresa a la primera captura del mismo sub-flujo; `Volver` en cada visor regresa al paso anterior o a la pantalla 7.
+
+Corrección aplicada durante la construcción: los botones "Volver" de las 4 pantallas de cámara medían 32×32 px (mismo tamaño que la flecha "←" ya usada en el header con gradiente de la pantalla 02). Se añadió un hotspot invisible de 48×48 px centrado sobre cada uno, siguiendo la misma solución que `errors/figma-lessons.md` documenta para los 67 controles del flujo original.
+
+Validación final del sub-flujo:
+
+- 39 pantallas totales en la página (31 + 8), 130 capas interactivas, 132 reacciones, 0 destinos rotos, 38 destinos únicos.
+- 71 controles por debajo del tamaño visible cuentan con hotspot ≥ 48 × 48 px (67 + 4 nuevos).
+- 0 fills `IMAGE`; toda la construcción usa Auto Layout, variables de color existentes o los mismos valores sólidos ya usados en insignias de ícono comparables, y Poppins en el 100% de los textos nuevos.
+- Capturas de las 8 pantallas revisadas una por una; se corrigió en el camino un título de dos líneas que se solapaba con el subtítulo en `07g` (`"Foto de tu factura de luz o agua"` → `"Foto de tu comprobante"`) y un label "NOVU" del status bar que se recortaba a "NOV" en las 4 pantallas de cámara.
+
+## Consistencia de Bottom Nav en las 10 pantallas que la usan
+
+Auditoría solicitada: revisar cada pantalla con barra de navegación inferior y asegurar que todas la tengan en la misma posición.
+
+Pantallas con `Bottom Nav`: `08 · Plan personal`, `10 · Tu ritmo`, `11 · Copiloto`, `12 · Oportunidades`, `13 · Inicio`, `18 · Historial del reto`, `19 · Plan del reto`, `27 · Fondo familiar (aportes)`, `28 · Solicitudes del fondo`, `29 · Historial de aportaciones`.
+
+Antes de corregir, la barra vivía en tres tamaños/posiciones distintos (`x:20` siempre igual, pero `y` entre 562 y 759, alto 46 o 49 px) y, más importante, los hotspots invisibles de navegación (los que realmente llevan la reacción `ON_CLICK`, no los íconos visibles) estaban en tres screens apilados verticalmente muy por debajo del frame de 812 px (hasta `y:1016`), fuera del viewport — es decir, esos 4–5 destinos de navegación existían pero no eran alcanzables. Una cuarta pantalla (`19 · Plan del reto`) tenía los 5 ítems visibles comprimidos a la izquierda y el logo NOVU circular desplazado al extremo derecho, en vez de centrado.
+
+Causa raíz: `11 · Copiloto`, `12 · Oportunidades` y `13 · Inicio` usan Auto Layout vertical en el frame de pantalla; `Bottom Nav` y sus hotspots quedaron como hijos `layoutPositioning = AUTO`, así que su posición la decidía el alto del contenido de cada pantalla en vez de un ancla fija — por eso Copiloto (poco contenido) dejaba ~200 px muertos debajo de la barra. En `19 · Plan del reto`, `Bottom Nav` es Auto Layout horizontal (`SPACE_BETWEEN`) y eran sus 5 ítems + el logo los que tenían `layoutPositioning = AUTO`. Ver la lección nueva en `errors/figma-lessons.md` sobre por qué estas escrituras de posición fallan sin lanzar error.
+
+Corrección aplicada:
+
+- `Bottom Nav` normalizado a `x:20, y:745, width:335, height:46` en las 10 pantallas (antes: 3 con alto 49 px y offsets internos de ítem distintos).
+- En Copiloto, Oportunidades e Inicio: `Bottom Nav` y sus hotspots pasaron a `layoutPositioning = ABSOLUTE` para anclarse al fondo sin importar el contenido de la pantalla.
+- En Plan del reto: los 5 ítems y el logo NOVU pasaron a `ABSOLUTE` y se reposicionaron a los mismos `x` que usan las otras 9 pantallas (`0, 74.75, 153.5, 230.25, 307`); el logo volvió al centro (`146.5, -16`, mismo lugar que el círculo NOVU de las demás).
+- Los hotspots de navegación de las 10 pantallas quedaron centrados sobre su ícono real (`slotCenter - 24`) a `y:749`, calculado por pantalla a partir de la posición live de sus propios ítems — no un valor fijo copiado a ciegas.
+- Dos duplicados preexistentes (un hotspot de más apuntando a un destino ya cubierto por otro, en Copiloto y en Tu Ritmo) se dejaron con el mismo destino y la misma posición que su gemelo en vez de borrarlos o inventarles un destino nuevo.
+- Dos hotspots ajenos a la barra (acciones de contenido en `19` y `27`, hacia `Aportar al reto`/`Aportar al fondo`) no se tocaron.
+
+Validación final: 10/10 pantallas con `Bottom Nav` en la posición canónica, separación entre el primer y último ícono consistente (306.5–307.5 px, la variación residual es el ancho natural del texto de cada etiqueta), 0 destinos rotos.
+
+**Corrección posterior — la insignia NOVU de `19 · Plan del reto` no era el mismo asset.** La revisión de posición dejó pasar que el círculo central de esa pantalla (`Logo / NOVU`, `105:859`) no era el nodo `Rectangle` con imagen que usan las otras 9 pantallas, sino un frame con 3 `VECTOR` reconstruidos a mano durante el trabajo de `Group Plan Components` (ver "Plan de reto grupal editable" arriba) — visualmente parecido pero con proporciones distintas del trazo de la "N". Se clonó el `Rectangle` de referencia (mismo `imageHash` `65db507d5aa7309f7ecb0af8079e11e7e79af0dc`, mismo trazo blanco de 3 px y sombra) a la posición `147, -16` dentro de `Bottom Nav` y se eliminó el frame vectorial. Las 10 pantallas quedaron con exactamente el mismo `imageHash` en la insignia central, verificado nodo por nodo.
+
 ## Estado recuperable
 
 El ledger técnico temporal de la sesión está en `/tmp/design-system-state-novu-20260814.json`. La especificación funcional completa está en `docs/functional-prototype.md`.

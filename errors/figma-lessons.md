@@ -79,8 +79,28 @@
 
 **Solución:** usar `layoutPositioning = ABSOLUTE` para el header, fijarlo en `x = 0`, `y = 0` e insertar un spacer de layout de 166 px antes del contenido. Así se conserva el header de borde a borde y el contenido empieza a 206 px.
 
+## Asignar x/y a un hijo `AUTO` de Auto Layout falla en silencio (sin error)
+
+**Error:** al normalizar la posición de `Bottom Nav` en `11 · Copiloto`, `12 · Oportunidades` y `13 · Inicio`, `node.y = 745` no lanzó ningún error, pero al releer `node.y` inmediatamente después seguía mostrando el valor viejo (562, 690, 759). Lo mismo pasó con los 5 ítems internos de `Bottom Nav` en `19 · Plan del reto` y con los hotspots de navegación de esas mismas pantallas.
+
+**Causa:** a diferencia del caso anterior (que sí lanza error si el nodo no es hijo de Auto Layout), asignar `x`/`y` a un nodo con `layoutPositioning = AUTO` dentro de un padre con `layoutMode !== NONE` **no lanza excepción** — la escritura simplemente no tiene efecto, porque el Auto Layout sigue calculando la posición. Es fácil confundir esto con que el script "no hizo nada" en vez de identificar que el valor fue ignorado.
+
+**Solución:** antes de asignar `x`/`y` a cualquier nodo, comprobar `node.parent.layoutMode`. Si no es `'NONE'`, asignar primero `node.layoutPositioning = 'ABSOLUTE'` (esto sí puede lanzar `Can only set layoutPositioning = ABSOLUTE if the parent node has layoutMode !== NONE`, así que conviene envolverlo en la misma comprobación, no en un try/catch ciego) y solo entonces fijar `x`/`y`. Tras cada escritura de posición, releer el valor en el mismo script para confirmar que se guardó — no asumir éxito solo porque no hubo excepción.
+
+**Resultado:** las 10 pantallas con `Bottom Nav` quedaron con la barra en `x:20, y:745, 335×46` y sus hotspots alineados a cada ícono, con 0 destinos rotos.
+
 ## Opacidad en pinturas vinculadas a variables
 
 **Problema:** la opacidad declarada dentro de una pintura blanca se perdió visualmente al vincular su color a `color/text/inverse`.
 
 **Solución:** mantener el color vinculado a la variable y aplicar la transparencia mediante `SceneNode.opacity`. Esto se usa en el halo del paso y en los segmentos pendientes del Process Header.
+
+## Componentes recién importados no se resuelven por ID en una llamada posterior
+
+**Error:** `TypeError: cannot set property 'x' of null` y luego `TypeError: cannot read property 'createInstance' of null`.
+
+**Causa:** se importaron dos component sets nuevos de Simple Design System (`Credit card`, `Camera`) con `figma.importComponentSetByKeyAsync` en una llamada de `use_figma`. En la siguiente llamada, `figma.getNodeByIdAsync(id)` con los IDs devueltos por esa importación resolvió a `null` — a diferencia de component sets que ya existían en el archivo de sesiones previas (`User`, `File text`), que sí se resolvieron sin problema. Los nodos recién creados por una importación de librería no parecen quedar consultables por ID de forma fiable en una ejecución de `use_figma` distinta a la que los creó.
+
+**Solución:** volver a llamar `figma.importComponentSetByKeyAsync(key)` con la misma key al inicio de cada script que necesite instanciar ese ícono, y usar la referencia en memoria devuelta (no un ID guardado de una llamada previa). La API deduplica por key: si el component set ya existe en el archivo, la llamada devuelve el nodo local existente en vez de crear un duplicado, así que reimportar es seguro y barato incluso cuando ya está presente.
+
+**Resultado:** `Credit card` y `Camera` quedaron disponibles para los sub-flujos de Verificación (KYC) sin nodos huérfanos ni duplicados.
