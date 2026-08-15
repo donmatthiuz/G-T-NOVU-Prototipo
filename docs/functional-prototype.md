@@ -20,6 +20,8 @@ Punto de inicio principal: `01 · Bienvenida` (`63:432`, `Flow 1`)
 - Chat, Ingresos, Plan generado y KYC comparten un header con progreso visible de seis fases.
 - La tarjeta principal de Plan personal es un componente editable, no una imagen raster.
 - El resumen y la tabla del Plan (Reto Grupal) son componentes editables; sus acciones conservan los destinos testeados.
+- Las 31 pantallas tienen nombres de frame únicos (`01`–`31`); no quedan duplicados como los antiguos `10 · Candado (Votar solicitud)` o `08 · Plan (Fondo Grupal - Aportes)`.
+- Historial del reto, Historial de aportaciones y Fondo familiar (aportes) — pantallas 18, 29 y 27 — no contienen fills `IMAGE`: sus listas, tarjetas de estadística e íconos son capas vectoriales y de texto editables.
 - El original permanece intacto en `Legacy · Prototipo original` (`0:1`).
 
 ## Secuencia principal testeada
@@ -49,7 +51,7 @@ El acceso para una persona con cuenta existente conserva el atajo de Bienvenida 
 | 15 | Resumen del reto | `63:994` | Confirma modalidad, objetivo, participantes y frecuencia. |
 | 16 | Invitar al reto | `63:1017` | Comparte invitación y revisa integrantes pendientes. |
 | 17 | Retiro del reto | `63:1053` | Solicita retirar monto y motivo del reto. |
-| 18 | Historial del reto | `63:1063` | Filtra y consulta aportes del reto. |
+| 18 | Historial del reto | `63:1063` | Filtra y consulta aportes de "Reto de Julio" con sus integrantes reales (Carlos, Ana, María, Tú/Diego). |
 | 19 | Plan del reto | `63:1101` | Consulta progreso, ranking, aportes, retiro e historial. |
 | 20 | Aportar al reto | `63:1151` | Selecciona cuenta, monto y descripción del aporte. |
 | 21 | Crear fondo familiar | `63:1162` | Define nombre, aporte mínimo, aprobadores y administrador. |

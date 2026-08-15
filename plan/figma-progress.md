@@ -4,7 +4,7 @@ Archivo: [NOVU](https://www.figma.com/design/vFm8Z8NqINCaW8YDb23hz5/NOVU?node-id
 
 File key: `vFm8Z8NqINCaW8YDb23hz5`
 
-Última actualización: 2026-08-14
+Última actualización: 2026-08-15
 
 ## Foundations completados
 
@@ -185,6 +185,18 @@ Página `08 · NOVU · Flujo original + Presentación`: `63:431`.
 - El resumen de 58 %, la tabla de Carlos, Ana, María y Diego, y los iconos de acción se reconstruyeron como capas editables.
 - Se preservan los 11 destinos de la pantalla: Aportar, Retirar, Historial y navegación inferior.
 - Auditoría final de la pantalla: 0 `IMAGE` fills, 0 destinos rotos y Poppins en todos los textos.
+
+### Renombrado de las 31 pantallas
+
+- La página `08 · NOVU · Flujo original + Presentación` (`63:431`) tenía nombres de frame duplicados: `10 · Candado (Votar solicitud)` en 4 pantallas y `08 · Plan (Fondo Grupal - Aportes)` en 3 pantallas, además de numeración inconsistente (`012`, `013`, `014`).
+- Las 31 pantallas se renombraron a un esquema único `01`–`31` alineado con el orden y los nombres de `docs/functional-prototype.md`. Ningún destino, reacción ni contenido visual cambió; solo la propiedad `name` de cada frame.
+
+### Pantallas 18, 27 y 29: reemplazo de imágenes raster por capas editables
+
+- **`29 · Historial de aportaciones`** (`63:1471`, Fondo Familiar): la lista de movimientos y el ícono "Total/Promedio" eran un único fill `IMAGE`. Se reconstruyeron como 3 encabezados de fecha, 5 tarjetas de transacción (avatar con inicial, nombre, etiqueta "Aporte", monto y hora) y un glifo vectorial de personas, conservando los montos y horarios originales.
+- **`18 · Historial del reto`** (`63:1063`): tenía el mismo fill `IMAGE` clonado de la pantalla 29, incluido el copy — el título decía "Fondo Familia Perez" y listaba integrantes del fondo familiar en vez del reto grupal (arrastre del bug de clonado descrito en `errors/figma-lessons.md`). Se corrigió el título a "Reto de Julio" y el subtítulo a "Historial del Reto", y se reconstruyó la lista con los integrantes reales del reto (Carlos, Ana, María, Tú/Diego), tomados de `Group Member Progress Table` en `19 · Plan del reto` (`105:342`). Los montos (`Q1,450` total, `Q362.50` promedio) ya cuadraban con la suma de las filas y se conservaron.
+- **`27 · Fondo familiar (aportes)`** (`63:1368`): dos fills `IMAGE` — el bloque de estadísticas (`Aportado este mes` / `Mi aporte total`) y la lista `Miembros del Fondo`. Se reconstruyeron con tarjetas editables (una con sparkline vectorial, otra con anillo de progreso `arcData` al 35 %, mismo patrón que `Personal Goal Hero`) y 4 filas de integrante con avatar, badge "Líder del fondo", monto y barra de progreso, siguiendo el patrón de `Group Member Progress Table`.
+- Las tres pantallas quedan en 0 fills `IMAGE`, con Poppins y los colores de `NOVU · Presentación · Color` en todas las capas nuevas.
 
 ## Estado recuperable
 
