@@ -6,6 +6,21 @@ File key: `vFm8Z8NqINCaW8YDb23hz5`
 
 Última actualización: 2026-08-15
 
+## PARA RETOMAR — decisión pendiente sin responder
+
+Todo el trabajo hasta acá está terminado, verificado y commiteado (working tree limpio; ver `git log` — último commit `9d03b38`). No hay nada roto ni a medias en Figma. Lo único abierto es una pregunta que el usuario **todavía no respondió**:
+
+**Pregunta hecha:** ¿qué tan lejos llevar la interactividad dentro de Figma? El usuario preguntó si se puede escribir texto libre en los campos (input real de teclado). Respuesta ya dada: **no** — un prototipo de Figma no acepta tecleo real en modo presentación, eso es una limitación de la plataforma, no de esfuerzo. Se le ofrecieron 4 opciones, y el usuario interrumpió el `AskUserQuestion` para pedir en cambio que se guardara el estado (este bloque). Osea: **no eligió ninguna opción todavía**.
+
+Opciones que quedaron sobre la mesa, para retomar la conversación con el usuario antes de tocar nada de esto:
+
+1. **Dejarlo como está** — los campos ya muestran valores de ejemplo realistas (no placeholders vacíos), lo cual ya lee como "funcional" en una demo visual. Cero trabajo adicional.
+2. **Variables de Figma en puntos clave** — ej. la meta elegida en `02` se refleja más adelante sin tener que escribirla a mano en cada pantalla. Requiere trabajo en varias pantallas.
+3. **Simular "tecleo" con variantes tocables** — los campos vacíos (login, KYC) se vuelven tocables: tocar cambia a una variante que ya se ve llena. Trabajo pantalla por pantalla.
+4. **Tecleo real** — implica salir de este archivo hacia Figma Make o código; no es un prototipo de Figma normal.
+
+**Qué hacer al retomar:** preguntarle directamente al usuario cuál de las 4 quiere (o si prefiere otra cosa) antes de implementar nada — no asumir una por defecto, porque el costo/alcance de cada una es muy distinto (de "nada" a "salir del archivo").
+
 ## Assets reales de referencia (logo, íconos de Portada/Login/Ingresos)
 
 El logo N y los íconos de `Portada`, `Inicio de sesión` y `05 · Ingresos` (el que viene de `flujometa/4.jpeg`) se habían reconstruido a mano/aproximado con íconos de Simple Design System. No coincidían con la referencia en forma ni color. Corrección: en vez de seguir aproximando a mano, se recortaron los assets reales de los JPEG de referencia con ImageMagick (`identify`/`magick -crop -trim`, con flood-fill para volver transparente el fondo) y se subieron a Figma con `upload_assets`, usando el `imageHash` devuelto directamente en fills `IMAGE` propios — no capturas pegadas, siguen siendo nodos editables de tamaño y posición controlados por código.
