@@ -6,6 +6,7 @@ import {
   type MouseEventHandler,
   type ReactNode,
 } from "react";
+import Image from "next/image";
 import type { LucideIcon } from "lucide-react";
 import { useNovuData } from "@/hooks/useNovuData";
 import {
@@ -97,7 +98,12 @@ type Complete = () => void;
 function Logo() {
   return (
     <span className="app-logo">
-      <img src="/novu_templates/logo.jpg" alt="NOVU" />
+      <Image
+        src="/novu_templates/logo.jpg"
+        alt="NOVU"
+        width={42}
+        height={42}
+      />
     </span>
   );
 }
@@ -284,7 +290,7 @@ function Wizard({ go, notify }: NavNotifyProps) {
   const [step, setStep] = useState(0);
   const [choice, setChoice] = useState<string[]>([]);
   const item = wizard[step];
-  const toggle = (value) =>
+  const toggle = (value: string) =>
     setChoice((old) =>
       old.includes(value) ? old.filter((x) => x !== value) : [...old, value],
     );
@@ -1642,13 +1648,13 @@ export default function NovuApp({ exit }: { exit: () => void }) {
       items.includes(label) ? items : [...items, label],
     );
   useEffect(() => {
-    const closeOnEscape = (event) => {
+    const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") setNavOpen(false);
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, []);
-  const screens = {
+  const screens: Record<string, ReactNode> = {
     welcome: <Welcome go={go} />,
     login: <Login go={go} />,
     wizard: <Wizard go={go} notify={notify} />,

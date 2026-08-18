@@ -11,12 +11,15 @@ Esta etapa sigue siendo exclusivamente frontend. No implementa backend, base de 
 ## Cambios de plataforma
 
 - Se eliminó `vite.config.js`, `index.html`, `src/main.jsx` y los scripts `vite`, `vite build` y `vite preview`.
+- Se eliminó del control de versiones `dist/`, que todavía contenía el bundle generado por Vite y una copia redundante de los assets. `dist/` volvió a quedar ignorado; la salida de compilación de Next es `.next/`.
 - El punto de entrada ahora es `src/app/page.tsx` y el layout global es `src/app/layout.tsx`.
 - La metadata HTML se define mediante la API `Metadata` de Next.
 - Los estilos globales se importan desde el layout y conservan las tres hojas existentes.
 - Los assets que Vite servía desde `referencias/` se copiaron a `public/`, manteniendo sus URLs públicas.
 - `App.jsx` y `NovuApp.jsx` se migraron a `LandingPage.tsx` y `NovuApp.tsx` como Client Components.
-- El acceso a `window` se protege para que el prerender estático de Next no falle.
+- La selección inicial mediante `?view=app` usa `useSyncExternalStore`, con una instantánea específica para servidor. Esto evita diferencias de hidratación entre el HTML estático y el primer render del navegador.
+- Los logos locales usan `next/image` con dimensiones explícitas y conservan el recorte definido en CSS.
+- TypeScript mantiene `strict` y `noImplicitAny` activos; no quedan parámetros implícitamente tipados como `any` en el frontend.
 
 ## Arquitectura resultante
 
@@ -84,10 +87,18 @@ Ejecutada sobre Node.js 24.19.0:
 | --- | --- |
 | `npm run typecheck` | Correcto, sin errores |
 | `npm test` | Correcto, 2 archivos y 3 pruebas |
-| `npm run lint` | Correcto, 0 errores; 2 avisos no bloqueantes por el `<img>` local del logo |
+| `npm run lint` | Correcto, 0 errores y 0 avisos |
 | `npm run build` | Correcto; ruta `/` prerenderizada como contenido estático |
 
-El logo conserva `<img>` para no alterar su recorte y presentación existentes durante esta migración. Los avisos `@next/next/no-img-element` son de optimización, no de funcionamiento.
+La configuración de ESLint ignora los directorios generados, assets estáticos, referencias y herramientas locales de `.claude/`; así `npm run lint` valida exclusivamente el código mantenido por la aplicación sin intentar corregir scripts externos al frontend.
+
+## Auditoría final de residuos Vite/JavaScript
+
+- No existen `vite.config.*`, `index.html`, `src/main.*`, `App.jsx` ni `NovuApp.jsx` en la aplicación activa.
+- No quedan archivos `.js` o `.jsx` dentro de `src/`.
+- No quedan dependencias directas de `vite` ni `@vitejs/plugin-react`, ni scripts de ejecución basados en Vite.
+- `vitest` se conserva como ejecutor de pruebas; no forma parte del runtime ni del proceso de build de la aplicación.
+- Los archivos JavaScript existentes bajo `referencias/` y `public/similares/` son material estático de referencia y no se importan ni ejecutan desde `src/`.
 
 ## Fuera de alcance de esta etapa
 

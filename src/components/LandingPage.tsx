@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, type MouseEventHandler, type ReactNode } from "react";
+import {
+  useState,
+  useSyncExternalStore,
+  type MouseEventHandler,
+  type ReactNode,
+} from "react";
+import Image from "next/image";
 import NovuApp from "./NovuApp";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -98,6 +104,21 @@ const flows = {
 >;
 
 type FlowId = keyof typeof flows;
+type AppView = "app" | "landing";
+
+function subscribeToUrl() {
+  return () => undefined;
+}
+
+function getUrlView(): AppView {
+  return new URLSearchParams(window.location.search).get("view") === "app"
+    ? "app"
+    : "landing";
+}
+
+function getServerView(): AppView {
+  return "landing";
+}
 
 const featureCards: [LucideIcon, string, string][] = [
   [Target, "Metas", "Definí lo que querés lograr."],
@@ -110,7 +131,12 @@ function Brand({ compact = false }) {
   return (
     <a className="brand" href="#inicio" aria-label="NOVU, ir al inicio">
       <span className="brand-mark">
-        <img src="/novu_templates/logo.jpg" alt="Logo NOVU" />
+        <Image
+          src="/novu_templates/logo.jpg"
+          alt="Logo NOVU"
+          width={38}
+          height={38}
+        />
       </span>
       {!compact && <span className="brand-name">NOVU</span>}
     </a>
@@ -287,13 +313,17 @@ function FlowExplorer() {
 }
 
 function LandingPage() {
-  const [view, setView] = useState<"app" | "landing">(() =>
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("view") === "app"
-      ? "app"
-      : "landing",
+  const urlView = useSyncExternalStore(
+    subscribeToUrl,
+    getUrlView,
+    getServerView,
   );
-  if (view === "app") return <NovuApp exit={() => setView("landing")} />;
+  const [viewOverride, setViewOverride] = useState<AppView | null>(null);
+  const view = viewOverride ?? urlView;
+
+  if (view === "app") {
+    return <NovuApp exit={() => setViewOverride("landing")} />;
+  }
   return (
     <>
       <header className="nav" id="inicio">
@@ -322,7 +352,7 @@ function LandingPage() {
               ver, entender y cumplir.
             </p>
             <div className="hero-actions">
-              <Button onClick={() => setView("app")}>
+              <Button onClick={() => setViewOverride("app")}>
                 Entrar al prototipo
               </Button>
               <Button href="#como-funciona" secondary>
@@ -487,7 +517,9 @@ function LandingPage() {
             NOVU está listo cuando vos lo estés
           </span>
           <h2>Un pequeño paso hoy puede cambiar mucho mañana.</h2>
-          <Button onClick={() => setView("app")}>Explorar el prototipo</Button>
+          <Button onClick={() => setViewOverride("app")}>
+            Explorar el prototipo
+          </Button>
         </section>
       </main>
       <footer>
