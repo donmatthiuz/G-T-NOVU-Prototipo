@@ -1,67 +1,108 @@
 meta:
   name: NOVU Mobile Design System
-  version: 2.0.0
-  updated: 2026-08-14
+  version: 3.0.0
+  updated: 2026-08-15
   locale: es-GT
+  source: >
+    Paleta, tipografía y patrones de componente extraídos de
+    referencias/segundoprototipo (portada.jpeg, iniciosesion/, flujometa/1-7.jpeg).
+    Sustituye la paleta 2.0.0 basada en Reinvención Grupo 3.pdf en todo el archivo,
+    salvo donde se indique lo contrario. Los valores hex son estimaciones cuidadosas
+    a partir de capturas JPEG, no un muestreo de píxel exacto: mantener la relación
+    entre ellos (contraste, temperatura) importa más que el hex literal.
+  theming_strategy: >
+    Dos contextos de superficie, no un modo dark/light intercambiable:
+    (1) "dark" — reservado para los momentos de entrada (Portada, Inicio de sesión):
+    fondo casi negro-navy, texto invertido, tarjetas oscuras translúcidas.
+    (2) "light" — el resto de la app, incluidas las pantallas restyladas: fondo claro,
+    texto oscuro, el mismo gradiente e insignias circulares de ícono más vívidas que
+    en 2.0.0. No alternar un mismo componente entre ambos; cada pantalla pertenece
+    a un solo contexto.
 
 color:
   primitive:
     brand:
-      indigo: "#22229F"
-      blue: "#134294"
-      violet: "#5D3E9F"
-      magenta: "#B43461"
-      coral: "#D51A30"
-    neutral:
+      indigo: "#4B2FE0"   # extremo frío del gradiente (antes indigo #22229F + blue #134294 fusionados)
+      violet: "#8B2FE0"   # paso medio, protagonista de acentos e íconos
+      magenta: "#E91C7A"  # extremo cálido del gradiente y color de marca más usado en CTAs
+    neutral_dark:
+      bg: "#0E0B22"        # fondo Portada / Inicio de sesión
+      surface: "#171339"   # tarjetas y campos sobre fondo oscuro
+      border: "#332C5C"    # separadores sobre fondo oscuro
+      text_inverse: "#FFFFFF"
+      text_inverse_muted: "#ABA5CC"
+    neutral_light:
       white: "#FFFFFF"
-      ink: "#171C23"
-      navy: "#161B75"
-      muted: "#625C72"
-      border: "#DED9EE"
-      canvas: "#F8F8FC"
+      ink: "#17142B"        # texto principal sobre fondo claro (antes #171C23)
+      muted: "#6E6A87"       # texto secundario sobre fondo claro (antes #625C72)
+      border: "#E7E1F5"      # bordes sutiles (antes #DED9EE)
+      canvas: "#FBFAFF"      # fondo de app (antes #F8F8FC)
       surface: "#FFFFFF"
-      soft_blue: "#EEF0FC"
-      soft_violet: "#F3EFFA"
-      soft_coral: "#FCEBED"
-      black: "#0F0E0F"
+      soft_violet: "#F3EAFB" # fondo de insignias de ícono, tono violeta
+      soft_pink: "#FCEAF3"   # fondo de insignias de ícono, tono magenta
     status:
       success: "#2E7D4F"
       warning: "#9A6500"
       danger: "#C21F5B"
   semantic:
-    background:
-      app: "{color.primitive.neutral.canvas}"
-      surface: "{color.primitive.neutral.surface}"
-      subtle: "{color.primitive.neutral.soft_violet}"
-      brand: "{color.primitive.brand.indigo}"
-      accent: "{color.primitive.brand.magenta}"
-    text:
-      primary: "{color.primitive.neutral.ink}"
-      secondary: "{color.primitive.neutral.navy}"
-      muted: "{color.primitive.neutral.muted}"
-      brand: "{color.primitive.brand.indigo}"
-      inverse: "{color.primitive.neutral.white}"
-      accent: "{color.primitive.brand.magenta}"
-    border:
-      default: "{color.primitive.neutral.border}"
-      focus: "{color.primitive.brand.indigo}"
-    action:
-      primary_background: "{color.primitive.brand.indigo}"
-      primary_text: "{color.primitive.neutral.white}"
-      secondary_background: "{color.primitive.neutral.white}"
-      secondary_text: "{color.primitive.brand.indigo}"
+    light:
+      background:
+        app: "{color.primitive.neutral_light.canvas}"
+        surface: "{color.primitive.neutral_light.surface}"
+        subtle: "{color.primitive.neutral_light.soft_violet}"
+        subtle_alt: "{color.primitive.neutral_light.soft_pink}"
+        brand: "{color.primitive.brand.indigo}"
+        accent: "{color.primitive.brand.magenta}"
+      text:
+        primary: "{color.primitive.neutral_light.ink}"
+        muted: "{color.primitive.neutral_light.muted}"
+        brand: "{color.primitive.brand.violet}"
+        inverse: "{color.primitive.neutral_light.white}"
+        accent: "{color.primitive.brand.magenta}"
+      border:
+        default: "{color.primitive.neutral_light.border}"
+        focus: "{color.primitive.brand.violet}"
+      action:
+        primary_background: gradient.brand
+        primary_text: "{color.primitive.neutral_light.white}"
+        secondary_background: "{color.primitive.neutral_light.white}"
+        secondary_text: "{color.primitive.brand.violet}"
+        secondary_border: "{color.primitive.brand.violet}"
+    dark:
+      background:
+        app: "{color.primitive.neutral_dark.bg}"
+        surface: "{color.primitive.neutral_dark.surface}"
+        brand: "{color.primitive.brand.indigo}"
+      text:
+        primary: "{color.primitive.neutral_dark.text_inverse}"
+        muted: "{color.primitive.neutral_dark.text_inverse_muted}"
+        accent: "{color.primitive.brand.magenta}"
+      border:
+        default: "{color.primitive.neutral_dark.border}"
+        focus: "{color.primitive.brand.magenta}"
+      action:
+        primary_background: gradient.brand
+        primary_text: "{color.primitive.neutral_dark.text_inverse}"
+        secondary_background: transparent
+        secondary_text: "{color.primitive.neutral_dark.text_inverse}"
+        secondary_border: "{color.primitive.neutral_dark.text_inverse}"
 
 typography:
   heading_family: Poppins
   body_family: Poppins
-  display_xl: {size: 32, line_height: 38, weight: 700}
-  heading_h1: {size: 24, line_height: 30, weight: 700}
+  note: >
+    Se conserva Poppins como única familia (regla heredada de 2.0.0, sin evidencia
+    en la referencia de un tipo distinto). El tratamiento "chunky" de la referencia
+    se logra con pesos Bold/ExtraBold y tamaños mayores, no con un cambio de fuente.
+  display_hero: {size: 34, line_height: 40, weight: 800}   # titular de Portada
+  heading_h1: {size: 26, line_height: 32, weight: 800}     # preguntas de flujometa (antes 24/30/700)
   heading_h2: {size: 20, line_height: 26, weight: 700}
   title_medium: {size: 18, line_height: 24, weight: 700}
   body_base: {size: 16, line_height: 24, weight: 400}
   body_small: {size: 14, line_height: 20, weight: 400}
-  label_medium: {size: 12, line_height: 16, weight: 500}
-  button_label: {size: 15, line_height: 20, weight: 700}
+  label_medium: {size: 12, line_height: 16, weight: 600}   # antes weight 500
+  button_label: {size: 16, line_height: 22, weight: 700}   # antes 15/20/700
+  logo_wordmark: {size: 22, line_height: 26, weight: 800, letter_spacing: 2}
 
 spacing:
   0: 0
@@ -76,17 +117,34 @@ spacing:
 radius:
   sm: 8
   md: 12
-  lg: 16
+  lg: 20      # antes 16 — tarjetas más redondeadas en la referencia
   xl: 24
-  full: 999
+  full: 999   # botones ahora usan full en el 100% de los casos, no solo pill ocasional
+  icon_badge: 999  # insignias de ícono pasan de cuadrado redondeado (8px) a círculo completo
 
 size:
   touch_target: 48
+  button_height: 52   # antes 48 — botones más altos en la referencia; 48 sigue siendo el mínimo táctil
 
 stroke:
   thin: 1
+  focus: 2
 
 effects:
-  card: "0 4px 16px rgba(34, 34, 159, 0.08)"
+  card_light: "0 4px 20px rgba(75, 47, 224, 0.10)"
+  card_dark: "0 8px 30px rgba(0, 0, 0, 0.45)"
   floating: "0 10px 30px -4px rgba(23, 28, 35, 0.14)"
+  brand_gradient: "linear-gradient(135deg, #4B2FE0 0%, #8B2FE0 50%, #E91C7A 100%)"
+  brand_gradient_angle_alt: "linear-gradient(135deg, #E91C7A 0%, #8B2FE0 50%, #4B2FE0 100%)"  # dirección invertida, usar solo si la composición lo pide (ver nota en style guide)
+
+deprecated_2_0_0:
+  note: >
+    Valores 2.0.0 conservados aquí solo como referencia histórica; no usar en
+    trabajo nuevo. Ver novu-style-guide.md → "Migración desde 2.0.0".
+  brand:
+    indigo: "#22229F"
+    blue: "#134294"
+    violet: "#5D3E9F"
+    magenta: "#B43461"
+    coral: "#D51A30"
   brand_gradient: "linear-gradient(115deg, #22229F 0%, #5D3E9F 38%, #B43461 72%, #D51A30 100%)"
