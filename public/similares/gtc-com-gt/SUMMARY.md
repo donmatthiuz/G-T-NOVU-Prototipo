@@ -1,0 +1,264 @@
+# Referencia visual — G&T Continental (https://www.gtc.com.gt/personas)
+
+Scrapeado el 2026-08-14T07:52:10.986Z con `scrape.js`.
+
+## Archivos
+- `index.html` — HTML crudo de la página
+- `css/` — hojas de estilo descargadas (2)
+- `screenshot.png` — captura visual de la página (si se generó)
+
+## Colores de marca (curado, viendo screenshot.png)
+
+El sitio usa Bootstrap con rampas de color auto-generadas (10/90/etc. por
+cada tono), por eso el listado crudo abajo tiene 216 valores. Los que
+realmente definen la identidad visual de G&T Continental:
+
+- `#1463b4` — azul primario (headers, botones, links, logo)
+- `#0058a4` — azul oscuro (hover/variante)
+- `#0f4d8b` / `#083c6b` — azules profundos (footer, texto sobre claro)
+- `#fdbb33` — amarillo/dorado (acento del logo, íconos "Mastercard")
+- `#da1a32` — rojo (acento del logo)
+- `#21babd` — teal (variante secundaria en algunos componentes)
+- `#212529` / `#303335` — texto principal (casi negro, no negro puro)
+- `#f1f2f2` / `#d9d9d9` — grises para fondos alternos y bordes
+- `#ffffff` — fondo base
+
+**Estilo visual (de `screenshot.png`):** cards con esquinas muy redondeadas,
+botones "pill" (border-radius alto) sólidos en azul y variante outline,
+navbar superior de doble franja (utilidades + navegación), mucho espacio
+en blanco, imágenes grandes con overlay oscuro para promociones.
+
+**Tipografía:** [Sarabun](https://fonts.google.com/specimen/Sarabun)
+(Google Font) — sans-serif geométrica, buena legibilidad en textos largos.
+
+## Paleta de color cruda detectada (216 valores, incluye rampas Bootstrap)
+
+- `#ffffff`
+- `#1463b4`
+- `#0058a4`
+- `#b9dbfe`
+- `#e8f4ff`
+- `#303335`
+- `#fdbb33`
+- `#d9d9d9`
+- `#ccc`
+- `#212529`
+- `#197fe6`
+- `#d4d5d7`
+- `#525659`
+- `#0f4d8b`
+- `#8f9498`
+- `#000000`
+- `#bfc1c4`
+- `#da1a32`
+- `#fff`
+- `#7ca8d5`
+- `#eff7ff`
+- `#78bbfe`
+- `#21babd`
+- `#3f4345`
+- `#696e73`
+- `#73797e`
+- `#a1a5a9`
+- `#f1f2f2`
+- `#0c3b6a`
+- `#1c8cfd`
+- `#49a3fd`
+- `#67b2fe`
+- `#97cafe`
+- `#6a0c23`
+- `#8b0f2e`
+- `#b4143c`
+- `#e6194c`
+- `#fd1c54`
+- `#fd4976`
+- `#fe678c`
+- `#fe97b0`
+- `#feb9ca`
+- `#ffe8ee`
+- `#6a4d0b`
+- `#8b650e`
+- `#b48212`
+- `#e6a718`
+- `#fdb71a`
+- `#fdc548`
+- `#fecf66`
+- `#fede96`
+- `#fee9b8`
+- `#fff8e8`
+- `#0b6119`
+- `#0e7f21`
+- `#12a32b`
+- `#19e63c`
+- `#47eb63`
+- `#65ee7c`
+- `#95f4a5`
+- `#b8f7c3`
+- `#e8fdec`
+- `#0c6a6a`
+- `#0f8b8b`
+- `#14b4b4`
+- `#19e6e6`
+- `#1cfdfd`
+- `#49fdfd`
+- `#67fefe`
+- `#97fefe`
+- `#b9fefe`
+- `#e8ffff`
+- `#3b0c6a`
+- `#4d0f8b`
+- `#6314b4`
+- `#7f19e6`
+- `#8c1cfd`
+- `#a349fd`
+- `#b267fe`
+- `#ca97fe`
+- `#dbb9fe`
+- `#f4e8ff`
+- `#6a0c6a`
+- `#8b0f8b`
+- `#b414b4`
+- `#e619e6`
+- `#fd1cfd`
+- `#fd49fd`
+- `#fe67fe`
+- `#fe97fe`
+- `#feb9fe`
+- `#ffe8ff`
+- `#6a230c`
+- `#8b2e0f`
+- `#b43c14`
+- `#e64c19`
+- `#fd541c`
+- `#fd7649`
+- `#fe8c67`
+- `#feb097`
+- `#fecab9`
+- `#ffeee8`
+- `#d63384`
+- `#fff3cd`
+- `#d1e7dd`
+- `#bcd0c7`
+- `#c7dbd2`
+- `#c1d6cc`
+- `#cff4fc`
+- `#badce3`
+- `#c5e8ef`
+- `#bfe2e9`
+- `#e6dbb9`
+- `#f2e7c3`
+- `#ece1be`
+- `#f8d7da`
+- `#dfc2c4`
+- `#eccccf`
+- `#e5c7ca`
+- `#dfe0e1`
+- `#ecedee`
+- `#e5e6e7`
+- `#2c3034`
+- `#323539`
+- `#51585e`
+- `#adb5bd`
+- `#f9fafb`
+- `#1a1e21`
+- `#f4f7fb`
+- `#002d57`
+- `#2686e7`
+- `#444`
+- `#0057bb`
+- `#f44336`
+- `#ffc107`
+- `#083c6b`
+- `#08498c`
+- `#4a79a7`
+- `#333`
+- `#dee2e6`
+- `#000`
+- `#007aff`
+- `rgba(0, 0, 0, 0.2)`
+- `rgba(204, 222, 237, 0.5)`
+- `rgba(33, 37, 41, 0.08)`
+- `rgba(20, 99, 180, 1)`
+- `rgba(var(--bs-primary-rgb)`
+- `rgba(var(--bs-secondary-rgb)`
+- `rgba(var(--bs-success-rgb)`
+- `rgba(var(--bs-info-rgb)`
+- `rgba(var(--bs-warning-rgb)`
+- `rgba(var(--bs-danger-rgb)`
+- `rgba(var(--bs-light-rgb)`
+- `rgba(var(--bs-dark-rgb)`
+- `rgba(var(--bs-primary-10-rgb)`
+- `rgba(var(--bs-secondary-10-rgb)`
+- `rgba(var(--bs-psuccessrimary-10-rgb)`
+- `rgba(var(--bs-info-10-rgb)`
+- `rgba(var(--bs-warning-10-rgb)`
+- `rgba(var(--bs-danger-10-rgb)`
+- `rgba(var(--bs-light-10-rgb)`
+- `rgba(var(--bs-dark-10-rgb)`
+- `rgba(255, 255, 255, 0.15)`
+- `rgba(255, 255, 255, 0)`
+- `rgba(var(--bs-body-color-rgb)`
+- `rgba(var(--bs-white-rgb)`
+- `rgba(var(--bs-primary-90-rgb)`
+- `rgba(182, 187, 203,1)`
+- `rgba(var(--bs-secondary-bg)`
+- `rgba(var(--bs-warning-10-bg)`
+- `rgba(var(--bs-black)`
+- `rgba(var(--bs-link-color-rgb)`
+- `rgba(var(--bs-black-rgb)`
+- `rgba(var(--bs-dark-90-rgb)`
+- `rgba(var(--bs-focus-rgb)`
+- `rgba(var(--bs-dark-10)`
+- `rgba(13, 110, 253, 0.25)`
+- `rgba(var(--bs-btn-focus-shadow-rgb)`
+- `rgba(var(--bs-secondary-90-rgb)`
+- `rgba(var(--bs-success-90-rgb)`
+- `rgba(var(--bs-info-90-rgb)`
+- `rgba(var(--bs-warning-90-rgb)`
+- `rgba(var(--bs-danger-90-rgb)`
+- `rgba(var(--bs-light-90-rgb)`
+- `rgba(var(--bs-emphasis-color-rgb)`
+- `rgba(255, 255, 255, 0.55)`
+- `rgba(255, 255, 255, 0.25)`
+- `rgba(255, 255, 255, 0.1)`
+- `rgba(var(--bs-body-bg-rgb)`
+- `rgba(var(--bs-gray-300)`
+- `rgba(var(--bs-gray-500)`
+- `rgba(255, 255, 255, 0.5)`
+- `rgba(var(--bs-secondary-bg-rgb)`
+- `rgba(var(--bs-emphasis-bg-rgb)`
+- `rgba(204,222,237,0)`
+- `rgba(204,222,237,0.4)`
+- `rgba(255,255,255,0)`
+- `rgba(0,0,0,0.85)`
+- `rgba(0,0,0,0.4)`
+- `rgba(0,0,0,0.1)`
+- `rgba(38,134,231,0.5)`
+- `rgba(38,134,231,0.4)`
+- `rgb(0 0 0 / 15%)`
+- `rgb(33 37 41 / 8%)`
+- `rgba(212, 213, 215, 0.4)`
+- `rgba(212, 213, 215, 0)`
+- `rgba(244,247,251,0.4)`
+- `rgba(244,247,251,0)`
+- `rgba(0, 0, 0, 0.05)`
+- `rgba(0, 0, 0, 0.1)`
+- `rgba(0, 0, 0, 0.03)`
+- `rgba(0,0,0,.15)`
+- `rgba(0,0,0,.5)`
+- `rgba(0,0,0,0)`
+- `rgba(0,0,0,.25)`
+- `rgba(0,0,0,.1)`
+
+## Tipografías detectadas (10 declaraciones)
+
+- `Sarabun`
+- `Sarabun, sans-serif`
+- `var(--bs-font-sans-serif)`
+- `var(--bs-body-font-family)`
+- `var(--bs-font-monospace)`
+- `inherit`
+- ``
+- `var(--bs-btn-font-family)`
+- `var(--bs-font-monospace) !important`
+- `swiper-icons`
