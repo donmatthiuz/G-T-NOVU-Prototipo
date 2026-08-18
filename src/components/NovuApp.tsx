@@ -2,13 +2,25 @@
 
 import {
   useEffect,
+  useRef,
   useState,
   type MouseEventHandler,
   type ReactNode,
 } from "react";
 import Image from "next/image";
 import type { LucideIcon } from "lucide-react";
+import { useCameraCapture } from "@/hooks/useCameraCapture";
 import { useNovuData } from "@/hooks/useNovuData";
+import {
+  validateCaptureFile,
+  validateRegistrationContact,
+} from "@/lib/registration";
+import type {
+  CapturedMedia,
+  CaptureSlot,
+  RegistrationContact,
+  RegistrationContactErrors,
+} from "@/types/novu";
 import {
   ArrowLeft,
   ArrowRight,
@@ -98,12 +110,7 @@ type Complete = () => void;
 function Logo() {
   return (
     <span className="app-logo">
-      <Image
-        src="/novu_templates/logo.jpg"
-        alt="NOVU"
-        width={42}
-        height={42}
-      />
+      <Image src="/novu_templates/logo.jpg" alt="NOVU" width={42} height={42} />
     </span>
   );
 }
@@ -414,17 +421,33 @@ function Kyc({ go, completed }: NavProps & { completed: string[] }) {
 function CaptureScreen({
   kind,
   side,
+  slot,
   go,
   back,
   next,
+  onCapture,
 }: NavProps & {
   kind: "dpi" | "selfie" | "proof";
   side?: "frente" | "reverso";
+  slot: CaptureSlot;
   back: string;
   next: string;
+  onCapture: (
+    slot: CaptureSlot,
+    file: File,
+    source: "camera" | "upload",
+  ) => void;
 }) {
   const isSelfie = kind === "selfie";
   const isProof = kind === "proof";
+  const [fileError, setFileError] = useState<string | null>(null);
+  const {
+    videoRef,
+    status,
+    error: cameraError,
+    start,
+    capture,
+  } = useCameraCapture(isSelfie ? "user" : "environment");
   const title = isSelfie
     ? "Tomate una selfie"
     : isProof
@@ -437,6 +460,36 @@ function CaptureScreen({
       : side === "frente"
         ? "Mostrá tu documento completo, con buena luz y sin reflejos."
         : "Mostrá el código y la dirección con buena luz, sin cortes.";
+  const accept = isProof
+    ? "image/jpeg,image/png,image/webp,application/pdf"
+    : "image/jpeg,image/png,image/webp";
+  const chooseFile = (file: File | undefined, source: "camera" | "upload") => {
+    if (!file) return;
+    const validationError = validateCaptureFile(file, kind);
+    if (validationError) {
+      setFileError(validationError);
+      return;
+    }
+    setFileError(null);
+    onCapture(slot, file, source);
+    go(next);
+  };
+  const useCamera = async () => {
+    if (status !== "ready") {
+      await start();
+      return;
+    }
+    try {
+      const file = await capture(`${slot}-${Date.now()}.jpg`);
+      chooseFile(file, "camera");
+    } catch (cause) {
+      setFileError(
+        cause instanceof Error
+          ? cause.message
+          : "No fue posible tomar la foto.",
+      );
+    }
+  };
   return (
     <div className="capture-page">
       <button className="capture-back" onClick={() => go(back)}>
@@ -456,18 +509,53 @@ function CaptureScreen({
       <div
         className={`camera-guide ${isSelfie ? "face" : isProof ? "proof" : ""}`}
       >
-        {isSelfie ? <UserRound /> : isProof ? <FileText /> : <CreditCard />}
+        <video
+          ref={videoRef}
+          className={
+            status === "ready" ? "camera-video visible" : "camera-video"
+          }
+          muted
+          playsInline
+          aria-label="Vista previa de la cámara"
+        />
+        {status !== "ready" && (
+          <span className="camera-placeholder" aria-hidden="true">
+            {isSelfie ? <UserRound /> : isProof ? <FileText /> : <CreditCard />}
+          </span>
+        )}
       </div>
-      <span className="capture-hint">Tocá para tomar la foto</span>
-      {isProof && (
-        <button className="gallery-button" onClick={() => go(next)}>
-          <Upload /> Subir desde galería
-        </button>
-      )}
+      <div className="capture-feedback" aria-live="polite">
+        <span className="capture-hint">
+          {status === "ready"
+            ? "Cámara lista. Tocá el obturador."
+            : status === "requesting"
+              ? "Solicitando permiso para la cámara…"
+              : "Activá la cámara o elegí un archivo."}
+        </span>
+        {(fileError || cameraError) && (
+          <span className="capture-error" role="alert">
+            {fileError || cameraError}
+          </span>
+        )}
+      </div>
+      <label className="gallery-button" htmlFor={`capture-${slot}`}>
+        <Upload /> Subir archivo
+      </label>
+      <input
+        className="visually-hidden"
+        id={`capture-${slot}`}
+        type="file"
+        accept={accept}
+        onChange={(event) => {
+          chooseFile(event.currentTarget.files?.[0], "upload");
+          event.currentTarget.value = "";
+        }}
+      />
       <button
         className="shutter"
-        onClick={() => go(next)}
-        aria-label="Tomar foto"
+        onClick={useCamera}
+        aria-label={status === "ready" ? "Tomar foto" : "Activar cámara"}
+        disabled={status === "requesting"}
       >
         <span></span>
       </button>
@@ -481,11 +569,15 @@ function ReviewCapture({
   accept,
   retake,
   complete,
+  media,
+  requiredCount = 1,
 }: NavProps & {
   kind: "dpi" | "selfie" | "proof";
   accept: string;
   retake: string;
   complete: Complete;
+  media: CapturedMedia[];
+  requiredCount?: number;
 }) {
   const isDpi = kind === "dpi";
   const isSelfie = kind === "selfie";
@@ -508,26 +600,24 @@ function ReviewCapture({
         </span>
         <h1>{title}</h1>
         <div className={`capture-preview ${isDpi ? "double" : ""}`}>
-          {isDpi ? (
-            <>
-              <span>
-                <CreditCard />
-                <small>Frente</small>
-              </span>
-              <span>
-                <CreditCard />
-                <small>Reverso</small>
-              </span>
-            </>
-          ) : (
-            <span>
-              <Icon />
-              <small>Captura simulada</small>
+          {media.map((item, index) => (
+            <span key={item.previewUrl}>
+              {item.file.type === "application/pdf" ? (
+                <FileText />
+              ) : (
+                // Blob URLs are local previews and are not compatible with the Next optimizer.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={item.previewUrl} alt={`Vista previa ${index + 1}`} />
+              )}
+              <small>
+                {isDpi ? (index === 0 ? "Frente" : "Reverso") : item.file.name}
+              </small>
             </span>
-          )}
+          ))}
         </div>
         <p>{copy}</p>
         <Primary
+          disabled={media.length < requiredCount}
           onClick={() => {
             complete();
             go(accept);
@@ -544,7 +634,26 @@ function ReviewCapture({
   );
 }
 
-function ContactForm({ go, complete }: NavProps & { complete: Complete }) {
+function ContactForm({
+  go,
+  complete,
+  values,
+  onChange,
+}: NavProps & {
+  complete: Complete;
+  values: RegistrationContact;
+  onChange: (values: RegistrationContact) => void;
+}) {
+  const [errors, setErrors] = useState<RegistrationContactErrors>({});
+  const setField = (field: keyof RegistrationContact, value: string) =>
+    onChange({ ...values, [field]: value });
+  const submit = () => {
+    const nextErrors = validateRegistrationContact(values);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) return;
+    complete();
+    go("kyc");
+  };
   return (
     <div className="capture-page review-page">
       <div className="review-card form-card">
@@ -553,42 +662,95 @@ function ContactForm({ go, complete }: NavProps & { complete: Complete }) {
         </span>
         <h1>Contacto y contraseña</h1>
         <p>Lo usamos para avisarte sobre tu ahorro y proteger tu cuenta.</p>
-        <label>
+        {Object.keys(errors).length > 0 && (
+          <div className="form-error-summary" role="alert" tabIndex={-1}>
+            Revisá los campos marcados antes de continuar.
+          </div>
+        )}
+        <label htmlFor="registration-phone">
           Teléfono
-          <input type="tel" defaultValue="5512 3456" autoComplete="tel" />
+          <input
+            id="registration-phone"
+            type="tel"
+            value={values.phone}
+            autoComplete="tel"
+            aria-invalid={Boolean(errors.phone)}
+            aria-describedby={
+              errors.phone ? "registration-phone-error" : undefined
+            }
+            onChange={(event) => setField("phone", event.target.value)}
+          />
+          {errors.phone && (
+            <small id="registration-phone-error" className="field-error">
+              {errors.phone}
+            </small>
+          )}
         </label>
-        <label>
+        <label htmlFor="registration-email">
           Correo electrónico
           <input
+            id="registration-email"
             type="email"
-            defaultValue="vos@correo.com"
+            value={values.email}
             autoComplete="email"
+            aria-invalid={Boolean(errors.email)}
+            aria-describedby={
+              errors.email ? "registration-email-error" : undefined
+            }
+            onChange={(event) => setField("email", event.target.value)}
           />
+          {errors.email && (
+            <small id="registration-email-error" className="field-error">
+              {errors.email}
+            </small>
+          )}
         </label>
-        <label>
+        <label htmlFor="registration-password">
           Contraseña
           <input
+            id="registration-password"
             type="password"
-            defaultValue="novu2026"
+            value={values.password}
             autoComplete="new-password"
+            aria-invalid={Boolean(errors.password)}
+            aria-describedby={
+              errors.password ? "registration-password-error" : undefined
+            }
+            onChange={(event) => setField("password", event.target.value)}
           />
+          {errors.password && (
+            <small id="registration-password-error" className="field-error">
+              {errors.password}
+            </small>
+          )}
         </label>
-        <label>
+        <label htmlFor="registration-password-confirmation">
           Confirmar contraseña
           <input
+            id="registration-password-confirmation"
             type="password"
-            defaultValue="novu2026"
+            value={values.passwordConfirmation}
             autoComplete="new-password"
+            aria-invalid={Boolean(errors.passwordConfirmation)}
+            aria-describedby={
+              errors.passwordConfirmation
+                ? "registration-password-confirmation-error"
+                : undefined
+            }
+            onChange={(event) =>
+              setField("passwordConfirmation", event.target.value)
+            }
           />
+          {errors.passwordConfirmation && (
+            <small
+              id="registration-password-confirmation-error"
+              className="field-error"
+            >
+              {errors.passwordConfirmation}
+            </small>
+          )}
         </label>
-        <Primary
-          onClick={() => {
-            complete();
-            go("kyc");
-          }}
-        >
-          Guardar y continuar
-        </Primary>
+        <Primary onClick={submit}>Guardar y continuar</Primary>
         <button className="review-secondary" onClick={() => go("kyc")}>
           Cancelar
         </button>
@@ -1628,6 +1790,17 @@ export default function NovuApp({ exit }: { exit: () => void }) {
   );
   const [toast, setToast] = useState("");
   const [completed, setCompleted] = useState<string[]>([]);
+  const [registrationMedia, setRegistrationMedia] = useState<
+    Partial<Record<CaptureSlot, CapturedMedia>>
+  >({});
+  const registrationMediaRef = useRef(registrationMedia);
+  const [registrationContact, setRegistrationContact] =
+    useState<RegistrationContact>({
+      phone: "5512 3456",
+      email: "vos@correo.com",
+      password: "novu2026",
+      passwordConfirmation: "novu2026",
+    });
   const [navOpen, setNavOpen] = useState(false);
   const [navCollapsed, setNavCollapsed] = useState(false);
   const notify: Notify = (message) => {
@@ -1647,6 +1820,29 @@ export default function NovuApp({ exit }: { exit: () => void }) {
     setCompleted((items) =>
       items.includes(label) ? items : [...items, label],
     );
+  const captureMedia = (
+    slot: CaptureSlot,
+    file: File,
+    source: "camera" | "upload",
+  ) => {
+    setRegistrationMedia((items) => {
+      if (items[slot]) URL.revokeObjectURL(items[slot].previewUrl);
+      const next = {
+        ...items,
+        [slot]: { file, source, previewUrl: URL.createObjectURL(file) },
+      };
+      registrationMediaRef.current = next;
+      return next;
+    });
+  };
+  useEffect(
+    () => () => {
+      Object.values(registrationMediaRef.current).forEach((item) =>
+        URL.revokeObjectURL(item.previewUrl),
+      );
+    },
+    [],
+  );
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") setNavOpen(false);
@@ -1666,18 +1862,22 @@ export default function NovuApp({ exit }: { exit: () => void }) {
       <CaptureScreen
         kind="dpi"
         side="frente"
+        slot="dpiFront"
         go={go}
         back="kyc"
         next="dpi-back"
+        onCapture={captureMedia}
       />
     ),
     "dpi-back": (
       <CaptureScreen
         kind="dpi"
         side="reverso"
+        slot="dpiBack"
         go={go}
         back="dpi-front"
         next="dpi-review"
+        onCapture={captureMedia}
       />
     ),
     "dpi-review": (
@@ -1687,10 +1887,21 @@ export default function NovuApp({ exit }: { exit: () => void }) {
         accept="kyc"
         retake="dpi-front"
         complete={() => complete("DPI")}
+        requiredCount={2}
+        media={[registrationMedia.dpiFront, registrationMedia.dpiBack].filter(
+          (item): item is CapturedMedia => Boolean(item),
+        )}
       />
     ),
     "selfie-capture": (
-      <CaptureScreen kind="selfie" go={go} back="kyc" next="selfie-review" />
+      <CaptureScreen
+        kind="selfie"
+        slot="selfie"
+        go={go}
+        back="kyc"
+        next="selfie-review"
+        onCapture={captureMedia}
+      />
     ),
     "selfie-review": (
       <ReviewCapture
@@ -1699,13 +1910,26 @@ export default function NovuApp({ exit }: { exit: () => void }) {
         accept="kyc"
         retake="selfie-capture"
         complete={() => complete("Selfie")}
+        media={registrationMedia.selfie ? [registrationMedia.selfie] : []}
       />
     ),
     contact: (
-      <ContactForm go={go} complete={() => complete("Contacto y contraseña")} />
+      <ContactForm
+        go={go}
+        complete={() => complete("Contacto y contraseña")}
+        values={registrationContact}
+        onChange={setRegistrationContact}
+      />
     ),
     "proof-capture": (
-      <CaptureScreen kind="proof" go={go} back="kyc" next="proof-review" />
+      <CaptureScreen
+        kind="proof"
+        slot="proof"
+        go={go}
+        back="kyc"
+        next="proof-review"
+        onCapture={captureMedia}
+      />
     ),
     "proof-review": (
       <ReviewCapture
@@ -1714,6 +1938,7 @@ export default function NovuApp({ exit }: { exit: () => void }) {
         accept="kyc"
         retake="proof-capture"
         complete={() => complete("Comprobante de domicilio")}
+        media={registrationMedia.proof ? [registrationMedia.proof] : []}
       />
     ),
     home: <Dashboard go={go} notify={notify} />,

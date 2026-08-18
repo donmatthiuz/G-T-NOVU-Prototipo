@@ -49,3 +49,24 @@ export interface ApiTransport {
     request: ApiRequest<TBody>,
   ): Promise<ApiResponse<TData>>;
 }
+
+export type CaptureKind = "dpi" | "selfie" | "proof";
+export type CaptureSource = "camera" | "upload";
+export type CaptureSlot = "dpiFront" | "dpiBack" | "selfie" | "proof";
+
+export interface CapturedMedia {
+  file: File;
+  previewUrl: string;
+  source: CaptureSource;
+}
+
+export interface RegistrationContact {
+  phone: string;
+  email: string;
+  password: string;
+  passwordConfirmation: string;
+}
+
+export type RegistrationContactErrors = Partial<
+  Record<keyof RegistrationContact, string>
+>;

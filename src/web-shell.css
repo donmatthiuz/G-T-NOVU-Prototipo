@@ -759,7 +759,7 @@ body:has(.novu-app) {
   display: grid;
   grid-template-columns: minmax(300px, 0.75fr) minmax(440px, 1.25fr);
   grid-template-rows: auto 1fr auto auto;
-  grid-template-areas: "back camera" "copy camera" "hint camera" "gallery shutter";
+  grid-template-areas: "back camera" "copy camera" "feedback camera" "gallery shutter";
   gap: 18px clamp(42px, 7vw, 110px);
   align-items: center;
 }
@@ -790,8 +790,8 @@ body:has(.novu-app) {
   max-width: 520px;
   height: min(58vw, 560px);
 }
-.capture-page:not(.review-page):not(.biometric-page) .capture-hint {
-  grid-area: hint;
+.capture-page:not(.review-page):not(.biometric-page) .capture-feedback {
+  grid-area: feedback;
   margin: 0;
   text-align: left;
 }
@@ -976,7 +976,7 @@ body:has(.novu-app) {
     width: 280px;
     height: 330px;
   }
-  .capture-page:not(.review-page):not(.biometric-page) .capture-hint {
+  .capture-page:not(.review-page):not(.biometric-page) .capture-feedback {
     margin: auto auto 13px;
     text-align: center;
   }
