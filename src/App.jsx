@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import NovuApp from './NovuApp.jsx'
 import {
   ArrowRight, ArrowUpRight, Banknote, Bot, BriefcaseBusiness, Check, ChevronLeft,
   ChevronRight, CircleDollarSign, Clock3, FileCheck2, Flag, HandCoins, Heart,
@@ -140,6 +141,8 @@ function FlowExplorer() {
 }
 
 function App() {
+  const [view, setView] = useState(() => new URLSearchParams(window.location.search).get('view') === 'app' ? 'app' : 'landing')
+  if (view === 'app') return <NovuApp exit={() => setView('landing')} />
   return <>
     <header className="nav" id="inicio">
       <Brand />
@@ -152,7 +155,7 @@ function App() {
           <span className="eyebrow dark"><ShieldCheck size={16} aria-hidden="true" /> Respaldado por G&T Continental</span>
           <h1>Tu futuro empieza con <em>un paso.</em></h1>
           <p>Convertí tus metas, retos y sueños familiares en un plan que podés ver, entender y cumplir.</p>
-          <div className="hero-actions"><Button href="#flujos">Empezar mi recorrido</Button><Button href="#como-funciona" secondary>Ver cómo funciona</Button></div>
+          <div className="hero-actions"><Button onClick={() => setView('app')}>Entrar al prototipo</Button><Button href="#como-funciona" secondary>Ver cómo funciona</Button></div>
           <div className="trust-row"><span><Check size={16} aria-hidden="true" /> Sin fórmulas complicadas</span><span><Check size={16} aria-hidden="true" /> Hecho para vos</span></div>
         </div>
         <div className="hero-visual" aria-label="Vista previa de NOVU">
@@ -188,7 +191,7 @@ function App() {
         <div className="security-points"><span><FileCheck2 size={19} /> Verificación guiada</span><span><UserRoundCheck size={19} /> Biometría simulada</span><span><Landmark size={19} /> Respaldo G&T</span></div>
       </section>
 
-      <section className="final-cta"><span className="eyebrow dark">NOVU está listo cuando vos lo estés</span><h2>Un pequeño paso hoy puede cambiar mucho mañana.</h2><Button href="#flujos">Explorar el prototipo</Button></section>
+      <section className="final-cta"><span className="eyebrow dark">NOVU está listo cuando vos lo estés</span><h2>Un pequeño paso hoy puede cambiar mucho mañana.</h2><Button onClick={() => setView('app')}>Explorar el prototipo</Button></section>
     </main>
     <footer><Brand /><p>Prototipo frontend de NOVU. Sin backend ni base de datos.</p><div><a href="#inicio">Inicio</a><a href="#flujos">Flujos</a><a href="#seguridad">Seguridad</a></div></footer>
   </>
