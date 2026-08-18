@@ -252,7 +252,7 @@ function Login({
             <button
               type="button"
               onClick={() => setShown(!shown)}
-              aria-label="Mostrar contraseña"
+              aria-label={shown ? "Ocultar contraseña" : "Mostrar contraseña"}
             >
               <LockKeyhole size={17} />
             </button>
@@ -501,6 +501,7 @@ function CaptureScreen({
   const isSelfie = kind === "selfie";
   const isProof = kind === "proof";
   const [fileError, setFileError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     videoRef,
     status,
@@ -598,13 +599,19 @@ function CaptureScreen({
           </span>
         )}
       </div>
-      <label className="gallery-button" htmlFor={`capture-${slot}`}>
-        <Upload /> Subir archivo
-      </label>
+      <button
+        className="gallery-button"
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <Upload aria-hidden="true" /> Subir archivo
+      </button>
       <input
+        ref={fileInputRef}
         className="visually-hidden"
         id={`capture-${slot}`}
         type="file"
+        tabIndex={-1}
         accept={accept}
         onChange={(event) => {
           chooseFile(event.currentTarget.files?.[0], "upload");
@@ -705,12 +712,25 @@ function ContactForm({
   onChange: (values: RegistrationContact) => void;
 }) {
   const [errors, setErrors] = useState<RegistrationContactErrors>({});
+  const errorSummaryRef = useRef<HTMLDivElement>(null);
   const setField = (field: keyof RegistrationContact, value: string) =>
     onChange({ ...values, [field]: value });
+  const validateField = (field: keyof RegistrationContact) => {
+    const message = validateRegistrationContact(values)[field];
+    setErrors((current) => {
+      const next = { ...current };
+      if (message) next[field] = message;
+      else delete next[field];
+      return next;
+    });
+  };
   const submit = () => {
     const nextErrors = validateRegistrationContact(values);
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length) return;
+    if (Object.keys(nextErrors).length) {
+      window.requestAnimationFrame(() => errorSummaryRef.current?.focus());
+      return;
+    }
     complete();
     go("kyc");
   };
@@ -723,8 +743,24 @@ function ContactForm({
         <h1>Contacto y contraseña</h1>
         <p>Lo usamos para avisarte sobre tu ahorro y proteger tu cuenta.</p>
         {Object.keys(errors).length > 0 && (
-          <div className="form-error-summary" role="alert" tabIndex={-1}>
-            Revisá los campos marcados antes de continuar.
+          <div
+            className="form-error-summary"
+            role="alert"
+            tabIndex={-1}
+            ref={errorSummaryRef}
+          >
+            <b>Revisá los campos marcados:</b>
+            <ul>
+              {Object.entries(errors).map(([field, message]) => (
+                <li key={field}>
+                  <a
+                    href={`#registration-${field.replace("Confirmation", "-confirmation")}`}
+                  >
+                    {message}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
         <label htmlFor="registration-phone">
@@ -739,6 +775,7 @@ function ContactForm({
               errors.phone ? "registration-phone-error" : undefined
             }
             onChange={(event) => setField("phone", event.target.value)}
+            onBlur={() => validateField("phone")}
           />
           {errors.phone && (
             <small id="registration-phone-error" className="field-error">
@@ -758,6 +795,7 @@ function ContactForm({
               errors.email ? "registration-email-error" : undefined
             }
             onChange={(event) => setField("email", event.target.value)}
+            onBlur={() => validateField("email")}
           />
           {errors.email && (
             <small id="registration-email-error" className="field-error">
@@ -777,6 +815,7 @@ function ContactForm({
               errors.password ? "registration-password-error" : undefined
             }
             onChange={(event) => setField("password", event.target.value)}
+            onBlur={() => validateField("password")}
           />
           {errors.password && (
             <small id="registration-password-error" className="field-error">
@@ -800,6 +839,7 @@ function ContactForm({
             onChange={(event) =>
               setField("passwordConfirmation", event.target.value)
             }
+            onBlur={() => validateField("passwordConfirmation")}
           />
           {errors.passwordConfirmation && (
             <small
@@ -1942,6 +1982,10 @@ export default function NovuApp({ exit }: { exit: () => void }) {
   }, []);
   const currentPage =
     authenticated && ["welcome", "login"].includes(page) ? "home" : page;
+  const mainRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    mainRef.current?.focus({ preventScroll: true });
+  }, [currentPage]);
   const screens: Record<string, ReactNode> = {
     welcome: <Welcome go={go} />,
     login: (
@@ -2176,7 +2220,12 @@ export default function NovuApp({ exit }: { exit: () => void }) {
             </span>
           </header>
         )}
-        <main className="app-workspace" id="app-main">
+        <main
+          className="app-workspace"
+          id="app-main"
+          ref={mainRef}
+          tabIndex={-1}
+        >
           <div className="route-frame" key={currentPage}>
             {screens[currentPage] || screens.home}
           </div>

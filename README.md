@@ -11,6 +11,7 @@ NOVU es un copiloto de ahorro para jóvenes guatemaltecos, respaldado por G&T Co
 
 ## Documentación local
 
+- [`aplication_doc/README.md`](aplication_doc/README.md): bitácora de implementación web, pruebas y siguiente alcance FastAPI/MongoDB.
 - [`style/novu-style-guide.md`](style/novu-style-guide.md): principios, identidad y reglas de interfaz.
 - [`style/novu-tokens.yaml`](style/novu-tokens.yaml): colores, tipografía, espaciado y radios.
 - [`plan/implementation-plan.md`](plan/implementation-plan.md): alcance y fases de implementación.

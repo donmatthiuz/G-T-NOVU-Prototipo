@@ -262,6 +262,13 @@
   font-size: 12px;
   font-weight: 700;
 }
+.form-error-summary ul {
+  margin: 7px 0 0;
+  padding-left: 18px;
+}
+.form-error-summary a {
+  color: inherit;
+}
 .web-form textarea {
   min-height: 95px;
   resize: vertical;
