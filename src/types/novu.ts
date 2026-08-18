@@ -70,3 +70,19 @@ export interface RegistrationContact {
 export type RegistrationContactErrors = Partial<
   Record<keyof RegistrationContact, string>
 >;
+
+export interface LoginCredentials {
+  identifier: string;
+  password: string;
+}
+
+export interface AuthSession {
+  accessToken: string;
+  expiresAt: string;
+  user: UserProfile;
+}
+
+export interface RegistrationSubmission {
+  contact: RegistrationContact;
+  media: Partial<Record<CaptureSlot, File>>;
+}

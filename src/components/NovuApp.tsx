@@ -9,12 +9,15 @@ import {
 } from "react";
 import Image from "next/image";
 import type { LucideIcon } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import { useCameraCapture } from "@/hooks/useCameraCapture";
 import { useNovuData } from "@/hooks/useNovuData";
+import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
 import {
   validateCaptureFile,
   validateRegistrationContact,
 } from "@/lib/registration";
+import { SIDEBAR_STORAGE_KEY } from "@/lib/session";
 import type {
   CapturedMedia,
   CaptureSlot,
@@ -204,8 +207,22 @@ function Welcome({ go }: NavProps) {
   );
 }
 
-function Login({ go }: NavProps) {
+function Login({
+  go,
+  onLogin,
+  loading,
+  error,
+}: NavProps & {
+  onLogin: (identifier: string, password: string) => Promise<boolean>;
+  loading: boolean;
+  error: string | null;
+}) {
   const [shown, setShown] = useState(false);
+  const [identifier, setIdentifier] = useState("diego@correo.com");
+  const [password, setPassword] = useState("novu2026");
+  const submit = async () => {
+    if (await onLogin(identifier, password)) go("home");
+  };
   return (
     <div className="entry-screen">
       <div className="login-card">
@@ -217,14 +234,19 @@ function Login({ go }: NavProps) {
         <p>Ingresá para seguir construyendo tu futuro.</p>
         <label>
           Correo o teléfono
-          <input defaultValue="diego@correo.com" autoComplete="username" />
+          <input
+            value={identifier}
+            onChange={(event) => setIdentifier(event.target.value)}
+            autoComplete="username"
+          />
         </label>
         <label>
           Contraseña
           <div className="password-input">
             <input
               type={shown ? "text" : "password"}
-              defaultValue="novu2026"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
               autoComplete="current-password"
             />
             <button
@@ -236,7 +258,17 @@ function Login({ go }: NavProps) {
             </button>
           </div>
         </label>
-        <Primary onClick={() => go("home")}>Ingresar</Primary>
+        {error && (
+          <div className="form-error-summary" role="alert">
+            {error}
+          </div>
+        )}
+        <Primary
+          onClick={submit}
+          disabled={loading || !identifier.trim() || !password}
+        >
+          {loading ? "Ingresando…" : "Ingresar"}
+        </Primary>
         <div className="bio-row">
           <button onClick={() => go("bio-fingerprint")}>
             <ShieldCheck /> Huella
@@ -256,7 +288,11 @@ function Login({ go }: NavProps) {
 function BiometricScan({
   type,
   go,
-}: NavProps & { type: "fingerprint" | "face" | "faceid" }) {
+  onVerify,
+}: NavProps & {
+  type: "fingerprint" | "face" | "faceid";
+  onVerify: () => Promise<boolean>;
+}) {
   const labels: Record<
     "fingerprint" | "face" | "faceid",
     [string, LucideIcon]
@@ -288,7 +324,15 @@ function BiometricScan({
           ? "Tu identidad se confirmó correctamente."
           : "Mantenete frente al dispositivo por un momento."}
       </p>
-      {ready && <Primary onClick={() => go("home")}>Continuar</Primary>}
+      {ready && (
+        <Primary
+          onClick={async () => {
+            if (await onVerify()) go("home");
+          }}
+        >
+          Continuar
+        </Primary>
+      )}
     </div>
   );
 }
@@ -364,7 +408,18 @@ function Wizard({ go, notify }: NavNotifyProps) {
   );
 }
 
-function Kyc({ go, completed }: NavProps & { completed: string[] }) {
+function Kyc({
+  go,
+  completed,
+  onFinish,
+  loading,
+  error,
+}: NavProps & {
+  completed: string[];
+  onFinish: () => Promise<void>;
+  loading: boolean;
+  error: string | null;
+}) {
   const steps: [string, LucideIcon, string][] = [
     ["DPI", CreditCard, "dpi-front"],
     ["Selfie", Camera, "selfie-capture"],
@@ -408,11 +463,16 @@ function Kyc({ go, completed }: NavProps & { completed: string[] }) {
         Sin cobros ocultos. Cualquier condición te la explicamos en lenguaje
         sencillo.
       </p>
+      {error && (
+        <div className="form-error-summary" role="alert">
+          {error}
+        </div>
+      )}
       <Primary
-        disabled={completed.length !== steps.length}
-        onClick={() => go("home")}
+        disabled={completed.length !== steps.length || loading}
+        onClick={onFinish}
       >
-        Crear mi cuenta y empezar
+        {loading ? "Creando tu cuenta…" : "Crear mi cuenta y empezar"}
       </Primary>
     </div>
   );
@@ -1584,7 +1644,11 @@ function Opportunities({ go, notify }: NavNotifyProps) {
   );
 }
 
-function MenuPage({ go, notify }: NavNotifyProps) {
+function MenuPage({
+  go,
+  notify,
+  onLogout,
+}: NavNotifyProps & { onLogout: () => void }) {
   return (
     <div className="app-page">
       <AppHeader title="Menú" onBack={() => go("home")} />
@@ -1614,11 +1678,11 @@ function MenuPage({ go, notify }: NavNotifyProps) {
           </span>
           <ChevronRight />
         </button>
-        <button onClick={() => go("welcome")}>
+        <button onClick={onLogout}>
           <ArrowLeft />
           <span>
-            <b>Salir del prototipo</b>
-            <small>Volver a la experiencia inicial</small>
+            <b>Cerrar sesión</b>
+            <small>Salir de tu cuenta en este dispositivo</small>
           </span>
           <ChevronRight />
         </button>
@@ -1718,6 +1782,8 @@ function AppNav({
         <button
           className="sidebar-collapse"
           onClick={onToggle}
+          aria-controls="novu-navigation"
+          aria-expanded={!collapsed}
           aria-label={collapsed ? "Expandir navegación" : "Contraer navegación"}
           title={collapsed ? "Expandir navegación" : "Contraer navegación"}
         >
@@ -1772,10 +1838,10 @@ function AppNav({
         <button
           className="sidebar-exit"
           onClick={exit}
-          title={collapsed ? "Volver a la landing" : undefined}
+          title={collapsed ? "Cerrar sesión" : undefined}
         >
           <ArrowLeft size={18} />
-          <span>Volver a la landing</span>
+          <span>Cerrar sesión</span>
         </button>
       </div>
     </aside>
@@ -1783,6 +1849,7 @@ function AppNav({
 }
 
 export default function NovuApp({ exit }: { exit: () => void }) {
+  const { authenticated, loading, error, login, register, logout } = useAuth();
   const [page, setPage] = useState(() =>
     typeof window !== "undefined"
       ? new URLSearchParams(window.location.search).get("page") || "welcome"
@@ -1802,7 +1869,8 @@ export default function NovuApp({ exit }: { exit: () => void }) {
       passwordConfirmation: "novu2026",
     });
   const [navOpen, setNavOpen] = useState(false);
-  const [navCollapsed, setNavCollapsed] = useState(false);
+  const [navCollapsed, setNavCollapsed] =
+    usePersistentBoolean(SIDEBAR_STORAGE_KEY);
   const notify: Notify = (message) => {
     setToast(message);
     window.setTimeout(() => setToast(""), 3600);
@@ -1820,6 +1888,28 @@ export default function NovuApp({ exit }: { exit: () => void }) {
     setCompleted((items) =>
       items.includes(label) ? items : [...items, label],
     );
+  const handleLogin = (identifier: string, password: string) =>
+    login({ identifier, password });
+  const handleBiometricLogin = () =>
+    login({ identifier: "diego@correo.com", password: "biometric-demo" });
+  const handleRegistration = async () => {
+    const success = await register({
+      contact: registrationContact,
+      media: Object.fromEntries(
+        Object.entries(registrationMedia).map(([slot, item]) => [
+          slot,
+          item.file,
+        ]),
+      ),
+    });
+    if (success) go("home");
+  };
+  const handleLogout = async () => {
+    await logout();
+    setCompleted([]);
+    setPage("welcome");
+    setNavOpen(false);
+  };
   const captureMedia = (
     slot: CaptureSlot,
     file: File,
@@ -1850,14 +1940,36 @@ export default function NovuApp({ exit }: { exit: () => void }) {
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, []);
+  const currentPage =
+    authenticated && ["welcome", "login"].includes(page) ? "home" : page;
   const screens: Record<string, ReactNode> = {
     welcome: <Welcome go={go} />,
-    login: <Login go={go} />,
+    login: (
+      <Login go={go} onLogin={handleLogin} loading={loading} error={error} />
+    ),
     wizard: <Wizard go={go} notify={notify} />,
-    "bio-fingerprint": <BiometricScan type="fingerprint" go={go} />,
-    "bio-face": <BiometricScan type="face" go={go} />,
-    "bio-faceid": <BiometricScan type="faceid" go={go} />,
-    kyc: <Kyc go={go} completed={completed} />,
+    "bio-fingerprint": (
+      <BiometricScan
+        type="fingerprint"
+        go={go}
+        onVerify={handleBiometricLogin}
+      />
+    ),
+    "bio-face": (
+      <BiometricScan type="face" go={go} onVerify={handleBiometricLogin} />
+    ),
+    "bio-faceid": (
+      <BiometricScan type="faceid" go={go} onVerify={handleBiometricLogin} />
+    ),
+    kyc: (
+      <Kyc
+        go={go}
+        completed={completed}
+        onFinish={handleRegistration}
+        loading={loading}
+        error={error}
+      />
+    ),
     "dpi-front": (
       <CaptureScreen
         kind="dpi"
@@ -1974,7 +2086,7 @@ export default function NovuApp({ exit }: { exit: () => void }) {
     "family-vote": <FamilyVote go={go} notify={notify} />,
     "family-votings": <FamilyVotings go={go} />,
     "family-released": <MoneyReleased go={go} />,
-    menu: <MenuPage go={go} notify={notify} />,
+    menu: <MenuPage go={go} notify={notify} onLogout={handleLogout} />,
   };
   const showNav = ![
     "welcome",
@@ -1992,20 +2104,20 @@ export default function NovuApp({ exit }: { exit: () => void }) {
     "contact",
     "proof-capture",
     "proof-review",
-  ].includes(page);
+  ].includes(currentPage);
   return (
     <div
       className={`novu-app ${showNav ? "has-web-shell" : "focus-shell"} ${navCollapsed ? "nav-is-collapsed" : ""}`}
     >
       {showNav && (
         <AppNav
-          page={page}
+          page={currentPage}
           go={go}
           collapsed={navCollapsed}
           open={navOpen}
           onToggle={() => setNavCollapsed((value) => !value)}
           onClose={() => setNavOpen(false)}
-          exit={exit}
+          exit={handleLogout}
         />
       )}
       {showNav && (
@@ -2031,7 +2143,7 @@ export default function NovuApp({ exit }: { exit: () => void }) {
               </button>
               <div>
                 <span>Espacio personal</span>
-                <strong>{pageLabels[page] || "NOVU"}</strong>
+                <strong>{pageLabels[currentPage] || "NOVU"}</strong>
               </div>
             </div>
             <div className="topbar-actions">
@@ -2065,8 +2177,8 @@ export default function NovuApp({ exit }: { exit: () => void }) {
           </header>
         )}
         <main className="app-workspace" id="app-main">
-          <div className="route-frame" key={page}>
-            {screens[page] || screens.home}
+          <div className="route-frame" key={currentPage}>
+            {screens[currentPage] || screens.home}
           </div>
         </main>
       </div>

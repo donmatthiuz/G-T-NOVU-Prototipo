@@ -633,6 +633,9 @@ body:has(.novu-app) {
   opacity: 0;
   pointer-events: none;
 }
+.web-sidebar.collapsed .sidebar-brand-copy {
+  display: none;
+}
 .web-sidebar.collapsed .sidebar-brand {
   padding-inline: 7px;
 }
@@ -856,6 +859,9 @@ body:has(.novu-app) {
   .web-sidebar.collapsed .sidebar-exit span {
     opacity: 1;
     pointer-events: auto;
+  }
+  .web-sidebar.collapsed .sidebar-brand-copy {
+    display: grid;
   }
   .web-sidebar.collapsed .sidebar-brand .app-logo {
     display: grid;
