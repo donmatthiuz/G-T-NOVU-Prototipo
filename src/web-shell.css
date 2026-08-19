@@ -244,6 +244,16 @@ body:has(.novu-app) {
   margin: -20px 0 26px;
   font-size: 15px;
 }
+.wizard-page > .app-subtitle {
+  margin: 0 0 24px;
+}
+.form-step {
+  width: min(760px, 100%);
+  margin: -14px 0 8px;
+}
+.form-step + .form-subtitle {
+  margin: 0 0 20px;
+}
 
 .app-primary {
   transition:
@@ -298,26 +308,36 @@ body:has(.novu-app) {
   right: -65px;
   top: -105px;
 }
-.quick-grid {
-  gap: 14px;
-}
-.quick-grid button {
-  min-height: 124px;
+.quick-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   border-radius: 19px;
-  font-size: 12px;
+  box-shadow: 0 10px 30px rgba(51, 34, 98, 0.045);
+}
+.quick-actions button {
+  min-height: 82px;
+  padding: 15px 17px;
   transition:
-    border-color 0.18s ease,
-    box-shadow 0.18s ease,
-    transform 0.18s ease;
+    color 0.18s ease,
+    background 0.18s ease;
 }
-.quick-grid button:hover {
-  transform: translateY(-2px);
-  border-color: #c8a8eb;
-  box-shadow: var(--web-shadow);
+.quick-actions button:nth-child(odd) {
+  border-right: 1px solid var(--border);
 }
-.quick-grid svg {
-  width: 26px;
-  height: 26px;
+.quick-actions button:nth-child(-n + 2) {
+  border-bottom: 1px solid var(--border);
+}
+.quick-actions button:nth-child(n + 3) {
+  border-bottom: 0;
+}
+.quick-actions button:hover {
+  background: #faf8fe;
+  color: #4d2887;
+}
+.quick-actions button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 3px solid rgba(139, 47, 224, 0.24);
+  outline-offset: -3px;
 }
 .activity-list {
   margin-top: 14px;
@@ -438,18 +458,47 @@ body:has(.novu-app) {
 .summary-list {
   max-width: 980px;
 }
-.copilot-page .coach-title,
-.copilot-page .chat,
-.copilot-page .quick-answers,
-.copilot-page .chat-input {
-  max-width: 980px;
+.app-workspace:has(.copilot-page) {
+  height: calc(100dvh - var(--topbar-height));
+  min-height: 0;
+  overflow: hidden;
 }
-.chat {
-  min-height: 360px;
-  padding: 24px;
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  background: #fff;
+.route-frame:has(.copilot-page) {
+  height: 100%;
+  min-height: 0;
+}
+.copilot-page {
+  height: 100%;
+  min-height: 0;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.copilot-page > .app-header {
+  min-height: 44px;
+  margin-bottom: 14px;
+}
+.copilot-page > .app-header h1 {
+  font-size: 25px;
+}
+.copilot-workspace {
+  width: min(1040px, 100%);
+  min-height: 0;
+  margin: 0 auto;
+}
+.copilot-workspace .coach-title {
+  padding: 0 4px 15px;
+}
+.copilot-workspace .chat {
+  padding: 20px 4px;
+}
+.copilot-composer {
+  padding: 14px 4px 0;
+  background: var(--web-bg);
+}
+.copilot-composer .chat-input {
+  box-shadow: 0 10px 30px rgba(42, 29, 78, 0.07);
 }
 
 /* Persistent desktop navigation */
@@ -491,7 +540,6 @@ body:has(.novu-app) {
   flex: 0 0 42px;
   width: 42px;
   height: 42px;
-  border-radius: 13px;
 }
 .sidebar-brand-copy {
   display: grid;
@@ -624,17 +672,24 @@ body:has(.novu-app) {
   height: 36px;
 }
 
-.web-sidebar.collapsed .sidebar-brand-copy,
-.web-sidebar.collapsed .sidebar-section > p,
 .web-sidebar.collapsed .sidebar-section button span,
 .web-sidebar.collapsed .sidebar-account > span:nth-child(2),
 .web-sidebar.collapsed .sidebar-account > svg,
 .web-sidebar.collapsed .sidebar-exit span {
-  opacity: 0;
+  display: none;
   pointer-events: none;
 }
 .web-sidebar.collapsed .sidebar-brand-copy {
   display: none;
+}
+.web-sidebar.collapsed .sidebar-section {
+  margin-bottom: 0;
+}
+.web-sidebar.collapsed .sidebar-section > p {
+  display: none;
+}
+.web-sidebar.collapsed .sidebar-links {
+  padding-top: 8px;
 }
 .web-sidebar.collapsed .sidebar-brand {
   padding-inline: 7px;
@@ -732,6 +787,24 @@ body:has(.novu-app) {
 }
 .focus-shell .wizard-page {
   width: min(980px, 100%);
+}
+.goal-create-page {
+  width: min(980px, 100%);
+}
+.goal-create-page .wizard-progress,
+.goal-create-page > h2,
+.goal-create-page > .app-subtitle {
+  max-width: 760px;
+}
+.goal-create-page .option-grid {
+  max-width: 760px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.goal-create-page > .app-primary,
+.goal-create-page > .app-text-button,
+.goal-create-page .plan-ready {
+  width: min(520px, 100%);
+  margin-left: 0;
 }
 .focus-shell .wizard-page .option-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -851,17 +924,30 @@ body:has(.novu-app) {
   .web-sidebar.open {
     transform: translateX(0);
   }
-  .web-sidebar.collapsed .sidebar-brand-copy,
-  .web-sidebar.collapsed .sidebar-section > p,
   .web-sidebar.collapsed .sidebar-section button span,
-  .web-sidebar.collapsed .sidebar-account > span:nth-child(2),
-  .web-sidebar.collapsed .sidebar-account > svg,
   .web-sidebar.collapsed .sidebar-exit span {
-    opacity: 1;
+    display: inline;
     pointer-events: auto;
   }
   .web-sidebar.collapsed .sidebar-brand-copy {
     display: grid;
+  }
+  .web-sidebar.collapsed .sidebar-account > span:nth-child(2) {
+    display: grid;
+    pointer-events: auto;
+  }
+  .web-sidebar.collapsed .sidebar-account > svg {
+    display: block;
+    pointer-events: auto;
+  }
+  .web-sidebar.collapsed .sidebar-section {
+    margin-bottom: 20px;
+  }
+  .web-sidebar.collapsed .sidebar-section > p {
+    display: block;
+  }
+  .web-sidebar.collapsed .sidebar-links {
+    padding-top: 18px;
   }
   .web-sidebar.collapsed .sidebar-brand .app-logo {
     display: grid;
@@ -927,6 +1013,33 @@ body:has(.novu-app) {
   .app-page {
     padding: 25px 18px 52px;
   }
+  .copilot-page {
+    padding: 14px 16px 12px;
+  }
+  .copilot-page > .app-header {
+    margin-bottom: 10px;
+  }
+  .copilot-page > .app-header h1 {
+    font-size: 22px;
+  }
+  .copilot-workspace .coach-title {
+    padding-bottom: 11px;
+  }
+  .coach-title > span:last-child {
+    display: none;
+  }
+  .copilot-workspace .chat {
+    padding-block: 14px;
+  }
+  .chat-message {
+    width: 94%;
+  }
+  .copilot-composer {
+    padding-top: 10px;
+  }
+  .quick-answers button {
+    min-height: 40px;
+  }
   .app-header {
     margin-bottom: 24px;
   }
@@ -940,8 +1053,15 @@ body:has(.novu-app) {
     min-height: 168px;
     padding: 26px 24px;
   }
-  .quick-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+  .quick-actions button:nth-child(n) {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .quick-actions button:last-child {
+    border-bottom: 0;
   }
   .action-list {
     grid-template-columns: 1fr;
@@ -956,6 +1076,9 @@ body:has(.novu-app) {
     display: inline-flex;
   }
   .focus-shell .wizard-page .option-grid {
+    grid-template-columns: 1fr;
+  }
+  .goal-create-page .option-grid {
     grid-template-columns: 1fr;
   }
   .capture-page:not(.review-page):not(.biometric-page) {
@@ -1036,7 +1159,7 @@ body:has(.novu-app) {
   .route-frame,
   .app-toast,
   .app-primary,
-  .quick-grid button,
+  .quick-actions button,
   .action-list button {
     animation: none !important;
     transition: none !important;

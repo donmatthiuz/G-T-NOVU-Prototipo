@@ -61,14 +61,14 @@ import {
 
 const wizard = [
   {
-    title: "Elegí tu meta",
-    text: "¿Qué querés lograr primero?",
+    title: "¿Qué querés lograr?",
+    text: "Elegí el objetivo que más se adapta a vos hoy.",
     options: [
-      "Viaje",
-      "Estudios",
-      "Emprendimiento",
-      "Hogar",
-      "Emergencias",
+      "Comprar una moto",
+      "Continuar mis estudios",
+      "Emprender un negocio",
+      "Mejorar mi vivienda",
+      "Fondo de emergencia",
       "Otra meta",
     ],
   },
@@ -110,11 +110,27 @@ type NavNotifyProps = NavProps & { notify: Notify };
 type SharedType = "group" | "family";
 type Complete = () => void;
 
-function Logo() {
+function Logo({ wordmark = false }: { wordmark?: boolean }) {
   return (
-    <span className="app-logo">
-      <Image src="/novu_templates/logo.jpg" alt="NOVU" width={42} height={42} />
-    </span>
+    <>
+      <span className="app-logo">
+        <Image
+          src="/brand/novu-mark-transparent.png"
+          alt="NOVU"
+          width={114}
+          height={104}
+        />
+      </span>
+      {wordmark && (
+        <Image
+          className="app-wordmark"
+          src="/brand/novu-wordmark.png"
+          alt=""
+          width={137}
+          height={26}
+        />
+      )}
+    </>
   );
 }
 
@@ -175,7 +191,7 @@ function Welcome({ go }: NavProps) {
   return (
     <div className="entry-screen">
       <div className="entry-content">
-        <Logo />
+        <Logo wordmark />
         <span className="entry-line"></span>
         <h1>
           Tu futuro empieza con <i>un paso.</i>
@@ -229,7 +245,7 @@ function Login({
         <button className="entry-back" onClick={() => go("welcome")}>
           <ArrowLeft size={20} /> Volver
         </button>
-        <Logo />
+        <Logo wordmark />
         <h1>Qué bueno verte de nuevo.</h1>
         <p>Ingresá para seguir construyendo tu futuro.</p>
         <label>
@@ -337,27 +353,46 @@ function BiometricScan({
   );
 }
 
-function Wizard({ go, notify }: NavNotifyProps) {
+function Wizard({
+  go,
+  notify,
+  newGoal = false,
+}: NavNotifyProps & { newGoal?: boolean }) {
   const [step, setStep] = useState(0);
   const [choice, setChoice] = useState<string[]>([]);
+  const [goalName, setGoalName] = useState("Viaje a Antigua");
   const item = wizard[step];
-  const toggle = (value: string) =>
-    setChoice((old) =>
-      old.includes(value) ? old.filter((x) => x !== value) : [...old, value],
-    );
+  const toggle = (value: string) => {
+    if (step === 0) setGoalName(value);
+    setChoice((old) => {
+      if (step !== 1) return [value];
+      return old.includes(value)
+        ? old.filter((item) => item !== value)
+        : [...old, value];
+    });
+  };
   const next = () => {
     if (step === wizard.length - 1) {
-      go("kyc");
+      if (newGoal) {
+        notify(`Nueva meta “${goalName}” creada en este demo.`);
+        go("metas");
+      } else {
+        go("kyc");
+      }
       return;
     }
     setStep(step + 1);
     setChoice([]);
   };
   return (
-    <div className="app-page wizard-page">
+    <div className={`app-page wizard-page ${newGoal ? "goal-create-page" : ""}`}>
       <AppHeader
-        title=""
-        onBack={step ? () => setStep(step - 1) : () => go("welcome")}
+        title={newGoal ? "Nueva meta personal" : ""}
+        onBack={
+          step
+            ? () => setStep(step - 1)
+            : () => go(newGoal ? "metas" : "welcome")
+        }
       />
       <div className="wizard-progress">
         {wizard.map((_, index) => (
@@ -386,7 +421,7 @@ function Wizard({ go, notify }: NavNotifyProps) {
         <div className="plan-ready">
           <Sparkles />
           <strong>Plan personal</strong>
-          <h3>Viaje a Antigua</h3>
+          <h3>{goalName}</h3>
           <p>Q 180 cada semana · 7 meses</p>
           <Progress />
           <small>Vas a llegar en marzo de 2027</small>
@@ -396,7 +431,11 @@ function Wizard({ go, notify }: NavNotifyProps) {
         disabled={Boolean(item.options.length && !choice.length)}
         onClick={next}
       >
-        {step === wizard.length - 1 ? "Verificar mi cuenta" : "Continuar"}
+        {step === wizard.length - 1
+          ? newGoal
+            ? "Crear meta personal"
+            : "Verificar mi cuenta"
+          : "Continuar"}
       </Primary>
       <button
         className="app-text-button"
@@ -891,21 +930,41 @@ function Dashboard({ go, notify }: NavNotifyProps) {
       </button>
       <section>
         <div className="section-row">
-          <h2>¿Qué querés hacer?</h2>
+          <h2>Accesos rápidos</h2>
           <button onClick={() => go("menu")}>Ver todo</button>
         </div>
-        <div className="quick-grid">
-          <button onClick={() => go("group")}>
-            <UsersRound /> Reto grupal
+        <div className="quick-actions" aria-label="Accesos rápidos">
+          <button onClick={() => go("personal-create")}>
+            <span className="quick-action-icon"><Target /></span>
+            <span>
+              <b>Nueva meta personal</b>
+              <small>Creá un plan de ahorro para vos</small>
+            </span>
+            <ChevronRight aria-hidden="true" />
           </button>
-          <button onClick={() => go("family")}>
-            <Heart /> Fondo familiar
+          <button onClick={() => go("group-create")}>
+            <span className="quick-action-icon"><UsersRound /></span>
+            <span>
+              <b>Nuevo reto grupal</b>
+              <small>Compartí una meta con otras personas</small>
+            </span>
+            <ChevronRight aria-hidden="true" />
+          </button>
+          <button onClick={() => go("family-create")}>
+            <span className="quick-action-icon"><Heart /></span>
+            <span>
+              <b>Nuevo fondo grupal</b>
+              <small>Definí aportes, permisos y administración</small>
+            </span>
+            <ChevronRight aria-hidden="true" />
           </button>
           <button onClick={() => go("copiloto")}>
-            <Bot /> Preguntar a NOVU
-          </button>
-          <button onClick={() => go("opportunities")}>
-            <Award /> Oportunidades
+            <span className="quick-action-icon"><Bot /></span>
+            <span>
+              <b>Consultar a NOVU</b>
+              <small>Recibí orientación sobre tu plan</small>
+            </span>
+            <ChevronRight aria-hidden="true" />
           </button>
         </div>
       </section>
@@ -969,6 +1028,14 @@ function Goals({ go, notify }: NavNotifyProps) {
         </div>
       </div>
       <section className="action-list">
+        <button onClick={() => go("personal-create")}>
+          <CirclePlus />
+          <span>
+            <b>Crear nueva meta</b>
+            <small>Definí otro objetivo y recibí un plan</small>
+          </span>
+          <ChevronRight />
+        </button>
         <button onClick={() => go("personal-withdraw")}>
           <HandCoins />
           <span>
@@ -999,58 +1066,96 @@ function Copilot({ go, notify }: NavNotifyProps) {
       text: "¡Hola, Diego! Esta semana vas muy bien. ¿Querés ver cómo adelantar tu viaje a Antigua?",
     },
   ]);
+  const [draft, setDraft] = useState("");
+  const chatRef = useRef<HTMLDivElement>(null);
   const answers = [
     "¿Cómo voy?",
     "Quiero ahorrar más",
     "¿Puedo cambiar mi meta?",
   ];
   const reply = (text: string) => {
-    setMessages([
-      ...messages,
-      { from: "me", text },
+    const cleanText = text.trim();
+    if (!cleanText) return;
+    setMessages((current) => [
+      ...current,
+      { from: "me", text: cleanText },
       {
         from: "bot",
-        text: text.includes("más")
+        text: cleanText.includes("más")
           ? "Podrías subir tu aporte a Q 220 por semana y llegarías un mes antes."
-          : text.includes("cambiar")
+          : cleanText.includes("cambiar")
             ? "Sí. Desde Metas podés ajustar tu objetivo y NOVU recalcula el plan."
             : "Llevás 62% de tu meta y una racha de 4 semanas. ¡Excelente avance!",
       },
     ]);
+    setDraft("");
     notify("Respuesta predeterminada de NOVU mostrada.");
   };
+  useEffect(() => {
+    const chat = chatRef.current;
+    if (!chat) return;
+    chat.scrollTo({
+      top: chat.scrollHeight,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
+    });
+  }, [messages]);
   return (
     <div className="app-page copilot-page">
       <AppHeader title="Copiloto NOVU" onBack={() => go("home")} />
-      <div className="coach-title">
-        <span>
+      <section className="copilot-workspace" aria-label="Conversación con NOVU">
+        <header className="coach-title">
           <Logo />
-        </span>
-        <div>
-          <b>Tu coach NOVU</b>
-          <small>En línea</small>
+          <div>
+            <b>Asistente financiero NOVU</b>
+            <small><i aria-hidden="true" /> Disponible para orientarte</small>
+          </div>
+          <span>Tu información permanece en este demo</span>
+        </header>
+        <div className="chat" ref={chatRef} role="log" aria-live="polite">
+          {messages.map((message, index) => (
+            <article key={`${message.from}-${index}`} className={`chat-message ${message.from}`}>
+              {message.from === "bot" && <Logo />}
+              <div>
+                <span>{message.from === "bot" ? "NOVU" : "Vos"}</span>
+                <p>{message.text}</p>
+              </div>
+            </article>
+          ))}
         </div>
-      </div>
-      <div className="chat">
-        {messages.map((message, index) => (
-          <p key={index} className={message.from}>
-            {message.text}
-          </p>
-        ))}
-      </div>
-      <div className="quick-answers">
-        {answers.map((answer) => (
-          <button key={answer} onClick={() => reply(answer)}>
-            {answer}
-          </button>
-        ))}
-      </div>
-      <button
-        className="chat-input"
-        onClick={() => reply("Quiero revisar mi plan")}
-      >
-        Escribí un mensaje <Send size={18} />
-      </button>
+        <div className="copilot-composer">
+          <div className="quick-answers" aria-label="Preguntas sugeridas">
+            {answers.map((answer) => (
+              <button type="button" key={answer} onClick={() => reply(answer)}>
+                {answer}
+              </button>
+            ))}
+          </div>
+          <form
+            className="chat-input"
+            onSubmit={(event) => {
+              event.preventDefault();
+              reply(draft);
+            }}
+          >
+            <label htmlFor="copilot-message" className="sr-only">
+              Escribí un mensaje para NOVU
+            </label>
+            <input
+              id="copilot-message"
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              placeholder="Escribí tu consulta"
+              autoComplete="off"
+            />
+            <button type="submit" disabled={!draft.trim()} aria-label="Enviar mensaje">
+              <Send size={18} aria-hidden="true" />
+            </button>
+          </form>
+          <small>NOVU puede equivocarse. Revisá la información antes de tomar decisiones.</small>
+        </div>
+      </section>
     </div>
   );
 }
@@ -1215,6 +1320,7 @@ function PersonalWithdraw({ go, notify }: NavNotifyProps) {
 function FormScreen({
   title,
   subtitle,
+  stepLabel,
   back,
   go,
   notify,
@@ -1224,6 +1330,7 @@ function FormScreen({
 }: NavNotifyProps & {
   title: string;
   subtitle: string;
+  stepLabel?: string;
   back: string;
   next: string;
   action: string;
@@ -1232,6 +1339,7 @@ function FormScreen({
   return (
     <div className="app-page">
       <AppHeader title={title} onBack={() => go(back)} />
+      {stepLabel && <p className="overline form-step">{stepLabel}</p>}
       <p className="app-subtitle form-subtitle">{subtitle}</p>
       <div className="web-form">{children}</div>
       <Primary
@@ -1251,6 +1359,7 @@ function GroupCreate({ go, notify }: NavNotifyProps) {
     <FormScreen
       title="Crear reto grupal"
       subtitle="Definí una meta compartida. Cada integrante conserva su propia cuenta."
+      stepLabel="Paso 1 de 3"
       back="group"
       go={go}
       notify={notify}
@@ -1289,6 +1398,7 @@ function SummaryScreen({ type, go }: NavProps & { type: SharedType }) {
         title={group ? "Resumen del reto" : "Resumen del fondo"}
         onBack={() => go(group ? "group-create" : "family-create")}
       />
+      <p className="overline form-step">Paso 2 de 3</p>
       <div className={`summary-hero ${group ? "group" : "family"}`}>
         {group ? <UsersRound /> : <Heart />}
         <span>{group ? "Reto colaborativo" : "Fondo familiar"}</span>
@@ -1332,6 +1442,7 @@ function InviteScreen({
         title={group ? "Invitar al reto" : "Invitar al fondo"}
         onBack={() => go(group ? "group-summary" : "family-summary")}
       />
+      <p className="overline form-step">Paso 3 de 3</p>
       <div className="invite-hero">
         <UsersRound />
         <h2>Invitá a quienes querés sumar</h2>
@@ -1471,8 +1582,9 @@ function HistoryScreen({ type, go }: NavProps & { type: SharedType }) {
 function FamilyCreate({ go, notify }: NavNotifyProps) {
   return (
     <FormScreen
-      title="Crear fondo familiar"
+      title="Crear fondo grupal"
       subtitle="Definí reglas claras para aportar y decidir juntos."
+      stepLabel="Paso 1 de 3"
       back="family"
       go={go}
       notify={notify}
@@ -1758,6 +1870,7 @@ const pageLabels: Record<string, string> = {
   home: "Resumen",
   inicio: "Resumen",
   metas: "Mis metas",
+  "personal-create": "Nueva meta personal",
   copiloto: "Copiloto NOVU",
   ritmo: "Mi ritmo",
   opportunities: "Oportunidades",
@@ -1769,7 +1882,7 @@ const pageLabels: Record<string, string> = {
   "group-withdraw": "Retirar del reto",
   "group-history": "Historial del reto",
   family: "Fondo familiar",
-  "family-create": "Crear fondo familiar",
+  "family-create": "Crear fondo grupal",
   "family-summary": "Resumen del fondo",
   "family-invite": "Invitar al fondo",
   "family-contribute": "Aportar al fondo",
@@ -1805,7 +1918,9 @@ function AppNav({
       ? ["home", "inicio"].includes(page)
       : id === "group" || id === "family"
         ? page.startsWith(id)
-        : page === id;
+        : id === "metas"
+          ? page === "metas" || page.startsWith("personal-")
+          : page === id;
 
   return (
     <aside
@@ -2100,6 +2215,7 @@ export default function NovuApp({ exit }: { exit: () => void }) {
     home: <Dashboard go={go} notify={notify} />,
     inicio: <Dashboard go={go} notify={notify} />,
     metas: <Goals go={go} notify={notify} />,
+    "personal-create": <Wizard go={go} notify={notify} newGoal />,
     "personal-withdraw": <PersonalWithdraw go={go} notify={notify} />,
     copiloto: <Copilot go={go} notify={notify} />,
     ritmo: <Rhythm go={go} />,

@@ -132,10 +132,10 @@ function Brand({ compact = false }) {
     <a className="brand" href="#inicio" aria-label="NOVU, ir al inicio">
       <span className="brand-mark">
         <Image
-          src="/novu_templates/logo.jpg"
+          src="/brand/novu-mark-transparent.png"
           alt="Logo NOVU"
-          width={38}
-          height={38}
+          width={114}
+          height={104}
         />
       </span>
       {!compact && <span className="brand-name">NOVU</span>}
