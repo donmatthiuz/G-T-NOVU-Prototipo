@@ -21,12 +21,14 @@ import {
   Flag,
   Heart,
   Landmark,
+  Menu,
   ShieldCheck,
   Sparkles,
   Target,
   TrendingUp,
   UserRoundCheck,
   UsersRound,
+  X,
 } from "lucide-react";
 
 const flows = {
@@ -319,6 +321,7 @@ function LandingPage() {
     getServerView,
   );
   const [viewOverride, setViewOverride] = useState<AppView | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const view = viewOverride ?? urlView;
 
   if (view === "app") {
@@ -326,16 +329,84 @@ function LandingPage() {
   }
   return (
     <>
-      <header className="nav" id="inicio">
-        <Brand />
-        <nav aria-label="Navegación principal">
-          <a href="#como-funciona">Cómo funciona</a>
-          <a href="#flujos">Flujos</a>
-          <a href="#seguridad">Seguridad</a>
-        </nav>
-        <a className="nav-cta" href="#flujos">
-          Conocé NOVU <ArrowUpRight size={16} aria-hidden="true" />
-        </a>
+      <header className="site-header" id="inicio">
+        <div className="nav">
+          <div className="nav-brand-group">
+            <Brand />
+            <span className="nav-brand-divider" aria-hidden="true" />
+            <span className="nav-brand-context">
+              <strong>Tu futuro, en movimiento</strong>
+              <small>Planificación financiera simple</small>
+            </span>
+          </div>
+
+          <nav className="nav-links" aria-label="Navegación principal">
+            <a href="#como-funciona">
+              <span aria-hidden="true">01</span>
+              Cómo funciona
+            </a>
+            <a href="#flujos">
+              <span aria-hidden="true">02</span>
+              Flujos
+            </a>
+            <a href="#seguridad">
+              <span aria-hidden="true">03</span>
+              Seguridad
+            </a>
+          </nav>
+
+          <div className="nav-actions">
+            <a className="nav-cta" href="#flujos">
+              Explorar NOVU
+              <span className="nav-cta-icon">
+                <ArrowUpRight size={17} aria-hidden="true" />
+              </span>
+            </a>
+            <button
+              className="nav-menu-toggle"
+              type="button"
+              aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-navigation"
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              {menuOpen ? (
+                <X size={22} aria-hidden="true" />
+              ) : (
+                <Menu size={22} aria-hidden="true" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {menuOpen && (
+          <nav
+            className="mobile-navigation"
+            id="mobile-navigation"
+            aria-label="Navegación principal móvil"
+          >
+            <a href="#como-funciona" onClick={() => setMenuOpen(false)}>
+              <span aria-hidden="true">01</span>
+              Cómo funciona
+            </a>
+            <a href="#flujos" onClick={() => setMenuOpen(false)}>
+              <span aria-hidden="true">02</span>
+              Flujos
+            </a>
+            <a href="#seguridad" onClick={() => setMenuOpen(false)}>
+              <span aria-hidden="true">03</span>
+              Seguridad
+            </a>
+            <a
+              className="mobile-navigation-cta"
+              href="#flujos"
+              onClick={() => setMenuOpen(false)}
+            >
+              Explorar NOVU
+              <ArrowUpRight size={18} aria-hidden="true" />
+            </a>
+          </nav>
+        )}
       </header>
       <main id="contenido">
         <section className="hero">
