@@ -104,6 +104,7 @@ export function createFetchTransport({
 
 export function createRegistrationFormData({
   contact,
+  savingsCapacity,
   media,
 }: RegistrationSubmission): FormData {
   const form = new FormData();
@@ -115,6 +116,7 @@ export function createRegistrationFormData({
       password: contact.password,
     }),
   );
+  form.append("savings_capacity", JSON.stringify(savingsCapacity));
   Object.entries(media).forEach(([slot, file]) => {
     if (file) form.append(slot, file, file.name);
   });

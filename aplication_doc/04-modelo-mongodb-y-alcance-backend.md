@@ -61,6 +61,37 @@ Esta revisión incorpora los recorridos nuevos del prototipo:
 
 `primary_goal_id` sólo controla la presentación. El servicio debe comprobar que la meta pertenece al usuario y está visible; si no, selecciona la meta activa actualizada más recientemente.
 
+### `savings_profiles`
+
+Guarda la capacidad declarada durante el registro separada del documento de identidad. El formulario es condicional y no solicita el mismo conjunto de campos para todos.
+
+```json
+{
+  "_id": "ObjectId",
+  "user_id": "ObjectId",
+  "income_pattern": "fixed | variable | mixed",
+  "fixed_monthly_income_minor": "int|null",
+  "variable_income_frequency": "weekly | biweekly | irregular | null",
+  "safe_monthly_savings_minor": 25000,
+  "currency": "GTQ",
+  "answers_version": 1,
+  "created_at": "Date",
+  "updated_at": "Date"
+}
+```
+
+Índice único `{user_id: 1}`.
+
+Validación condicional:
+
+- `fixed`: exige `fixed_monthly_income_minor` y no guarda frecuencia variable;
+- `variable`: exige `variable_income_frequency` y **no solicita ni guarda ingreso mensual**;
+- `mixed`: exige ingreso fijo mensual y frecuencia del componente variable;
+- los tres recorridos exigen `safe_monthly_savings_minor`;
+- montos mayores que cero, en centavos y dentro de límites razonables definidos por producto.
+
+Este perfil es información financiera sensible. Sólo los servicios de planificación autorizados deben leerlo y cada actualización debe generar auditoría.
+
 ### `auth_sessions`
 
 ```json
@@ -408,6 +439,7 @@ Registro inmutable con actor, acción, entidad, resultado, request/correlation I
 ```text
 users ──< auth_sessions
   │
+  ├── savings_profiles
   ├──< kyc_cases ──< media_assets
   ├──< goals ──< contributions
   ├──< memberships >── shared_plans ──< plan_invitations
@@ -480,7 +512,7 @@ Base: `/v1`. Respuestas de error con `{ "code": "...", "detail": "...", "request
 
 ### Autenticación y KYC
 
-- `POST /auth/register` — multipart actual; crea usuario, caso KYC y cuatro assets.
+- `POST /auth/register` — multipart con `contact`, `savings_capacity` y cuatro assets; crea usuario, perfil de ahorro y caso KYC.
 - `POST /auth/login`, `POST /auth/refresh` y `POST /auth/logout`.
 - `GET /me`, `GET /kyc` y `POST /kyc/submit`.
 
@@ -528,7 +560,7 @@ La validación de MongoDB complementa, pero no sustituye, los modelos Pydantic n
 ## Reglas transaccionales
 
 - MongoDB debe ejecutarse como replica set incluso en desarrollo; standalone no soporta transacciones multidocumento.
-- Registro: usuario, caso KYC y metadatos de assets se confirman juntos; un fallo elimina objetos recién cargados.
+- Registro: usuario, perfil de ahorro, caso KYC y metadatos de assets se confirman juntos; un fallo elimina objetos recién cargados.
 - Crear un plan confirma juntos el plan, la membresía del propietario y el evento de auditoría.
 - Aceptar una invitación confirma juntos su estado, la membresía y `member_count`.
 - Aportes: insertar movimiento y actualizar saldo dentro de una transacción.
@@ -591,7 +623,8 @@ backend/
 ## Criterios de aceptación
 
 - Ningún endpoint devuelve hashes, secretos, rutas internas o metadatos sensibles.
-- Registro multipart funciona sin cambiar los campos actuales.
+- Registro multipart acepta `savings_capacity` con validación distinta para ingresos fijos, variables o mixtos.
+- El recorrido variable nunca exige ni persiste un ingreso mensual estimado.
 - Sesión sobrevive recarga, expira y se puede revocar.
 - Un usuario crea varias metas, reanuda un borrador y elige una meta principal.
 - Repetir activación o creación con la misma llave no duplica una meta o plan.

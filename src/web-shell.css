@@ -280,7 +280,7 @@ body:has(.novu-app) {
 
 .home-page > .app-header,
 .home-page > .app-subtitle,
-.home-page > .goal-hero {
+.home-page > .plan-overview-card {
   grid-column: 1 / -1;
 }
 .home-page > section {
@@ -289,6 +289,278 @@ body:has(.novu-app) {
 .home-page > section:last-child {
   grid-column: 2;
 }
+
+/* Premium financial overview cards */
+.plan-overview-card {
+  --plan-accent: #d991ff;
+  --plan-glass: rgba(255, 255, 255, 0.1);
+  --plan-border: rgba(255, 255, 255, 0.18);
+  width: 100%;
+  min-height: 318px;
+  padding: 30px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: #fff;
+  text-align: left;
+  border: 1px solid var(--plan-border);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 90% 8%, rgba(255, 255, 255, 0.17), transparent 27%),
+    radial-gradient(circle at 10% 110%, rgba(233, 28, 122, 0.26), transparent 36%),
+    linear-gradient(135deg, #3020a8 0%, #6d2ad1 52%, #c91d79 112%);
+  box-shadow:
+    0 24px 55px rgba(47, 25, 105, 0.23),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  font: inherit;
+}
+.plan-overview-card.group {
+  --plan-accent: #d9b7ff;
+  background:
+    radial-gradient(circle at 92% 4%, rgba(232, 190, 255, 0.2), transparent 28%),
+    radial-gradient(circle at 0% 105%, rgba(79, 117, 255, 0.25), transparent 39%),
+    linear-gradient(140deg, #24115f 0%, #6030c4 55%, #a12eae 116%);
+  box-shadow:
+    0 24px 55px rgba(47, 25, 105, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+.plan-overview-card.family {
+  --plan-accent: #ffc1d9;
+  background:
+    radial-gradient(circle at 88% 4%, rgba(255, 205, 229, 0.2), transparent 29%),
+    radial-gradient(circle at 3% 108%, rgba(154, 71, 205, 0.3), transparent 40%),
+    linear-gradient(140deg, #49164e 0%, #9d2675 54%, #df3f78 116%);
+  box-shadow:
+    0 24px 55px rgba(111, 28, 84, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+.plan-overview-card::before {
+  content: "";
+  width: 230px;
+  height: 230px;
+  position: absolute;
+  z-index: -1;
+  top: -112px;
+  right: -64px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 36px rgba(255, 255, 255, 0.045),
+    0 0 0 72px rgba(255, 255, 255, 0.025);
+}
+.plan-overview-card::after {
+  content: "";
+  width: 180px;
+  height: 80px;
+  position: absolute;
+  z-index: -1;
+  right: 18%;
+  bottom: -58px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  filter: blur(30px);
+}
+button.plan-overview-card {
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+button.plan-overview-card:hover {
+  transform: translateY(-2px);
+  filter: saturate(1.06);
+  box-shadow:
+    0 30px 65px rgba(47, 25, 105, 0.29),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.plan-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+.plan-card-icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+}
+.plan-card-identity {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.plan-card-identity > small {
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.plan-card-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+.plan-card-status i {
+  width: 7px;
+  height: 7px;
+  display: block;
+  background: #8df0b1;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(79, 220, 134, 0.12);
+}
+.plan-card-percentage {
+  min-width: 62px;
+  min-height: 44px;
+  margin-left: auto;
+  padding: 0 12px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(14, 11, 34, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+  backdrop-filter: blur(10px);
+}
+.plan-card-heading {
+  margin: 24px 0 20px;
+  position: relative;
+  z-index: 1;
+}
+.plan-card-heading h2 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(25px, 2.5vw, 34px);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+.plan-card-heading p {
+  margin: 7px 0 0;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.plan-card-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  background: var(--plan-glass);
+  border: 1px solid var(--plan-border);
+  border-radius: 17px;
+  backdrop-filter: blur(13px);
+}
+.plan-card-metrics > div {
+  min-width: 0;
+  padding: 13px 15px;
+  display: grid;
+  gap: 3px;
+  border-right: 1px solid rgba(255, 255, 255, 0.13);
+}
+.plan-card-metrics > div:last-child {
+  border-right: 0;
+}
+.plan-card-metrics span {
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 9px;
+  font-weight: 500;
+}
+.plan-card-metrics strong {
+  overflow: hidden;
+  color: #fff;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.plan-card-progress {
+  margin-top: 17px;
+  position: relative;
+  z-index: 1;
+}
+.plan-card-progress > div:first-child {
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 9px;
+}
+.plan-card-progress b {
+  color: #fff;
+  font-weight: 600;
+}
+.plan-card-progress .app-progress {
+  height: 7px;
+  background: rgba(14, 11, 34, 0.25);
+  box-shadow: inset 0 1px 2px rgba(14, 11, 34, 0.18);
+}
+.plan-card-progress .app-progress span {
+  background: #fff;
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.36);
+}
+.plan-card-members {
+  margin-top: 18px;
+  padding-top: 16px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+.plan-card-members > div {
+  display: flex;
+  padding-left: 7px;
+}
+.plan-card-members > div > span {
+  width: 31px;
+  height: 31px;
+  margin-left: -7px;
+  display: grid;
+  place-items: center;
+  color: #43236b;
+  background: #f8ecff;
+  border: 2px solid rgba(80, 31, 126, 0.72);
+  border-radius: 50%;
+  font-size: 8px;
+  font-weight: 800;
+}
+.plan-card-members p {
+  margin: 0 0 0 11px;
+  display: grid;
+}
+.plan-card-members b {
+  color: #fff;
+  font-size: 10px;
+}
+.plan-card-members small {
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 9px;
+}
+.plan-overview-card.tall {
+  margin-bottom: 18px;
+}
+.plan-overview-card.summary-card {
+  max-width: 980px;
+}
+
 .goal-hero {
   min-height: 190px;
   padding: 34px 38px;
@@ -384,26 +656,22 @@ body:has(.novu-app) {
   transform: translateY(-1px);
 }
 
-.app-page:has(.shared-hero) {
+.app-page:has(.plan-overview-card.shared) {
   display: grid;
   grid-template-columns: minmax(340px, 0.82fr) minmax(420px, 1.18fr);
   gap: 22px 28px;
   align-content: start;
 }
-.app-page:has(.shared-hero) > .app-header {
+.app-page:has(.plan-overview-card.shared) > .app-header {
   grid-column: 1 / -1;
 }
-.app-page:has(.shared-hero) > .shared-hero {
+.app-page:has(.plan-overview-card.shared) > .plan-overview-card.shared {
   grid-column: 1;
   grid-row: 2 / span 2;
-  min-height: 330px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 36px;
+  min-height: 390px;
 }
-.app-page:has(.shared-hero) > .member-list,
-.app-page:has(.shared-hero) > .vote-card {
+.app-page:has(.plan-overview-card.shared) > .member-list,
+.app-page:has(.plan-overview-card.shared) > .vote-card {
   grid-column: 2;
   margin: 0;
   background: #fff;
@@ -411,7 +679,7 @@ body:has(.novu-app) {
   border: 1px solid var(--border);
   border-radius: 22px;
 }
-.app-page:has(.shared-hero) > .action-list {
+.app-page:has(.plan-overview-card.shared) > .action-list {
   grid-column: 1 / -1;
 }
 
@@ -818,6 +1086,270 @@ body:has(.novu-app) {
   width: min(1100px, 100%);
 }
 
+.capacity-page {
+  min-height: calc(100dvh - 64px);
+}
+.capacity-page > .app-header {
+  margin-bottom: 24px;
+}
+.capacity-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.78fr) minmax(480px, 1.22fr);
+  gap: clamp(34px, 6vw, 90px);
+  align-items: start;
+}
+.capacity-intro {
+  padding-top: 30px;
+}
+.capacity-intro-icon {
+  width: 52px;
+  height: 52px;
+  margin-bottom: 22px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--gradient);
+  border-radius: 16px;
+  box-shadow: 0 14px 28px rgba(111, 42, 205, 0.22);
+}
+.capacity-intro h2 {
+  max-width: 470px;
+  margin: 9px 0 13px;
+  color: var(--ink);
+  font-size: clamp(31px, 3.2vw, 46px);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+.capacity-intro > p:not(.overline) {
+  max-width: 470px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+.capacity-intro > div {
+  max-width: 420px;
+  margin-top: 30px;
+  padding-top: 22px;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  color: #4f3974;
+  border-top: 1px solid var(--border);
+}
+.capacity-intro > div > span {
+  display: grid;
+}
+.capacity-intro > div b {
+  font-size: 11px;
+}
+.capacity-intro > div small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.capacity-form {
+  padding: clamp(24px, 3vw, 36px);
+  background: #fff;
+  border: 1px solid #e2dced;
+  border-radius: 28px;
+  box-shadow: 0 22px 55px rgba(50, 30, 100, 0.09);
+}
+.capacity-form fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.capacity-form legend,
+.capacity-conditional > label {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+.capacity-pattern > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 13px;
+}
+.capacity-pattern button {
+  min-width: 0;
+  min-height: 104px;
+  padding: 14px 13px;
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  color: var(--ink);
+  text-align: left;
+  background: #fbfaff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.capacity-pattern button:hover {
+  border-color: #bfa2e6;
+  background: #faf6ff;
+}
+.capacity-pattern button.selected {
+  background: var(--soft-violet);
+  border-color: var(--violet);
+  box-shadow: 0 0 0 3px rgba(139, 47, 224, 0.09);
+}
+.capacity-pattern button > span {
+  font-size: 13px;
+  font-weight: 700;
+}
+.capacity-pattern button > small {
+  max-width: 16ch;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.4;
+}
+.capacity-pattern button > i {
+  width: 22px;
+  height: 22px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: transparent;
+  border: 1px solid #d7cee8;
+  border-radius: 50%;
+}
+.capacity-pattern button.selected > i {
+  background: var(--violet);
+  border-color: var(--violet);
+}
+.capacity-form .field-error {
+  display: block;
+  margin-top: 6px;
+  color: #b42318;
+  font-size: 10px;
+  font-weight: 600;
+}
+.capacity-conditional {
+  margin-top: 24px;
+  padding: 22px;
+  display: grid;
+  gap: 20px;
+  background: #faf8fe;
+  border: 1px solid #ebe5f4;
+  border-radius: 20px;
+  animation: capacity-fields-in 0.22s ease both;
+}
+@keyframes capacity-fields-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+}
+.capacity-conditional > header {
+  padding-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid #e8e1f2;
+}
+.capacity-conditional > header span {
+  color: var(--violet);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.capacity-conditional > header small {
+  padding: 4px 8px;
+  color: #625a78;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 600;
+}
+.capacity-conditional > label {
+  display: grid;
+  gap: 7px;
+}
+.capacity-conditional > label > small:not(.field-error) {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+.capacity-money-field {
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+}
+.capacity-money-field:focus-within {
+  border-color: var(--violet);
+  box-shadow: 0 0 0 3px rgba(139, 47, 224, 0.1);
+}
+.capacity-money-field > b {
+  height: 26px;
+  display: grid;
+  place-items: center;
+  color: var(--violet);
+  border-right: 1px solid var(--border);
+  font-size: 13px;
+}
+.capacity-money-field input {
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+  padding: 0 13px;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font: inherit;
+  font-size: 14px;
+}
+.capacity-money-field:has(input[aria-invalid="true"]) {
+  border-color: #d92d20;
+}
+.capacity-frequency legend {
+  margin-bottom: 10px;
+}
+.capacity-frequency > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.capacity-frequency button {
+  min-height: 44px;
+  padding: 8px 10px;
+  color: #554f68;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+}
+.capacity-frequency button.selected {
+  color: var(--violet);
+  background: var(--soft-violet);
+  border-color: var(--violet);
+}
+.capacity-form > .app-primary {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 22px;
+}
+
 .capture-page {
   min-height: calc(100dvh - 64px);
   margin: 0;
@@ -895,18 +1427,18 @@ body:has(.novu-app) {
   .home-page > section:last-child {
     grid-column: 1;
   }
-  .app-page:has(.shared-hero) {
+  .app-page:has(.plan-overview-card.shared) {
     grid-template-columns: 1fr;
   }
-  .app-page:has(.shared-hero) > .shared-hero,
-  .app-page:has(.shared-hero) > .member-list,
-  .app-page:has(.shared-hero) > .vote-card,
-  .app-page:has(.shared-hero) > .action-list {
+  .app-page:has(.plan-overview-card.shared) > .plan-overview-card.shared,
+  .app-page:has(.plan-overview-card.shared) > .member-list,
+  .app-page:has(.plan-overview-card.shared) > .vote-card,
+  .app-page:has(.plan-overview-card.shared) > .action-list {
     grid-column: 1;
     grid-row: auto;
   }
-  .app-page:has(.shared-hero) > .shared-hero {
-    min-height: 280px;
+  .app-page:has(.plan-overview-card.shared) > .plan-overview-card.shared {
+    min-height: 340px;
   }
 }
 
@@ -1049,9 +1581,9 @@ body:has(.novu-app) {
   .app-subtitle {
     margin-top: -15px;
   }
-  .goal-hero {
-    min-height: 168px;
-    padding: 26px 24px;
+  .plan-overview-card {
+    min-height: 300px;
+    padding: 25px;
   }
   .quick-actions {
     grid-template-columns: 1fr;
@@ -1080,6 +1612,22 @@ body:has(.novu-app) {
   }
   .goal-create-page .option-grid {
     grid-template-columns: 1fr;
+  }
+  .capacity-layout {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .capacity-intro {
+    padding-top: 0;
+  }
+  .capacity-intro h2 {
+    max-width: 650px;
+  }
+  .capacity-intro > p:not(.overline) {
+    max-width: 650px;
+  }
+  .capacity-intro > div {
+    display: none;
   }
   .capture-page:not(.review-page):not(.biometric-page) {
     display: flex;
@@ -1144,11 +1692,73 @@ body:has(.novu-app) {
     padding: 0;
     justify-content: center;
   }
-  .goal-hero h2 {
-    font-size: 27px;
+  .plan-overview-card {
+    min-height: 0;
+    padding: 20px;
+    border-radius: 23px;
+  }
+  .plan-card-heading {
+    margin-block: 20px 17px;
+  }
+  .plan-card-heading h2 {
+    font-size: 25px;
+  }
+  .plan-card-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+  .plan-card-metrics > div {
+    padding: 12px;
+  }
+  .plan-card-metrics > div:nth-child(2) {
+    border-right: 0;
+  }
+  .plan-card-metrics > div:last-child {
+    grid-column: 1 / -1;
+    border-top: 1px solid rgba(255, 255, 255, 0.13);
+  }
+  .plan-card-members {
+    align-items: flex-start;
+  }
+  .plan-card-percentage {
+    min-width: 56px;
+    padding-inline: 9px;
+    font-size: 17px;
   }
   .review-card {
     padding: 24px;
+  }
+  .capacity-page {
+    padding-inline: 16px;
+  }
+  .capacity-page > .app-header {
+    margin-bottom: 18px;
+  }
+  .capacity-intro-icon {
+    width: 46px;
+    height: 46px;
+    margin-bottom: 16px;
+  }
+  .capacity-intro h2 {
+    font-size: 29px;
+  }
+  .capacity-form {
+    padding: 18px;
+    border-radius: 22px;
+  }
+  .capacity-pattern > div {
+    grid-template-columns: 1fr;
+  }
+  .capacity-pattern button {
+    min-height: 76px;
+  }
+  .capacity-pattern button > small {
+    max-width: none;
+  }
+  .capacity-frequency > div {
+    grid-template-columns: 1fr;
+  }
+  .capacity-conditional {
+    padding: 17px;
   }
 }
 
@@ -1159,6 +1769,9 @@ body:has(.novu-app) {
   .route-frame,
   .app-toast,
   .app-primary,
+  .plan-overview-card,
+  .capacity-pattern button,
+  .capacity-conditional,
   .quick-actions button,
   .action-list button {
     animation: none !important;

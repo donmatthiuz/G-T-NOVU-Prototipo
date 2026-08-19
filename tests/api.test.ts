@@ -32,6 +32,11 @@ describe("capa API local", () => {
         password: "novu2026",
         passwordConfirmation: "novu2026",
       },
+      savingsCapacity: {
+        incomePattern: "variable",
+        variableIncomeFrequency: "irregular",
+        safeMonthlySavingsMinor: 25000,
+      },
       media: {
         selfie: new File(["image"], "selfie.jpg", { type: "image/jpeg" }),
       },
@@ -39,6 +44,7 @@ describe("capa API local", () => {
 
     expect(session.data.accessToken).toMatch(/^demo-/);
     expect(form.get("contact")).toContain("persona@correo.com");
+    expect(form.get("savings_capacity")).toContain('"incomePattern":"variable"');
     expect(form.get("selfie")).toBeInstanceOf(File);
   });
 });

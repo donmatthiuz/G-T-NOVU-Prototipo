@@ -21,8 +21,11 @@ import { SIDEBAR_STORAGE_KEY } from "@/lib/session";
 import type {
   CapturedMedia,
   CaptureSlot,
+  IncomePattern,
   RegistrationContact,
   RegistrationContactErrors,
+  RegistrationSavingsCapacity,
+  VariableIncomeFrequency,
 } from "@/types/novu";
 import {
   ArrowLeft,
@@ -184,6 +187,112 @@ function Progress({ value = 62 }: { value?: number }) {
     <div className="app-progress" aria-label={`${value}% completado`}>
       <span style={{ width: `${value}%` }}></span>
     </div>
+  );
+}
+
+type PlanOverviewCardProps = {
+  variant: "personal" | SharedType;
+  eyebrow: string;
+  title: string;
+  status: string;
+  saved: string;
+  target: string;
+  detailLabel: string;
+  detailValue: string;
+  progress: number;
+  remaining: string;
+  members?: string[];
+  sharedLayout?: boolean;
+  className?: string;
+  onClick?: () => void;
+};
+
+function PlanOverviewCard({
+  variant,
+  eyebrow,
+  title,
+  status,
+  saved,
+  target,
+  detailLabel,
+  detailValue,
+  progress,
+  remaining,
+  members,
+  sharedLayout = false,
+  className = "",
+  onClick,
+}: PlanOverviewCardProps) {
+  const Icon =
+    variant === "personal" ? Target : variant === "group" ? UsersRound : Heart;
+  const content = (
+    <>
+      <header className="plan-card-header">
+        <span className="plan-card-icon">
+          <Icon size={22} aria-hidden="true" />
+        </span>
+        <span className="plan-card-identity">
+          <small>{eyebrow}</small>
+          <span className="plan-card-status">
+            <i aria-hidden="true" />
+            {status}
+          </span>
+        </span>
+        <strong className="plan-card-percentage">{progress}%</strong>
+      </header>
+
+      <div className="plan-card-heading">
+        <h2>{title}</h2>
+        <p>{remaining}</p>
+      </div>
+
+      <div className="plan-card-metrics">
+        <div>
+          <span>Ahorrado</span>
+          <strong>{saved}</strong>
+        </div>
+        <div>
+          <span>Meta total</span>
+          <strong>{target}</strong>
+        </div>
+        <div>
+          <span>{detailLabel}</span>
+          <strong>{detailValue}</strong>
+        </div>
+      </div>
+
+      <div className="plan-card-progress">
+        <div>
+          <span>Progreso total</span>
+          <b>{progress}% completado</b>
+        </div>
+        <Progress value={progress} />
+      </div>
+
+      {members && (
+        <div className="plan-card-members">
+          <div aria-label={`${members.length} integrantes`}>
+            {members.map((member) => (
+              <span key={member}>{member}</span>
+            ))}
+          </div>
+          <p>
+            <b>{members.length} personas</b>
+            <small>aportando a este plan</small>
+          </p>
+        </div>
+      )}
+    </>
+  );
+  const classes =
+    `plan-overview-card ${variant} ${sharedLayout ? "shared" : ""} ${className}`.trim();
+
+  return onClick ? (
+    <button className={classes} type="button" onClick={onClick}>
+      {content}
+    </button>
+  ) : (
+    <article className={classes}>{content}</article>
   );
 }
 
@@ -377,7 +486,7 @@ function Wizard({
         notify(`Nueva meta “${goalName}” creada en este demo.`);
         go("metas");
       } else {
-        go("kyc");
+        go("capacity");
       }
       return;
     }
@@ -447,6 +556,342 @@ function Wizard({
   );
 }
 
+type CapacityDraft = {
+  incomePattern: IncomePattern | null;
+  fixedMonthlyIncome: string;
+  variableIncomeFrequency: VariableIncomeFrequency | null;
+  safeMonthlySavings: string;
+};
+
+function SavingsCapacity({
+  go,
+  value,
+  onComplete,
+}: NavProps & {
+  value: RegistrationSavingsCapacity | null;
+  onComplete: (capacity: RegistrationSavingsCapacity) => void;
+}) {
+  const [draft, setDraft] = useState<CapacityDraft>({
+    incomePattern: value?.incomePattern ?? null,
+    fixedMonthlyIncome: value?.fixedMonthlyIncomeMinor
+      ? String(value.fixedMonthlyIncomeMinor / 100)
+      : "",
+    variableIncomeFrequency: value?.variableIncomeFrequency ?? null,
+    safeMonthlySavings: value?.safeMonthlySavingsMinor
+      ? String(value.safeMonthlySavingsMinor / 100)
+      : "",
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const errorSummaryRef = useRef<HTMLDivElement>(null);
+  const needsFixedIncome =
+    draft.incomePattern === "fixed" || draft.incomePattern === "mixed";
+  const needsVariableFrequency =
+    draft.incomePattern === "variable" || draft.incomePattern === "mixed";
+  const amountToMinor = (amount: string) =>
+    Math.round(Number.parseFloat(amount || "0") * 100);
+  const update = <K extends keyof CapacityDraft>(
+    field: K,
+    nextValue: CapacityDraft[K],
+  ) => {
+    setDraft((current) => ({ ...current, [field]: nextValue }));
+    if (field === "incomePattern") {
+      setErrors({});
+      return;
+    }
+    setErrors((current) => {
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  };
+  const submit = () => {
+    const nextErrors: Record<string, string> = {};
+    if (!draft.incomePattern) {
+      nextErrors.incomePattern = "Elegí cómo recibís tus ingresos.";
+    }
+    if (
+      needsFixedIncome &&
+      (!draft.fixedMonthlyIncome || amountToMinor(draft.fixedMonthlyIncome) <= 0)
+    ) {
+      nextErrors.fixedMonthlyIncome = "Ingresá tu ingreso fijo mensual.";
+    }
+    if (needsVariableFrequency && !draft.variableIncomeFrequency) {
+      nextErrors.variableIncomeFrequency =
+        "Elegí cada cuánto recibís ingresos variables.";
+    }
+    if (
+      !draft.safeMonthlySavings ||
+      amountToMinor(draft.safeMonthlySavings) <= 0
+    ) {
+      nextErrors.safeMonthlySavings =
+        "Indicá un monto de ahorro que sintás sostenible.";
+    }
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      window.requestAnimationFrame(() => errorSummaryRef.current?.focus());
+      return;
+    }
+
+    onComplete({
+      incomePattern: draft.incomePattern as IncomePattern,
+      ...(needsFixedIncome
+        ? {
+            fixedMonthlyIncomeMinor: amountToMinor(
+              draft.fixedMonthlyIncome,
+            ),
+          }
+        : {}),
+      ...(needsVariableFrequency
+        ? {
+            variableIncomeFrequency:
+              draft.variableIncomeFrequency as VariableIncomeFrequency,
+          }
+        : {}),
+      safeMonthlySavingsMinor: amountToMinor(draft.safeMonthlySavings),
+    });
+    go("kyc");
+  };
+
+  const patternOptions: Array<{
+    id: IncomePattern;
+    title: string;
+    description: string;
+  }> = [
+    {
+      id: "fixed",
+      title: "Fijos",
+      description: "Recibís un monto similar cada mes.",
+    },
+    {
+      id: "variable",
+      title: "Variables",
+      description: "El monto y la fecha cambian.",
+    },
+    {
+      id: "mixed",
+      title: "Ambos",
+      description: "Tenés una base fija y entradas variables.",
+    },
+  ];
+  const frequencyOptions: Array<{
+    id: VariableIncomeFrequency;
+    label: string;
+  }> = [
+    { id: "weekly", label: "Cada semana" },
+    { id: "biweekly", label: "Cada 15 días" },
+    { id: "irregular", label: "Sin frecuencia fija" },
+  ];
+
+  return (
+    <div className="app-page capacity-page">
+      <AppHeader title="Capacidad de ahorro" onBack={() => go("wizard")} />
+      <div className="capacity-layout">
+        <section className="capacity-intro" aria-labelledby="capacity-title">
+          <span className="capacity-intro-icon">
+            <HandCoins size={24} aria-hidden="true" />
+          </span>
+          <p className="overline">Tu plan debe sentirse posible</p>
+          <h2 id="capacity-title">Contanos cómo recibís tus ingresos.</h2>
+          <p>
+            Sólo preguntaremos lo necesario para proponerte un ahorro que se
+            adapte a tu realidad.
+          </p>
+          <div>
+            <ShieldCheck size={18} aria-hidden="true" />
+            <span>
+              <b>Información privada</b>
+              <small>No afecta tu verificación ni tu acceso a NOVU.</small>
+            </span>
+          </div>
+        </section>
+
+        <form
+          className="capacity-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            submit();
+          }}
+        >
+          {Object.keys(errors).length > 0 && (
+            <div
+              className="form-error-summary"
+              role="alert"
+              tabIndex={-1}
+              ref={errorSummaryRef}
+            >
+              Revisá los campos marcados antes de continuar.
+            </div>
+          )}
+
+          <fieldset className="capacity-pattern">
+            <legend>¿Cómo son tus ingresos?</legend>
+            <div>
+              {patternOptions.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  className={
+                    draft.incomePattern === option.id ? "selected" : ""
+                  }
+                  aria-pressed={draft.incomePattern === option.id}
+                  onClick={() => update("incomePattern", option.id)}
+                >
+                  <span>{option.title}</span>
+                  <small>{option.description}</small>
+                  <i aria-hidden="true">
+                    {draft.incomePattern === option.id && <Check size={14} />}
+                  </i>
+                </button>
+              ))}
+            </div>
+            {errors.incomePattern && (
+              <small className="field-error">{errors.incomePattern}</small>
+            )}
+          </fieldset>
+
+          {draft.incomePattern && (
+            <div className="capacity-conditional" key={draft.incomePattern}>
+              <header>
+                <span>
+                  {draft.incomePattern === "fixed"
+                    ? "Ingresos fijos"
+                    : draft.incomePattern === "variable"
+                      ? "Ingresos variables"
+                      : "Ingresos combinados"}
+                </span>
+                <small>
+                  {draft.incomePattern === "fixed"
+                    ? "2 respuestas"
+                    : draft.incomePattern === "variable"
+                      ? "2 respuestas"
+                      : "3 respuestas"}
+                </small>
+              </header>
+
+              {needsFixedIncome && (
+                <label htmlFor="capacity-fixed-income">
+                  {draft.incomePattern === "mixed"
+                    ? "¿Cuál es tu ingreso fijo mensual?"
+                    : "¿Cuál es tu ingreso mensual neto?"}
+                  <span className="capacity-money-field">
+                    <b aria-hidden="true">Q</b>
+                    <input
+                      id="capacity-fixed-income"
+                      type="number"
+                      min="1"
+                      inputMode="decimal"
+                      value={draft.fixedMonthlyIncome}
+                      onChange={(event) =>
+                        update("fixedMonthlyIncome", event.target.value)
+                      }
+                      aria-invalid={Boolean(errors.fixedMonthlyIncome)}
+                      aria-describedby={
+                        errors.fixedMonthlyIncome
+                          ? "capacity-fixed-income-error"
+                          : "capacity-fixed-income-help"
+                      }
+                      placeholder="0.00"
+                    />
+                  </span>
+                  <small id="capacity-fixed-income-help">
+                    El monto que recibís regularmente después de descuentos.
+                  </small>
+                  {errors.fixedMonthlyIncome && (
+                    <small
+                      className="field-error"
+                      id="capacity-fixed-income-error"
+                    >
+                      {errors.fixedMonthlyIncome}
+                    </small>
+                  )}
+                </label>
+              )}
+
+              {needsVariableFrequency && (
+                <fieldset className="capacity-frequency">
+                  <legend>¿Cada cuánto recibís ingresos variables?</legend>
+                  <div>
+                    {frequencyOptions.map((option) => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        className={
+                          draft.variableIncomeFrequency === option.id
+                            ? "selected"
+                            : ""
+                        }
+                        aria-pressed={
+                          draft.variableIncomeFrequency === option.id
+                        }
+                        onClick={() =>
+                          update("variableIncomeFrequency", option.id)
+                        }
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                  {errors.variableIncomeFrequency && (
+                    <small className="field-error">
+                      {errors.variableIncomeFrequency}
+                    </small>
+                  )}
+                </fieldset>
+              )}
+
+              <label htmlFor="capacity-safe-savings">
+                {draft.incomePattern === "variable"
+                  ? "En un mes bajo, ¿cuánto podrías separar?"
+                  : "¿Cuánto podrías ahorrar sin complicarte?"}
+                <span className="capacity-money-field">
+                  <b aria-hidden="true">Q</b>
+                  <input
+                    id="capacity-safe-savings"
+                    type="number"
+                    min="1"
+                    inputMode="decimal"
+                    value={draft.safeMonthlySavings}
+                    onChange={(event) =>
+                      update("safeMonthlySavings", event.target.value)
+                    }
+                    aria-invalid={Boolean(errors.safeMonthlySavings)}
+                    aria-describedby={
+                      errors.safeMonthlySavings
+                        ? "capacity-safe-savings-error"
+                        : "capacity-safe-savings-help"
+                    }
+                    placeholder="0.00"
+                  />
+                </span>
+                <small id="capacity-safe-savings-help">
+                  Elegí un monto prudente que también podrías mantener en un
+                  mes difícil.
+                </small>
+                {errors.safeMonthlySavings && (
+                  <small
+                    className="field-error"
+                    id="capacity-safe-savings-error"
+                  >
+                    {errors.safeMonthlySavings}
+                  </small>
+                )}
+              </label>
+            </div>
+          )}
+
+          <button
+            className="app-primary"
+            type="submit"
+            disabled={!draft.incomePattern}
+          >
+            Guardar y continuar <ArrowRight size={18} aria-hidden="true" />
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function Kyc({
   go,
   completed,
@@ -467,7 +912,7 @@ function Kyc({
   ];
   return (
     <div className="app-page">
-      <AppHeader title="Un último paso" onBack={() => go("wizard")} />
+      <AppHeader title="Un último paso" onBack={() => go("capacity")} />
       <div className="kyc-intro">
         <ShieldCheck />
         <h2>Verificá tu identidad</h2>
@@ -916,18 +1361,19 @@ function Dashboard({ go, notify }: NavNotifyProps) {
         }
       />
       <p className="app-subtitle">Hoy es un buen día para avanzar.</p>
-      <button className="goal-hero" onClick={() => go("metas")}>
-        <div>
-          <span>Meta personal</span>
-          <h2>{personalGoal.name}</h2>
-          <p>
-            Q {personalGoal.savedAmount.toLocaleString("es-GT")} de Q{" "}
-            {personalGoal.targetAmount.toLocaleString("es-GT")}
-          </p>
-        </div>
-        <strong>{personalGoal.progress}%</strong>
-        <Progress value={personalGoal.progress} />
-      </button>
+      <PlanOverviewCard
+        variant="personal"
+        eyebrow="Meta personal"
+        title={personalGoal.name}
+        status="En marcha"
+        saved={`Q ${personalGoal.savedAmount.toLocaleString("es-GT")}`}
+        target={`Q ${personalGoal.targetAmount.toLocaleString("es-GT")}`}
+        detailLabel="Próximo aporte"
+        detailValue="Q 180 · viernes"
+        progress={personalGoal.progress}
+        remaining="Te faltan Q 750 para completar esta meta."
+        onClick={() => go("metas")}
+      />
       <section>
         <div className="section-row">
           <h2>Accesos rápidos</h2>
@@ -998,18 +1444,20 @@ function Goals({ go, notify }: NavNotifyProps) {
   return (
     <div className="app-page">
       <AppHeader title="Mis metas" onBack={() => go("home")} />
-      <button
-        className="goal-hero tall"
+      <PlanOverviewCard
+        variant="personal"
+        eyebrow="Plan personal"
+        title="Viaje a Antigua"
+        status="En marcha"
+        saved="Q 1,250"
+        target="Q 2,000"
+        detailLabel="Próximo aporte"
+        detailValue="Q 180 · viernes"
+        progress={62}
+        remaining="Te faltan Q 750 para completar esta meta."
+        className="tall"
         onClick={() => notify("Tu aporte sugerido es Q 180 cada viernes.")}
-      >
-        <div>
-          <span>Plan personal</span>
-          <h2>Viaje a Antigua</h2>
-          <p>Faltan Q 750 para llegar.</p>
-        </div>
-        <strong>62%</strong>
-        <Progress value={62} />
-      </button>
+      />
       <div className="metric-row">
         <div>
           <Clock3 />
@@ -1164,13 +1612,20 @@ function Group({ go }: NavProps) {
   return (
     <div className="app-page">
       <AppHeader title="Plan del reto" onBack={() => go("home")} />
-      <div className="shared-hero group">
-        <UsersRound />
-        <span>Reto colaborativo</span>
-        <h2>Reto de julio</h2>
-        <p>Q 2,100 de Q 3,000 · 4 integrantes</p>
-        <Progress value={70} />
-      </div>
+      <PlanOverviewCard
+        variant="group"
+        eyebrow="Reto colaborativo"
+        title="Reto de julio"
+        status="Reto activo"
+        saved="Q 2,100"
+        target="Q 3,000"
+        detailLabel="Frecuencia"
+        detailValue="Semanal"
+        progress={70}
+        remaining="El equipo está a Q 900 de completar el reto."
+        members={["CA", "AN", "DV", "MA"]}
+        sharedLayout
+      />
       <div className="member-list">
         <div>
           <span>CA</span>
@@ -1235,13 +1690,20 @@ function Family({ go }: NavProps) {
   return (
     <div className="app-page">
       <AppHeader title="Fondo familiar" onBack={() => go("home")} />
-      <div className="shared-hero family">
-        <Heart />
-        <span>Meta de familia</span>
-        <h2>Fondo Familia Pérez</h2>
-        <p>Q 4,850 de Q 8,000 · 5 integrantes</p>
-        <Progress value={60} />
-      </div>
+      <PlanOverviewCard
+        variant="family"
+        eyebrow="Fondo familiar"
+        title="Fondo Familia Pérez"
+        status="Fondo activo"
+        saved="Q 4,850"
+        target="Q 8,000"
+        detailLabel="Aprobación"
+        detailValue="3 de 5 votos"
+        progress={60}
+        remaining="La familia está a Q 3,150 de completar el fondo."
+        members={["DP", "AP", "MP", "JP", "LP"]}
+        sharedLayout
+      />
       <div className="vote-card">
         <span className="vote-icon">
           <FileText />
@@ -1399,16 +1861,24 @@ function SummaryScreen({ type, go }: NavProps & { type: SharedType }) {
         onBack={() => go(group ? "group-create" : "family-create")}
       />
       <p className="overline form-step">Paso 2 de 3</p>
-      <div className={`summary-hero ${group ? "group" : "family"}`}>
-        {group ? <UsersRound /> : <Heart />}
-        <span>{group ? "Reto colaborativo" : "Fondo familiar"}</span>
-        <h2>{group ? "Reto de agosto" : "Fondo para emergencias"}</h2>
-        <p>
-          {group
-            ? "Q 3,000 · 4 integrantes · semanal"
-            : "Q 8,000 · aporte mínimo Q 150"}
-        </p>
-      </div>
+      <PlanOverviewCard
+        variant={group ? "group" : "family"}
+        eyebrow={group ? "Reto colaborativo" : "Fondo familiar"}
+        title={group ? "Reto de agosto" : "Fondo para emergencias"}
+        status="Listo para invitar"
+        saved="Q 0"
+        target={group ? "Q 3,000" : "Q 8,000"}
+        detailLabel={group ? "Frecuencia" : "Aporte mínimo"}
+        detailValue={group ? "Semanal" : "Q 150"}
+        progress={0}
+        remaining={
+          group
+            ? "El plan comenzará cuando confirmés e invites al equipo."
+            : "El fondo comenzará cuando confirmés las reglas familiares."
+        }
+        members={group ? ["CA", "AN", "MA", "DV"] : ["DP", "AP", "MP", "JP", "LP"]}
+        className="summary-card"
+      />
       <div className="summary-list">
         <div>
           <span>Objetivo</span>
@@ -2023,6 +2493,8 @@ export default function NovuApp({ exit }: { exit: () => void }) {
       password: "novu2026",
       passwordConfirmation: "novu2026",
     });
+  const [registrationSavingsCapacity, setRegistrationSavingsCapacity] =
+    useState<RegistrationSavingsCapacity | null>(null);
   const [navOpen, setNavOpen] = useState(false);
   const [navCollapsed, setNavCollapsed] =
     usePersistentBoolean(SIDEBAR_STORAGE_KEY);
@@ -2048,8 +2520,14 @@ export default function NovuApp({ exit }: { exit: () => void }) {
   const handleBiometricLogin = () =>
     login({ identifier: "diego@correo.com", password: "biometric-demo" });
   const handleRegistration = async () => {
+    if (!registrationSavingsCapacity) {
+      notify("Completá tu capacidad de ahorro antes de crear la cuenta.");
+      go("capacity");
+      return;
+    }
     const success = await register({
       contact: registrationContact,
+      savingsCapacity: registrationSavingsCapacity,
       media: Object.fromEntries(
         Object.entries(registrationMedia).map(([slot, item]) => [
           slot,
@@ -2062,6 +2540,7 @@ export default function NovuApp({ exit }: { exit: () => void }) {
   const handleLogout = async () => {
     await logout();
     setCompleted([]);
+    setRegistrationSavingsCapacity(null);
     setPage("welcome");
     setNavOpen(false);
   };
@@ -2107,6 +2586,13 @@ export default function NovuApp({ exit }: { exit: () => void }) {
       <Login go={go} onLogin={handleLogin} loading={loading} error={error} />
     ),
     wizard: <Wizard go={go} notify={notify} />,
+    capacity: (
+      <SavingsCapacity
+        go={go}
+        value={registrationSavingsCapacity}
+        onComplete={setRegistrationSavingsCapacity}
+      />
+    ),
     "bio-fingerprint": (
       <BiometricScan
         type="fingerprint"
@@ -2252,6 +2738,7 @@ export default function NovuApp({ exit }: { exit: () => void }) {
     "welcome",
     "login",
     "wizard",
+    "capacity",
     "kyc",
     "bio-fingerprint",
     "bio-face",

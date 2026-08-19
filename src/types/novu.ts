@@ -67,6 +67,16 @@ export interface RegistrationContact {
   passwordConfirmation: string;
 }
 
+export type IncomePattern = "fixed" | "variable" | "mixed";
+export type VariableIncomeFrequency = "weekly" | "biweekly" | "irregular";
+
+export interface RegistrationSavingsCapacity {
+  incomePattern: IncomePattern;
+  fixedMonthlyIncomeMinor?: number;
+  variableIncomeFrequency?: VariableIncomeFrequency;
+  safeMonthlySavingsMinor: number;
+}
+
 export type RegistrationContactErrors = Partial<
   Record<keyof RegistrationContact, string>
 >;
@@ -84,5 +94,6 @@ export interface AuthSession {
 
 export interface RegistrationSubmission {
   contact: RegistrationContact;
+  savingsCapacity: RegistrationSavingsCapacity;
   media: Partial<Record<CaptureSlot, File>>;
 }
