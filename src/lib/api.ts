@@ -4,6 +4,9 @@ import type {
   ApiResponse,
   ApiTransport,
   AuthSession,
+  CopilotConversation,
+  CopilotMessagePage,
+  CopilotTurn,
   LoginCredentials,
   NovuOverview,
   RegistrationSubmission,
@@ -89,7 +92,10 @@ export function createFetchTransport({
         body: body ? (multipart ? body : JSON.stringify(body)) : undefined,
       });
 
-      const data = response.status === 204 ? undefined : await response.json();
+      const data =
+        response.status === 204
+          ? undefined
+          : await response.json().catch(() => undefined);
       if (!response.ok) {
         const message =
           typeof data?.detail === "string"
@@ -141,7 +147,47 @@ export function createNovuApi(transport: ApiTransport = mockTransport) {
       }),
     logout: () =>
       transport.request<void>({ method: "POST", path: "/v1/auth/logout" }),
+    createCopilotConversation: () =>
+      transport.request<CopilotConversation, { contextType: "general" }>({
+        method: "POST",
+        path: "/v1/copilot/conversations",
+        body: { contextType: "general" },
+      }),
+    getCopilotMessages: (conversationId: string) =>
+      transport.request<CopilotMessagePage>({
+        method: "GET",
+        path: `/v1/copilot/conversations/${conversationId}/messages?limit=50`,
+      }),
+    sendCopilotMessage: (
+      conversationId: string,
+      content: string,
+      clientMessageId: string,
+    ) =>
+      transport.request<
+        CopilotTurn,
+        { content: string; clientMessageId: string }
+      >({
+        method: "POST",
+        path: `/v1/copilot/conversations/${conversationId}/messages`,
+        body: { content, clientMessageId },
+      }),
   };
 }
 
-export const novuApi = createNovuApi();
+function readAccessToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem("novu.auth.session.v1");
+    return raw ? (JSON.parse(raw)?.accessToken ?? null) : null;
+  } catch {
+    return null;
+  }
+}
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const defaultTransport =
+  process.env.NODE_ENV === "test"
+    ? mockTransport
+    : createFetchTransport({ baseUrl: apiUrl, getAccessToken: readAccessToken });
+
+export const novuApi = createNovuApi(defaultTransport);

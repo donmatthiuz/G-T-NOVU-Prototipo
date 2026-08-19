@@ -1937,6 +1937,12 @@ footer > div {
   background: var(--gradient);
   color: #fff;
 }
+.chat-status {
+  align-self: center;
+  justify-self: center;
+  color: var(--muted);
+  font-size: 12px;
+}
 .copilot-composer {
   padding-top: 12px;
   border-top: 1px solid var(--border);
@@ -1956,6 +1962,10 @@ footer > div {
   padding: 8px 13px;
   font-size: 11px;
   font-weight: 600;
+}
+.quick-answers button:disabled {
+  opacity: 0.55;
+  cursor: wait;
 }
 .chat-input {
   border: 1px solid var(--border);

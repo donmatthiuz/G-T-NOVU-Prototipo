@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCameraCapture } from "@/hooks/useCameraCapture";
 import { useNovuData } from "@/hooks/useNovuData";
 import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
+import { novuApi } from "@/lib/api";
 import {
   validateCaptureFile,
   validateRegistrationContact,
@@ -21,6 +22,7 @@ import { SIDEBAR_STORAGE_KEY } from "@/lib/session";
 import type {
   CapturedMedia,
   CaptureSlot,
+  CopilotMessage,
   IncomePattern,
   RegistrationContact,
   RegistrationContactErrors,
@@ -1506,39 +1508,95 @@ function Goals({ go, notify }: NavNotifyProps) {
 }
 
 function Copilot({ go, notify }: NavNotifyProps) {
-  const [messages, setMessages] = useState<
-    Array<{ from: "bot" | "me"; text: string }>
-  >([
-    {
-      from: "bot",
-      text: "¡Hola, Diego! Esta semana vas muy bien. ¿Querés ver cómo adelantar tu viaje a Antigua?",
-    },
-  ]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<CopilotMessage[]>([]);
   const [draft, setDraft] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [retry, setRetry] = useState<{ id: string; text: string } | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const answers = [
     "¿Cómo voy?",
     "Quiero ahorrar más",
     "¿Puedo cambiar mi meta?",
   ];
-  const reply = (text: string) => {
+  const reply = async (text: string) => {
     const cleanText = text.trim();
-    if (!cleanText) return;
-    setMessages((current) => [
-      ...current,
-      { from: "me", text: cleanText },
-      {
-        from: "bot",
-        text: cleanText.includes("más")
-          ? "Podrías subir tu aporte a Q 220 por semana y llegarías un mes antes."
-          : cleanText.includes("cambiar")
-            ? "Sí. Desde Metas podés ajustar tu objetivo y NOVU recalcula el plan."
-            : "Llevás 62% de tu meta y una racha de 4 semanas. ¡Excelente avance!",
-      },
-    ]);
+    if (!cleanText || !conversationId || sending) return;
+    const clientMessageId =
+      retry?.text === cleanText ? retry.id : crypto.randomUUID();
+    const optimistic: CopilotMessage = {
+      id: `pending-${clientMessageId}`,
+      sender: "user",
+      content: cleanText,
+      kind: "text",
+      createdAt: new Date().toISOString(),
+    };
+    if (!retry || retry.id !== clientMessageId) {
+      setMessages((current) => [...current, optimistic]);
+    }
     setDraft("");
-    notify("Respuesta predeterminada de NOVU mostrada.");
+    setSending(true);
+    setError(null);
+    try {
+      const response = await novuApi.sendCopilotMessage(
+        conversationId,
+        cleanText,
+        clientMessageId,
+      );
+      setMessages((current) => [
+        ...current.filter(
+          (item) =>
+            item.id !== `pending-${clientMessageId}` &&
+            item.id !== response.data.userMessage.id,
+        ),
+        response.data.userMessage,
+        response.data.assistantMessage,
+      ]);
+      setRetry(null);
+      notify("NOVU analizó tu información financiera actualizada.");
+    } catch (cause) {
+      const message =
+        cause instanceof Error
+          ? cause.message
+          : "El Copiloto no pudo responder. Intentá de nuevo.";
+      setError(message);
+      setRetry({ id: clientMessageId, text: cleanText });
+      setDraft(cleanText);
+    } finally {
+      setSending(false);
+    }
   };
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const conversation = await novuApi.createCopilotConversation();
+        const history = await novuApi.getCopilotMessages(conversation.data.id);
+        if (active) {
+          setConversationId(conversation.data.id);
+          setMessages(history.data.items);
+        }
+      } catch (cause) {
+        if (active) {
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : "No pudimos abrir la conversación.",
+          );
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    void load();
+    return () => {
+      active = false;
+    };
+  }, []);
   useEffect(() => {
     const chat = chatRef.current;
     if (!chat) return;
@@ -1559,23 +1617,32 @@ function Copilot({ go, notify }: NavNotifyProps) {
             <b>Asistente financiero NOVU</b>
             <small><i aria-hidden="true" /> Disponible para orientarte</small>
           </div>
-          <span>Tu información permanece en este demo</span>
+          <span>Contexto protegido y personalizado</span>
         </header>
         <div className="chat" ref={chatRef} role="log" aria-live="polite">
-          {messages.map((message, index) => (
-            <article key={`${message.from}-${index}`} className={`chat-message ${message.from}`}>
-              {message.from === "bot" && <Logo />}
-              <div>
-                <span>{message.from === "bot" ? "NOVU" : "Vos"}</span>
-                <p>{message.text}</p>
-              </div>
-            </article>
-          ))}
+          {loading && <p className="chat-status">Cargando tu conversación…</p>}
+          {messages.map((message) => {
+            const from = message.sender === "assistant" ? "bot" : "me";
+            return (
+              <article key={message.id} className={`chat-message ${from}`}>
+                {from === "bot" && <Logo />}
+                <div>
+                  <span>{from === "bot" ? "NOVU" : "Vos"}</span>
+                  <p>{message.content}</p>
+                </div>
+              </article>
+            );
+          })}
         </div>
         <div className="copilot-composer">
           <div className="quick-answers" aria-label="Preguntas sugeridas">
             {answers.map((answer) => (
-              <button type="button" key={answer} onClick={() => reply(answer)}>
+              <button
+                type="button"
+                key={answer}
+                onClick={() => void reply(answer)}
+                disabled={loading || sending}
+              >
                 {answer}
               </button>
             ))}
@@ -1584,7 +1651,7 @@ function Copilot({ go, notify }: NavNotifyProps) {
             className="chat-input"
             onSubmit={(event) => {
               event.preventDefault();
-              reply(draft);
+              void reply(draft);
             }}
           >
             <label htmlFor="copilot-message" className="sr-only">
@@ -1597,11 +1664,26 @@ function Copilot({ go, notify }: NavNotifyProps) {
               placeholder="Escribí tu consulta"
               autoComplete="off"
             />
-            <button type="submit" disabled={!draft.trim()} aria-label="Enviar mensaje">
+            <button
+              type="submit"
+              disabled={!draft.trim() || loading || sending || !conversationId}
+              aria-label="Enviar mensaje"
+            >
               <Send size={18} aria-hidden="true" />
             </button>
           </form>
-          <small>NOVU puede equivocarse. Revisá la información antes de tomar decisiones.</small>
+          {error && (
+            <small className="field-error" role="alert">
+              {error}
+            </small>
+          )}
+          {sending && (
+            <small className="chat-status">NOVU está analizando tus datos…</small>
+          )}
+          <small>
+            NOVU puede equivocarse. Revisá la información antes de tomar
+            decisiones.
+          </small>
         </div>
       </section>
     </div>

@@ -30,7 +30,38 @@ export interface ActivityItem {
 export interface NovuOverview {
   profile: UserProfile;
   personalGoal: PersonalGoal;
+  personalGoals?: PersonalGoal[];
+  primaryGoalId?: string;
+  sharedPlans?: Array<Record<string, unknown>>;
   recentActivity: ActivityItem[];
+}
+
+export interface CopilotConversation {
+  id: string;
+  title: string;
+  contextType: "general" | "goal" | "shared_plan";
+  entityId: string | null;
+  messageCount: number;
+  lastMessageAt: string;
+}
+
+export interface CopilotMessage {
+  id: string;
+  sender: "user" | "assistant" | "system";
+  content: string;
+  kind: "text" | "recommendation" | "action";
+  createdAt: string;
+}
+
+export interface CopilotMessagePage {
+  items: CopilotMessage[];
+  nextCursor: string | null;
+}
+
+export interface CopilotTurn {
+  userMessage: CopilotMessage;
+  assistantMessage: CopilotMessage;
+  duplicated: boolean;
 }
 
 export interface ApiRequest<TBody = unknown> {
