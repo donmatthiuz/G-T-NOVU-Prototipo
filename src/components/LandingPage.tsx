@@ -356,8 +356,8 @@ function LandingPage() {
           </nav>
 
           <div className="nav-actions">
-            <a className="nav-cta" href="#flujos">
-              Explorar NOVU
+            <a className="nav-cta" href="/prototipo">
+              Ver prototipo
               <span className="nav-cta-icon">
                 <ArrowUpRight size={17} aria-hidden="true" />
               </span>
@@ -399,10 +399,10 @@ function LandingPage() {
             </a>
             <a
               className="mobile-navigation-cta"
-              href="#flujos"
+              href="/prototipo"
               onClick={() => setMenuOpen(false)}
             >
-              Explorar NOVU
+              Ver prototipo completo
               <ArrowUpRight size={18} aria-hidden="true" />
             </a>
           </nav>
@@ -423,11 +423,9 @@ function LandingPage() {
               ver, entender y cumplir.
             </p>
             <div className="hero-actions">
-              <Button onClick={() => setViewOverride("app")}>
-                Entrar al prototipo
-              </Button>
-              <Button href="#como-funciona" secondary>
-                Ver cómo funciona
+              <Button href="/prototipo">Ver prototipo completo</Button>
+              <Button onClick={() => setViewOverride("app")} secondary>
+                Probar versión funcional
               </Button>
             </div>
             <div className="trust-row">
@@ -588,9 +586,7 @@ function LandingPage() {
             NOVU está listo cuando vos lo estés
           </span>
           <h2>Un pequeño paso hoy puede cambiar mucho mañana.</h2>
-          <Button onClick={() => setViewOverride("app")}>
-            Explorar el prototipo
-          </Button>
+          <Button href="/prototipo">Recorrer todas las pantallas</Button>
         </section>
       </main>
       <footer>
@@ -600,6 +596,7 @@ function LandingPage() {
           <a href="#inicio">Inicio</a>
           <a href="#flujos">Flujos</a>
           <a href="#seguridad">Seguridad</a>
+          <a href="/prototipo">Prototipo</a>
         </div>
       </footer>
     </>
