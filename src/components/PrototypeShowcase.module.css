@@ -570,6 +570,131 @@
   font-size: 13px;
 }
 
+.groupNavigation {
+  margin-bottom: 16px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: minmax(190px, 0.72fr) minmax(0, 3fr);
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+}
+
+.groupNavigationIntro {
+  min-width: 0;
+  padding-inline: 4px 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.groupNavigationIntro > span {
+  color: #b4a7dc;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.groupNavigationIntro > strong {
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.groupNavigationIntro > small {
+  min-height: 32px;
+  color: #aaa3c4;
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.groupNavigationList {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.groupNavigationButton {
+  min-width: 0;
+  min-height: 72px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  color: #aaa3c4;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.groupNavigationButton:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.075);
+  border-color: rgba(215, 204, 255, 0.2);
+}
+
+.groupNavigationButton[aria-pressed="true"] {
+  color: #fff;
+  background: linear-gradient(
+    110deg,
+    rgba(75, 47, 224, 0.46),
+    rgba(233, 28, 122, 0.22)
+  );
+  border-color: rgba(215, 204, 255, 0.34);
+  box-shadow: 0 9px 22px rgba(7, 4, 25, 0.2);
+}
+
+.groupNavigationIcon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  color: #cfc3f6;
+  background: rgba(139, 47, 224, 0.17);
+  border-radius: 10px;
+}
+
+.groupNavigationButton[aria-pressed="true"] .groupNavigationIcon {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.groupNavigationButton > span:last-child {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.groupNavigationButton strong,
+.groupNavigationButton small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.groupNavigationButton strong {
+  font-size: 10px;
+}
+
+.groupNavigationButton small {
+  color: #8f88a7;
+  font-size: 8px;
+}
+
+.groupNavigationButton[aria-pressed="true"] small {
+  color: #d7ccff;
+}
+
 .explorer {
   min-height: 720px;
   display: grid;
@@ -1123,6 +1248,21 @@
   .journeyGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .groupNavigation {
+    grid-template-columns: 1fr;
+  }
+  .groupNavigationIntro {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.9fr);
+    align-items: end;
+    gap: 4px 24px;
+  }
+  .groupNavigationIntro > span {
+    grid-column: 1 / -1;
+  }
+  .groupNavigationIntro > small {
+    min-height: 0;
+    text-align: right;
+  }
   .explorer {
     grid-template-columns: 205px minmax(350px, 1fr);
   }
@@ -1216,6 +1356,34 @@
     grid-template-columns: 1fr;
     align-items: start;
     gap: 14px;
+  }
+  .groupNavigation {
+    margin-inline: -4px;
+    padding: 14px;
+  }
+  .groupNavigationIntro {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .groupNavigationIntro > span,
+  .groupNavigationIntro > strong,
+  .groupNavigationIntro > small {
+    grid-column: 1;
+    text-align: left;
+  }
+  .groupNavigationList {
+    margin-inline: -14px;
+    padding: 2px 14px 8px;
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    scrollbar-color: #514676 transparent;
+  }
+  .groupNavigationButton {
+    min-width: 178px;
+    min-height: 68px;
+    scroll-snap-align: start;
   }
   .explorer {
     grid-template-columns: 1fr;
@@ -1401,6 +1569,9 @@
   .stageControls button,
   .galleryCard,
   .selectedGalleryCard {
+    transition: none !important;
+  }
+  .groupNavigationButton {
     transition: none !important;
   }
 }

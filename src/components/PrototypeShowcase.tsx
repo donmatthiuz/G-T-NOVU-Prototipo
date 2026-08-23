@@ -10,6 +10,7 @@ import {
   Grid3X3,
   HeartHandshake,
   Layers3,
+  LogIn,
   MousePointerClick,
   Play,
   Route,
@@ -17,6 +18,7 @@ import {
   ShieldCheck,
   Sparkles,
   Target,
+  UserPlus,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
@@ -30,7 +32,9 @@ import {
 import styles from "./PrototypeShowcase.module.css";
 
 type FlowId = "onboarding" | "access" | "personal" | "group" | "family" | "kyc";
-type FilterId = "all" | FlowId;
+type PrototypeGroupId =
+  "login" | "registration" | "personal-plan" | "group-fund" | "group-challenge";
+type FilterId = "all" | PrototypeGroupId;
 
 type PrototypeScreen = {
   id: string;
@@ -44,6 +48,13 @@ type FlowDefinition = {
   shortLabel: string;
   description: string;
   path: string;
+  icon: LucideIcon;
+};
+
+type PrototypeGroupDefinition = {
+  label: string;
+  shortLabel: string;
+  description: string;
   icon: LucideIcon;
 };
 
@@ -99,6 +110,51 @@ const flowDefinitions: Record<FlowId, FlowDefinition> = {
     path: "DPI → Selfie → Contacto → Comprobante → Confirmación",
     icon: ScanFace,
   },
+};
+
+const prototypeGroupDefinitions: Record<
+  PrototypeGroupId,
+  PrototypeGroupDefinition
+> = {
+  login: {
+    label: "Inicio de sesión",
+    shortLabel: "Inicio de sesión",
+    description: "Acceso y validación biométrica para usuarios existentes.",
+    icon: LogIn,
+  },
+  registration: {
+    label: "Registro",
+    shortLabel: "Registro",
+    description: "Alta, creación de meta y verificación de identidad.",
+    icon: UserPlus,
+  },
+  "personal-plan": {
+    label: "Plan personal",
+    shortLabel: "Plan personal",
+    description: "Progreso, ritmo, retiros y herramientas individuales.",
+    icon: Sparkles,
+  },
+  "group-fund": {
+    label: "Fondo grupal",
+    shortLabel: "Fondo grupal",
+    description: "Aportes, solicitudes y decisiones compartidas.",
+    icon: HeartHandshake,
+  },
+  "group-challenge": {
+    label: "Reto grupal",
+    shortLabel: "Reto grupal",
+    description: "Creación, invitaciones y progreso de retos en equipo.",
+    icon: UsersRound,
+  },
+};
+
+const groupByFlow: Record<FlowId, PrototypeGroupId> = {
+  onboarding: "registration",
+  access: "login",
+  personal: "personal-plan",
+  group: "group-challenge",
+  family: "group-fund",
+  kyc: "registration",
 };
 
 const screens: PrototypeScreen[] = [
@@ -375,6 +431,13 @@ const screens: PrototypeScreen[] = [
 ];
 
 const flowOrder = Object.keys(flowDefinitions) as FlowId[];
+const prototypeGroupOrder: PrototypeGroupId[] = [
+  "login",
+  "registration",
+  "personal-plan",
+  "group-fund",
+  "group-challenge",
+];
 
 function figmaNodeUrl(id: string) {
   return `https://www.figma.com/design/vFm8Z8NqINCaW8YDb23hz5/NOVU?node-id=${id.replace(":", "-")}`;
@@ -389,28 +452,40 @@ export default function PrototypeShowcase() {
     () =>
       activeFilter === "all"
         ? screens
-        : screens.filter((screen) => screen.flow === activeFilter),
+        : screens.filter((screen) => groupByFlow[screen.flow] === activeFilter),
     [activeFilter],
   );
   const selectedScreen =
     screens.find((screen) => screen.id === selectedId) ?? screens[0];
   const selectedFlow = flowDefinitions[selectedScreen.flow];
-  const selectedIndex = screens.findIndex(
+  const selectedGroupId = groupByFlow[selectedScreen.flow];
+  const selectedGroup = prototypeGroupDefinitions[selectedGroupId];
+  const selectedGroupScreens = screens.filter(
+    (screen) => groupByFlow[screen.flow] === selectedGroupId,
+  );
+  const selectedIndex = selectedGroupScreens.findIndex(
     (screen) => screen.id === selectedScreen.id,
   );
 
-  const selectFilter = (filter: FilterId) => {
-    setActiveFilter(filter);
-    if (filter !== "all") {
-      const first = screens.find((screen) => screen.flow === filter);
-      if (first) setSelectedId(first.id);
-    }
+  const selectGroup = (groupId: PrototypeGroupId) => {
+    const first = screens.find(
+      (screen) => groupByFlow[screen.flow] === groupId,
+    );
+    setActiveFilter(groupId);
+    if (first) setSelectedId(first.id);
+  };
+
+  const selectFlow = (flowId: FlowId) => {
+    const first = screens.find((screen) => screen.flow === flowId);
+    setActiveFilter(groupByFlow[flowId]);
+    if (first) setSelectedId(first.id);
   };
 
   const moveSelection = (direction: -1 | 1) => {
     const nextIndex =
-      (selectedIndex + direction + screens.length) % screens.length;
-    setSelectedId(screens[nextIndex].id);
+      (selectedIndex + direction + selectedGroupScreens.length) %
+      selectedGroupScreens.length;
+    setSelectedId(selectedGroupScreens[nextIndex].id);
   };
 
   const handleExplorerKeys = (event: KeyboardEvent<HTMLElement>) => {
@@ -591,7 +666,7 @@ export default function PrototypeShowcase() {
                   className={styles.journeyCard}
                   key={flowId}
                   onClick={() => {
-                    selectFilter(flowId);
+                    selectFlow(flowId);
                     document
                       .getElementById("explorador")
                       ?.scrollIntoView({ behavior: "smooth" });
@@ -636,43 +711,75 @@ export default function PrototypeShowcase() {
             </p>
           </div>
 
-          <div className={styles.explorer}>
+          <nav
+            className={styles.groupNavigation}
+            aria-label="Cambiar grupo de prototipos móviles"
+          >
+            <div className={styles.groupNavigationIntro}>
+              <span>Prototipos móviles de Figma</span>
+              <strong>Elegí el grupo que querés explorar</strong>
+              <small aria-live="polite">{selectedGroup.description}</small>
+            </div>
+            <div className={styles.groupNavigationList}>
+              {prototypeGroupOrder.map((groupId) => {
+                const group = prototypeGroupDefinitions[groupId];
+                const GroupIcon = group.icon;
+                const count = screens.filter(
+                  (screen) => groupByFlow[screen.flow] === groupId,
+                ).length;
+
+                return (
+                  <button
+                    type="button"
+                    key={groupId}
+                    className={styles.groupNavigationButton}
+                    aria-pressed={selectedGroupId === groupId}
+                    aria-label={`${group.label}: ${count} pantallas`}
+                    onClick={() => selectGroup(groupId)}
+                  >
+                    <span className={styles.groupNavigationIcon}>
+                      <GroupIcon size={19} aria-hidden="true" />
+                    </span>
+                    <span>
+                      <strong>{group.label}</strong>
+                      <small>{count} pantallas</small>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
+
+          <div
+            className={styles.explorer}
+            aria-label={`Grupo ${selectedGroup.label}`}
+          >
             <aside
               className={styles.screenRail}
-              aria-label="Pantallas del recorrido seleccionado"
+              aria-label="Pantallas del grupo seleccionado"
             >
               <div className={styles.railTitle}>
-                <span>{selectedFlow.shortLabel}</span>
-                <b>
-                  {
-                    screens.filter(
-                      (screen) => screen.flow === selectedScreen.flow,
-                    ).length
-                  }
-                </b>
+                <span>{selectedGroup.shortLabel}</span>
+                <b>{selectedGroupScreens.length}</b>
               </div>
               <div className={styles.railList}>
-                {screens
-                  .filter((screen) => screen.flow === selectedScreen.flow)
-                  .map((screen) => (
-                    <button
-                      key={screen.id}
-                      className={
-                        screen.id === selectedScreen.id
-                          ? styles.activeScreenButton
-                          : styles.screenButton
-                      }
-                      aria-current={
-                        screen.id === selectedScreen.id ? "step" : undefined
-                      }
-                      onClick={() => setSelectedId(screen.id)}
-                    >
-                      <span>{screen.name.split(" · ")[0]}</span>
-                      <span>
-                        {screen.name.split(" · ").slice(1).join(" · ")}
-                      </span>
-                    </button>
-                  ))}
+                {selectedGroupScreens.map((screen) => (
+                  <button
+                    key={screen.id}
+                    className={
+                      screen.id === selectedScreen.id
+                        ? styles.activeScreenButton
+                        : styles.screenButton
+                    }
+                    aria-current={
+                      screen.id === selectedScreen.id ? "step" : undefined
+                    }
+                    onClick={() => setSelectedId(screen.id)}
+                  >
+                    <span>{screen.name.split(" · ")[0]}</span>
+                    <span>{screen.name.split(" · ").slice(1).join(" · ")}</span>
+                  </button>
+                ))}
               </div>
             </aside>
 
@@ -683,7 +790,7 @@ export default function PrototypeShowcase() {
                   {selectedScreen.id}
                 </span>
                 <span>
-                  {selectedIndex + 1} / {screens.length}
+                  {selectedIndex + 1} / {selectedGroupScreens.length}
                 </span>
               </div>
               <div className={styles.selectedPhone} key={selectedScreen.id}>
@@ -741,8 +848,8 @@ export default function PrototypeShowcase() {
                 </a>
               </div>
               <p className={styles.keyboardHint}>
-                Tip: enfocá esta sección y usá ← → para recorrer todo el
-                prototipo.
+                Tip: enfocá esta sección y usá ← → para recorrer el grupo
+                actual.
               </p>
             </aside>
           </div>
@@ -761,27 +868,33 @@ export default function PrototypeShowcase() {
               <h2 id="gallery-title">Las 45 pantallas, a la vista.</h2>
             </div>
             <p>
-              Filtrá por recorrido y tocá cualquier tarjeta para verla en
-              detalle.
+              Filtrá por grupo y tocá cualquier tarjeta para verla en detalle.
             </p>
           </div>
 
-          <div className={styles.filters} aria-label="Filtrar pantallas">
+          <div
+            className={styles.filters}
+            aria-label="Filtrar pantallas por grupo"
+          >
             <button
               aria-pressed={activeFilter === "all"}
-              onClick={() => selectFilter("all")}
+              onClick={() => setActiveFilter("all")}
             >
               Todas <span>45</span>
             </button>
-            {flowOrder.map((flowId) => (
+            {prototypeGroupOrder.map((groupId) => (
               <button
-                key={flowId}
-                aria-pressed={activeFilter === flowId}
-                onClick={() => selectFilter(flowId)}
+                key={groupId}
+                aria-pressed={activeFilter === groupId}
+                onClick={() => selectGroup(groupId)}
               >
-                {flowDefinitions[flowId].shortLabel}
+                {prototypeGroupDefinitions[groupId].shortLabel}
                 <span>
-                  {screens.filter((screen) => screen.flow === flowId).length}
+                  {
+                    screens.filter(
+                      (screen) => groupByFlow[screen.flow] === groupId,
+                    ).length
+                  }
                 </span>
               </button>
             ))}
