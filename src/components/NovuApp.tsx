@@ -19,6 +19,7 @@ import {
   validateRegistrationContact,
 } from "@/lib/registration";
 import { SIDEBAR_STORAGE_KEY } from "@/lib/session";
+import PartnerBrand from "@/components/PartnerBrand";
 import type {
   CapturedMedia,
   CaptureSlot,
@@ -302,7 +303,7 @@ function Welcome({ go }: NavProps) {
   return (
     <div className="entry-screen">
       <div className="entry-content">
-        <Logo wordmark />
+        <PartnerBrand className="entry-partner-brand" priority tone="dark" />
         <span className="entry-line"></span>
         <h1>
           Tu futuro empieza con <i>un paso.</i>
@@ -356,7 +357,7 @@ function Login({
         <button className="entry-back" onClick={() => go("welcome")}>
           <ArrowLeft size={20} /> Volver
         </button>
-        <Logo wordmark />
+        <PartnerBrand className="entry-partner-brand" tone="dark" />
         <h1>Qué bueno verte de nuevo.</h1>
         <p>Ingresá para seguir construyendo tu futuro.</p>
         <label>
@@ -2481,11 +2482,7 @@ function AppNav({
       aria-label="Navegación principal"
     >
       <div className="sidebar-brand">
-        <Logo />
-        <span className="sidebar-brand-copy">
-          <b>NOVU</b>
-          <small>Tu futuro, a tu ritmo</small>
-        </span>
+        <PartnerBrand className="sidebar-partner-brand" compact tone="dark" />
         <button
           className="sidebar-collapse"
           onClick={onToggle}

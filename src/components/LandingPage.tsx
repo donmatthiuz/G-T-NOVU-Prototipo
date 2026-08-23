@@ -6,8 +6,8 @@ import {
   type MouseEventHandler,
   type ReactNode,
 } from "react";
-import Image from "next/image";
 import NovuApp from "./NovuApp";
+import PartnerBrand from "./PartnerBrand";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
@@ -131,16 +131,12 @@ const featureCards: [LucideIcon, string, string][] = [
 
 function Brand({ compact = false }) {
   return (
-    <a className="brand" href="#inicio" aria-label="NOVU, ir al inicio">
-      <span className="brand-mark">
-        <Image
-          src="/brand/novu-mark-transparent.png"
-          alt="Logo NOVU"
-          width={114}
-          height={104}
-        />
-      </span>
-      {!compact && <span className="brand-name">NOVU</span>}
+    <a
+      className="brand"
+      href="#inicio"
+      aria-label="NOVU by G&T Continental, ir al inicio"
+    >
+      <PartnerBrand compact={compact} priority />
     </a>
   );
 }
@@ -356,8 +352,8 @@ function LandingPage() {
           </nav>
 
           <div className="nav-actions">
-            <a className="nav-cta" href="#flujos">
-              Explorar NOVU
+            <a className="nav-cta" href="/prototipo">
+              Ver prototipo
               <span className="nav-cta-icon">
                 <ArrowUpRight size={17} aria-hidden="true" />
               </span>
@@ -399,10 +395,10 @@ function LandingPage() {
             </a>
             <a
               className="mobile-navigation-cta"
-              href="#flujos"
+              href="/prototipo"
               onClick={() => setMenuOpen(false)}
             >
-              Explorar NOVU
+              Ver prototipo completo
               <ArrowUpRight size={18} aria-hidden="true" />
             </a>
           </nav>
@@ -411,10 +407,12 @@ function LandingPage() {
       <main id="contenido">
         <section className="hero">
           <div className="hero-copy">
-            <span className="eyebrow dark">
-              <ShieldCheck size={16} aria-hidden="true" /> Respaldado por G&T
-              Continental
-            </span>
+            <div className="hero-cobrand">
+              <span>
+                <ShieldCheck size={16} aria-hidden="true" /> Una experiencia
+              </span>
+              <PartnerBrand compact priority tone="dark" />
+            </div>
             <h1>
               Tu futuro empieza con <em>un paso.</em>
             </h1>
@@ -423,11 +421,9 @@ function LandingPage() {
               ver, entender y cumplir.
             </p>
             <div className="hero-actions">
-              <Button onClick={() => setViewOverride("app")}>
-                Entrar al prototipo
-              </Button>
-              <Button href="#como-funciona" secondary>
-                Ver cómo funciona
+              <Button href="/prototipo">Ver prototipo completo</Button>
+              <Button onClick={() => setViewOverride("app")} secondary>
+                Probar versión funcional
               </Button>
             </div>
             <div className="trust-row">
@@ -449,7 +445,7 @@ function LandingPage() {
                 <span></span>
               </div>
               <div className="mini-brand">
-                <Brand />
+                <Brand compact />
               </div>
               <p className="mini-overline">Tu meta personal</p>
               <h2>Viaje a Antigua</h2>
@@ -588,9 +584,7 @@ function LandingPage() {
             NOVU está listo cuando vos lo estés
           </span>
           <h2>Un pequeño paso hoy puede cambiar mucho mañana.</h2>
-          <Button onClick={() => setViewOverride("app")}>
-            Explorar el prototipo
-          </Button>
+          <Button href="/prototipo">Recorrer todas las pantallas</Button>
         </section>
       </main>
       <footer>
@@ -600,6 +594,7 @@ function LandingPage() {
           <a href="#inicio">Inicio</a>
           <a href="#flujos">Flujos</a>
           <a href="#seguridad">Seguridad</a>
+          <a href="/prototipo">Prototipo</a>
         </div>
       </footer>
     </>

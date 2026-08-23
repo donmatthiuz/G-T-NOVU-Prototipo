@@ -809,6 +809,10 @@ button.plan-overview-card:hover {
   width: 42px;
   height: 42px;
 }
+.sidebar-partner-brand {
+  min-width: 0;
+  transform-origin: left center;
+}
 .sidebar-brand-copy {
   display: grid;
   min-width: 122px;
@@ -948,6 +952,9 @@ button.plan-overview-card:hover {
   pointer-events: none;
 }
 .web-sidebar.collapsed .sidebar-brand-copy {
+  display: none;
+}
+.web-sidebar.collapsed .sidebar-partner-brand {
   display: none;
 }
 .web-sidebar.collapsed .sidebar-section {
@@ -1463,6 +1470,9 @@ button.plan-overview-card:hover {
   }
   .web-sidebar.collapsed .sidebar-brand-copy {
     display: grid;
+  }
+  .web-sidebar.collapsed .sidebar-partner-brand {
+    display: inline-flex;
   }
   .web-sidebar.collapsed .sidebar-account > span:nth-child(2) {
     display: grid;
