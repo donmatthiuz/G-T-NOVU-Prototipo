@@ -56,28 +56,6 @@
   min-width: max-content;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-}
-
-.brand img {
-  object-fit: contain;
-}
-
-.brand span {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-}
-
-.brand small {
-  margin-left: 2px;
-  padding-left: 12px;
-  color: #aaa3c4;
-  border-left: 1px solid rgba(255, 255, 255, 0.18);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
 }
 
 .headerNav {
@@ -248,6 +226,22 @@
   gap: 12px;
 }
 
+.partnerSignature {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.partnerSignature > span:first-child {
+  color: #918aa9;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .secondaryAction {
   color: #fff;
   background: rgba(255, 255, 255, 0.05);
@@ -355,6 +349,29 @@
   font-size: 11px;
   font-weight: 700;
   animation: noteIn 520ms 520ms ease both;
+}
+
+.deckBrandSeal {
+  width: 64px;
+  height: 64px;
+  position: absolute;
+  z-index: 5;
+  left: 12px;
+  bottom: 40px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.3);
+  transform: rotate(-7deg);
+  animation: noteIn 520ms 620ms ease both;
+}
+
+.deckBrandMark {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
 }
 
 @keyframes heroPhoneIn {
@@ -497,6 +514,22 @@
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
+}
+
+.journeyBrandMark {
+  width: 72px;
+  height: 72px;
+  position: absolute;
+  right: 20px;
+  bottom: 18px;
+  object-fit: contain;
+  opacity: 0.1;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.journeyCard:hover .journeyBrandMark {
+  opacity: 0.18;
 }
 
 .journeyIcon,
@@ -829,6 +862,17 @@
     0 0 0 140px rgba(255, 255, 255, 0.012);
 }
 
+.stageBrandMark {
+  width: min(180px, 34%);
+  height: auto;
+  position: absolute;
+  right: -22px;
+  bottom: 58px;
+  object-fit: contain;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
 .stageTopbar {
   width: 100%;
   position: relative;
@@ -934,6 +978,10 @@
   color: #aaa3c4;
   font-size: 11px;
   line-height: 1.62;
+}
+
+.screenInfoBrand {
+  margin-top: 24px;
 }
 
 .routePath {
@@ -1180,6 +1228,18 @@
   box-shadow: 0 0 0 70px rgba(255, 255, 255, 0.025);
 }
 
+.finalBrandMark {
+  width: min(300px, 35vw);
+  height: auto;
+  position: absolute;
+  z-index: 0;
+  right: 7%;
+  bottom: -21%;
+  object-fit: contain;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
 .finalCta h2,
 .finalCta p,
 .finalCta > div,
@@ -1204,6 +1264,12 @@
   gap: 12px;
 }
 
+.finalPartnerBrand {
+  position: relative;
+  z-index: 1;
+  margin-top: 22px;
+}
+
 .footer {
   width: min(1180px, calc(100% - 40px));
   min-height: 90px;
@@ -1215,11 +1281,6 @@
   color: var(--muted);
   border-top: 1px solid var(--border);
   font-size: 10px;
-}
-
-.footer .brand span {
-  color: var(--ink);
-  font-size: 15px;
 }
 
 .footer > a:last-child {
@@ -1298,6 +1359,10 @@
   .keyboardHint {
     grid-column: 2 / -1;
   }
+  .screenInfoBrand {
+    grid-column: 2 / -1;
+    margin-top: 0;
+  }
   .galleryGrid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
@@ -1307,9 +1372,6 @@
   .headerInner {
     width: min(calc(100% - 28px), 1240px);
     min-height: 68px;
-  }
-  .brand small {
-    display: none;
   }
   .launchButton {
     min-height: 44px;
@@ -1423,15 +1485,15 @@
   .keyboardHint {
     margin-top: 18px;
   }
+  .screenInfoBrand {
+    margin-top: 20px;
+  }
   .galleryGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 580px) {
-  .header .brand span {
-    font-size: 15px;
-  }
   .headerInner {
     gap: 12px;
   }
@@ -1488,6 +1550,9 @@
   }
   .deckNote {
     right: 16px;
+  }
+  .deckBrandSeal {
+    left: 16px;
   }
   .journeys,
   .gallerySection {

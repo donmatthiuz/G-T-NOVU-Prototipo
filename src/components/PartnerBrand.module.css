@@ -1,0 +1,112 @@
+.lockup {
+  min-width: max-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+}
+
+.novuBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.novuMark {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.novuName {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.light .novuName {
+  color: transparent;
+  background: var(--gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+.dark .novuName {
+  color: #fff;
+}
+
+.by {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: lowercase;
+}
+
+.dark .by {
+  color: #aaa3c4;
+}
+
+.divider {
+  width: 1px;
+  height: 25px;
+  background: rgba(23, 20, 43, 0.14);
+}
+
+.dark .divider {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.gtcLogo {
+  width: 70px;
+  height: auto;
+  object-fit: contain;
+}
+
+.compact {
+  gap: 6px;
+}
+
+.compact .novuBrand {
+  gap: 6px;
+}
+
+.compact .novuMark {
+  width: 30px;
+  height: 30px;
+}
+
+.compact .novuName {
+  font-size: 14px;
+}
+
+.compact .by {
+  font-size: 8px;
+}
+
+.compact .divider {
+  height: 21px;
+}
+
+.compact .gtcLogo {
+  width: 56px;
+}
+
+@media (max-width: 440px) {
+  .lockup {
+    gap: 5px;
+  }
+
+  .novuMark {
+    width: 30px;
+    height: 30px;
+  }
+
+  .novuName {
+    font-size: 14px;
+  }
+
+  .gtcLogo {
+    width: 58px;
+  }
+}

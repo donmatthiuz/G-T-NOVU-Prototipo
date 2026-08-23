@@ -6,8 +6,8 @@ import {
   type MouseEventHandler,
   type ReactNode,
 } from "react";
-import Image from "next/image";
 import NovuApp from "./NovuApp";
+import PartnerBrand from "./PartnerBrand";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
@@ -131,16 +131,12 @@ const featureCards: [LucideIcon, string, string][] = [
 
 function Brand({ compact = false }) {
   return (
-    <a className="brand" href="#inicio" aria-label="NOVU, ir al inicio">
-      <span className="brand-mark">
-        <Image
-          src="/brand/novu-mark-transparent.png"
-          alt="Logo NOVU"
-          width={114}
-          height={104}
-        />
-      </span>
-      {!compact && <span className="brand-name">NOVU</span>}
+    <a
+      className="brand"
+      href="#inicio"
+      aria-label="NOVU by G&T Continental, ir al inicio"
+    >
+      <PartnerBrand compact={compact} priority />
     </a>
   );
 }
@@ -411,10 +407,12 @@ function LandingPage() {
       <main id="contenido">
         <section className="hero">
           <div className="hero-copy">
-            <span className="eyebrow dark">
-              <ShieldCheck size={16} aria-hidden="true" /> Respaldado por G&T
-              Continental
-            </span>
+            <div className="hero-cobrand">
+              <span>
+                <ShieldCheck size={16} aria-hidden="true" /> Una experiencia
+              </span>
+              <PartnerBrand compact priority tone="dark" />
+            </div>
             <h1>
               Tu futuro empieza con <em>un paso.</em>
             </h1>
@@ -447,7 +445,7 @@ function LandingPage() {
                 <span></span>
               </div>
               <div className="mini-brand">
-                <Brand />
+                <Brand compact />
               </div>
               <p className="mini-overline">Tu meta personal</p>
               <h2>Viaje a Antigua</h2>

@@ -29,6 +29,7 @@ import {
   type CSSProperties,
   type KeyboardEvent,
 } from "react";
+import PartnerBrand, { NovuSymbol } from "./PartnerBrand";
 import styles from "./PrototypeShowcase.module.css";
 
 type FlowId = "onboarding" | "access" | "personal" | "group" | "family" | "kyc";
@@ -515,16 +516,9 @@ export default function PrototypeShowcase() {
           <Link
             className={styles.brand}
             href="/"
-            aria-label="Volver a la landing principal de NOVU"
+            aria-label="Volver a NOVU by G&T Continental"
           >
-            <Image
-              src="/brand/novu-mark-transparent.png"
-              alt=""
-              width={38}
-              height={38}
-            />
-            <span>NOVU</span>
-            <small>Prototype atlas</small>
+            <PartnerBrand compact priority tone="dark" />
           </Link>
           <nav className={styles.headerNav} aria-label="Navegación del atlas">
             <a href="#recorridos">Recorridos</a>
@@ -568,6 +562,10 @@ export default function PrototypeShowcase() {
                   Abrir archivo Figma{" "}
                   <ExternalLink size={17} aria-hidden="true" />
                 </a>
+              </div>
+              <div className={styles.partnerSignature}>
+                <span>Una experiencia financiera creada por</span>
+                <PartnerBrand compact tone="dark" />
               </div>
               <dl className={styles.heroStats}>
                 <div>
@@ -623,6 +621,9 @@ export default function PrototypeShowcase() {
                   sizes="250px"
                 />
               </div>
+              <span className={styles.deckBrandSeal} aria-hidden="true">
+                <NovuSymbol className={styles.deckBrandMark} size={64} />
+              </span>
               <span className={styles.deckNote}>
                 <MousePointerClick size={17} aria-hidden="true" />
                 Navegá pantalla por pantalla
@@ -674,6 +675,7 @@ export default function PrototypeShowcase() {
                   style={{ "--card-index": index } as CSSProperties}
                 >
                   <span className={styles.journeyNumber}>0{index + 1}</span>
+                  <NovuSymbol className={styles.journeyBrandMark} size={72} />
                   <span className={styles.journeyIcon}>
                     <Icon size={23} aria-hidden="true" />
                   </span>
@@ -793,6 +795,7 @@ export default function PrototypeShowcase() {
                   {selectedIndex + 1} / {selectedGroupScreens.length}
                 </span>
               </div>
+              <NovuSymbol className={styles.stageBrandMark} size={180} />
               <div className={styles.selectedPhone} key={selectedScreen.id}>
                 <Image
                   src={selectedScreen.image}
@@ -851,6 +854,11 @@ export default function PrototypeShowcase() {
                 Tip: enfocá esta sección y usá ← → para recorrer el grupo
                 actual.
               </p>
+              <PartnerBrand
+                className={styles.screenInfoBrand}
+                compact
+                tone="dark"
+              />
             </aside>
           </div>
         </section>
@@ -939,6 +947,7 @@ export default function PrototypeShowcase() {
         </section>
 
         <section className={styles.finalCta}>
+          <NovuSymbol className={styles.finalBrandMark} size={300} />
           <span className={styles.eyebrow}>
             <ShieldCheck size={16} aria-hidden="true" /> Prototipo funcional
           </span>
@@ -947,6 +956,11 @@ export default function PrototypeShowcase() {
             La versión local replica los principales flujos con interacciones
             reales, estados persistentes y navegación web responsive.
           </p>
+          <PartnerBrand
+            className={styles.finalPartnerBrand}
+            compact
+            tone="dark"
+          />
           <div>
             <Link className={styles.primaryAction} href="/?view=app">
               Abrir NOVU <ArrowRight size={18} aria-hidden="true" />
@@ -959,14 +973,12 @@ export default function PrototypeShowcase() {
       </main>
 
       <footer className={styles.footer}>
-        <Link className={styles.brand} href="/">
-          <Image
-            src="/brand/novu-mark-transparent.png"
-            alt=""
-            width={32}
-            height={32}
-          />
-          <span>NOVU</span>
+        <Link
+          className={styles.brand}
+          href="/"
+          aria-label="NOVU by G&T Continental"
+        >
+          <PartnerBrand compact />
         </Link>
         <p>Atlas local del prototipo · Figma MCP · Sin despliegue externo</p>
         <a href="#atlas-content">Volver arriba</a>

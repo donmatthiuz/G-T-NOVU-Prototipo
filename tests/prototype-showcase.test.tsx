@@ -6,6 +6,10 @@ describe("navegación de prototipos móviles", () => {
   it("cambia entre los cinco grupos y abre su primera pantalla", () => {
     render(<PrototypeShowcase />);
 
+    expect(
+      screen.getAllByRole("img", { name: "NOVU by G&T Continental" }).length,
+    ).toBeGreaterThanOrEqual(5);
+
     const navigation = screen.getByRole("navigation", {
       name: "Cambiar grupo de prototipos móviles",
     });
