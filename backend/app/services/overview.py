@@ -2,7 +2,6 @@ import asyncio
 from datetime import UTC, datetime
 from typing import Any
 
-from bson import ObjectId
 from pymongo import DESCENDING
 from pymongo.asynchronous.database import AsyncDatabase
 
@@ -12,6 +11,9 @@ from app.schemas.api import (
     PersonalGoalResponse,
 )
 from app.services.auth import public_profile
+
+
+MONTHS_ES = ("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
 
 
 def goal_response(goal: dict[str, Any]) -> PersonalGoalResponse:
@@ -40,15 +42,31 @@ def activity_response(activity: dict[str, Any]) -> ActivityResponse:
     if occurred_at.tzinfo is None:
         occurred_at = occurred_at.replace(tzinfo=UTC)
     delta = datetime.now(UTC).date() - occurred_at.date()
-    date_label = "Hoy" if delta.days == 0 else "Ayer" if delta.days == 1 else occurred_at.strftime("%d %b")
+    date_label = (
+        "Hoy"
+        if delta.days == 0
+        else "Ayer"
+        if delta.days == 1
+        else f"{occurred_at.day:02d} {MONTHS_ES[occurred_at.month - 1]}"
+    )
     amount_minor = activity.get("amount_minor")
     sign = "+" if (amount_minor or 0) >= 0 else "−"
     amount_label = "" if amount_minor is None else f"{sign} Q {abs(amount_minor) / 100:,.0f}"
+    activity_type = activity.get("type", "info")
+    response_type = (
+        "contribution"
+        if activity_type == "contribution"
+        else "expense"
+        if activity_type == "withdrawal"
+        else "info"
+    )
     return ActivityResponse(
         id=str(activity["_id"]),
         name=activity["title"],
         date_label=date_label,
         amount_label=amount_label,
+        amount=None if amount_minor is None else round(int(amount_minor) / 100),
+        type=response_type,
         tone=activity.get("tone", "muted"),
     )
 
@@ -62,7 +80,7 @@ async def get_overview(
     ).sort("updated_at", DESCENDING).limit(20).to_list(length=20)
     activities_task = database.activities.find({"user_id": user_id}).sort(
         [("occurred_at", DESCENDING), ("_id", DESCENDING)]
-    ).limit(10).to_list(length=10)
+    ).limit(30).to_list(length=30)
     memberships_task = database.memberships.find(
         {"user_id": user_id, "status": "active"}, {"shared_plan_id": 1}
     ).limit(20).to_list(length=20)
@@ -101,6 +119,6 @@ async def get_overview(
             }
             for plan in shared_plans
         ],
-        recent_activity=[activity_response(item) for item in activities],
+        recent_activity=[activity_response(item) for item in activities[:3]],
+        activity_history=[activity_response(item) for item in activities],
     )
-

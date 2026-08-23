@@ -197,8 +197,8 @@ function FlowExplorer() {
         </span>
         <h2 id="flow-title">Todos los caminos llevan a un ahorro más claro.</h2>
         <p>
-          Explorá localmente los flujos que hacen de NOVU una experiencia
-          personal, compartida y familiar.
+          Explorá los flujos que hacen de NOVU una experiencia personal,
+          compartida y familiar.
         </p>
       </div>
       <div className="flow-explorer">
@@ -561,9 +561,8 @@ function LandingPage() {
             <h2>Tu información se entiende antes de pedirla.</h2>
             <p>
               La verificación de identidad se presenta como un recorrido guiado:
-              DPI, selfie, datos de contacto y comprobante. Sin backend en este
-              prototipo, cada interacción es una demostración local de la
-              experiencia.
+              DPI, selfie, datos de contacto y comprobante, con explicaciones
+              claras en cada paso.
             </p>
           </div>
           <div className="security-points">
@@ -589,7 +588,7 @@ function LandingPage() {
       </main>
       <footer>
         <Brand />
-        <p>Prototipo frontend de NOVU. Sin backend ni base de datos.</p>
+        <p>NOVU by G&T Continental · Ahorrá con claridad y propósito.</p>
         <div>
           <a href="#inicio">Inicio</a>
           <a href="#flujos">Flujos</a>

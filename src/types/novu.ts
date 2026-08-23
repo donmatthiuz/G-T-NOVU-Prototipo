@@ -17,13 +17,28 @@ export interface PersonalGoal {
   currency: CurrencyCode;
 }
 
-export type ActivityTone = "success" | "muted";
+export type SharedPlanType = "group_challenge" | "family_fund";
+
+export interface SharedPlan {
+  id: string;
+  name: string;
+  type: SharedPlanType;
+  balanceAmount: number;
+  targetAmount: number;
+  currency: CurrencyCode;
+  status: string;
+}
+
+export type ActivityTone = "success" | "expense" | "muted";
+export type ActivityType = "contribution" | "expense" | "info";
 
 export interface ActivityItem {
   id: string;
   name: string;
   dateLabel: string;
   amountLabel: string;
+  amount: number | null;
+  type: ActivityType;
   tone: ActivityTone;
 }
 
@@ -32,8 +47,44 @@ export interface NovuOverview {
   personalGoal: PersonalGoal;
   personalGoals?: PersonalGoal[];
   primaryGoalId?: string;
-  sharedPlans?: Array<Record<string, unknown>>;
+  sharedPlans?: SharedPlan[];
   recentActivity: ActivityItem[];
+  activityHistory: ActivityItem[];
+}
+
+export type ContributionDestinationType = "goal" | "shared_plan";
+
+export interface ContributionItem {
+  id: string;
+  destinationType: ContributionDestinationType;
+  destinationId: string;
+  memberName: string;
+  description: string;
+  amount: number;
+  amountLabel: string;
+  dateLabel: string;
+  occurredAt: string;
+  currentMonth: boolean;
+  status: "pending" | "posted" | "failed" | "reversed";
+}
+
+export interface ContributionPage {
+  items: ContributionItem[];
+}
+
+export interface ContributionCreate {
+  destinationType: ContributionDestinationType;
+  destinationId: string;
+  amountMinor: number;
+  description: string;
+  clientContributionId: string;
+}
+
+export interface ContributionCreateResponse {
+  contribution: ContributionItem;
+  updatedBalanceAmount: number;
+  updatedProgress: number;
+  duplicated: boolean;
 }
 
 export interface CopilotConversation {

@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, File, Form, Header, Query, Request, UploadFile, status
 
@@ -7,6 +7,9 @@ from app.core.config import get_settings
 from app.core.security import hash_token
 from app.schemas.api import (
     AuthSessionResponse,
+    ContributionCreate,
+    ContributionCreateResponse,
+    ContributionPage,
     ConversationCreate,
     ConversationResponse,
     CopilotMessageCreate,
@@ -15,7 +18,7 @@ from app.schemas.api import (
     MessagePage,
     OverviewResponse,
 )
-from app.services import auth, copilot, overview
+from app.services import auth, contributions, copilot, overview
 
 
 router = APIRouter()
@@ -85,6 +88,32 @@ async def get_overview(database: Database, user: CurrentUser) -> OverviewRespons
     return await overview.get_overview(database, user)
 
 
+@router.get("/contributions", response_model=ContributionPage, tags=["contributions"])
+async def get_contributions(
+    database: Database,
+    user: CurrentUser,
+    destination_type: Annotated[
+        Literal["goal", "shared_plan"], Query(alias="destinationType")
+    ],
+    destination_id: Annotated[str, Query(alias="destinationId", min_length=24, max_length=24)],
+) -> ContributionPage:
+    return await contributions.list_contributions(
+        database, user, destination_type, destination_id
+    )
+
+
+@router.post(
+    "/contributions",
+    response_model=ContributionCreateResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["contributions"],
+)
+async def post_contribution(
+    payload: ContributionCreate, database: Database, user: CurrentUser
+) -> ContributionCreateResponse:
+    return await contributions.create_contribution(database, user, payload)
+
+
 @router.get(
     "/copilot/conversations", response_model=list[ConversationResponse], tags=["copilot"]
 )
@@ -133,4 +162,3 @@ async def post_message(
     return await copilot.send_message(
         database, get_settings(), conversation_id, user, payload
     )
-

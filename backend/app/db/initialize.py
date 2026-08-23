@@ -107,7 +107,7 @@ COLLECTIONS: dict[str, dict[str, Any]] = {
     ),
     "activities": object_schema(
         ["user_id", "type", "title", "tone", "occurred_at"],
-        {"user_id": OID, "type": STRING, "title": STRING, "amount_minor": {"bsonType": ["long", "null"]}, "tone": {"enum": ["success", "muted"]}, "reference": {"bsonType": "object"}, "occurred_at": DATE},
+        {"user_id": OID, "type": STRING, "title": STRING, "amount_minor": {"bsonType": ["long", "null"]}, "tone": {"enum": ["success", "expense", "muted"]}, "reference": {"bsonType": "object"}, "occurred_at": DATE},
     ),
     "audit_events": object_schema(
         ["actor_id", "action", "entity_type", "entity_id", "result", "occurred_at"],
@@ -156,6 +156,8 @@ async def initialize_database(database: AsyncDatabase[dict[str, Any]], seed_demo
 async def seed_demo_data(database: AsyncDatabase[dict[str, Any]]) -> None:
     user_id = ObjectId("66c000000000000000000001")
     goal_id = ObjectId("66c000000000000000000002")
+    group_plan_id = ObjectId("66c000000000000000000003")
+    family_plan_id = ObjectId("66c000000000000000000004")
     now = datetime.now(UTC)
     await database.users.update_one(
         {"_id": user_id},
@@ -172,20 +174,154 @@ async def seed_demo_data(database: AsyncDatabase[dict[str, Any]]) -> None:
         {"$setOnInsert": {"owner_id": user_id, "client_creation_id": "demo-goal-antigua", "name": "Viaje a Antigua", "category": "travel", "currency": "GTQ", "target_amount_minor": Int64(200000), "saved_amount_minor": Int64(125000), "planning_context": {"motivations": ["travel", "peace_of_mind"], "starting_point": "habitual_saver", "horizon": "flexible", "answers_version": 1}, "recommendation": {"contribution_amount_minor": Int64(18000), "contribution_frequency": "weekly", "estimated_months": 7, "generated_by": "rules_v1", "generated_at": now}, "target_date": None, "status": "active", "activated_at": now, "completed_at": None, "created_at": now, "updated_at": now, "deleted_at": None}},
         upsert=True,
     )
-    demo_activities = [
-        ("demo-activity-weekly", "contribution", "Aporte semanal", 18000, "success", 0),
-        ("demo-activity-challenge", "contribution", "Reto de julio", 7500, "success", 1),
-        ("demo-activity-coffee", "withdrawal", "Café con amigos", -4500, "muted", 6),
+    shared_plan_seeds = [
+        (
+            group_plan_id,
+            "group_challenge",
+            "Reto de julio",
+            210000,
+            300000,
+            4,
+            {"frequency": "weekly"},
+        ),
+        (
+            family_plan_id,
+            "family_fund",
+            "Fondo Familia Pérez",
+            485000,
+            800000,
+            5,
+            {"required_approvals": 3},
+        ),
     ]
-    for key, kind, title, amount, tone, days in demo_activities:
-        await database.activities.update_one(
-            {"reference.seed_key": key},
-            {"$setOnInsert": {"user_id": user_id, "type": kind, "title": title, "amount_minor": Int64(amount), "tone": tone, "reference": {"seed_key": key}, "occurred_at": now - timedelta(days=days)}},
+    for plan_id, plan_type, name, balance, target, members, rules in shared_plan_seeds:
+        await database.shared_plans.update_one(
+            {"_id": plan_id},
+            {
+                "$setOnInsert": {
+                    "type": plan_type,
+                    "name": name,
+                    "currency": "GTQ",
+                    "target_amount_minor": Int64(target),
+                    "balance_minor": Int64(balance),
+                    "created_by": user_id,
+                    "expected_participants": members,
+                    "rules": rules,
+                    "member_count": members,
+                    "status": "active",
+                    "created_at": now,
+                    "updated_at": now,
+                    "deleted_at": None,
+                }
+            },
             upsert=True,
         )
-    await database.contributions.update_one(
-        {"user_id": user_id, "idempotency_key": "demo-weekly-contribution"},
-        {"$setOnInsert": {"destination": {"type": "goal", "id": goal_id}, "amount_minor": Int64(18000), "currency": "GTQ", "description": "Aporte semanal", "status": "posted", "occurred_at": now, "created_at": now}},
-        upsert=True,
-    )
+        await database.memberships.update_one(
+            {"shared_plan_id": plan_id, "user_id": user_id},
+            {
+                "$setOnInsert": {
+                    "role": "owner",
+                    "status": "active",
+                    "invitation_id": None,
+                    "joined_at": now,
+                    "created_at": now,
+                    "updated_at": now,
+                }
+            },
+            upsert=True,
+        )
+    seeded_activities = [
+        ("demo-activity-weekly", "contribution", "Aporte semanal", 18000, "success", 0),
+        ("demo-activity-challenge", "contribution", "Aporte al reto de julio", 7500, "success", 1),
+        ("demo-activity-coffee", "withdrawal", "Café con amigos", -4500, "expense", 6),
+        ("activity-goal-02", "contribution", "Aporte automático", 18000, "success", 7),
+        ("activity-transport", "withdrawal", "Transporte inesperado", -12000, "expense", 16),
+        ("activity-goal-03", "contribution", "Aporte a Viaje a Antigua", 10000, "success", 18),
+        ("activity-medicine", "withdrawal", "Medicinas", -28000, "expense", 28),
+        ("activity-goal-04", "contribution", "Aporte semanal", 18000, "success", 30),
+        ("activity-entertainment", "withdrawal", "Salida de fin de semana", -9000, "expense", 43),
+        ("activity-goal-05", "contribution", "Aporte flexible", 12000, "success", 45),
+        ("activity-goal-06", "contribution", "Aporte semanal", 18000, "success", 52),
+        ("activity-family-support", "withdrawal", "Apoyo familiar", -22000, "expense", 61),
+        ("activity-goal-07", "contribution", "Aporte a la meta", 15000, "success", 67),
+    ]
+    for key, kind, title, amount, tone, days in seeded_activities:
+        await database.activities.update_one(
+            {"reference.seed_key": key},
+            {"$set": {"user_id": user_id, "type": kind, "title": title, "amount_minor": Int64(amount), "tone": tone, "reference": {"seed_key": key}, "occurred_at": now - timedelta(days=days)}},
+            upsert=True,
+        )
 
+    seeded_contributions = [
+        ("demo-weekly-contribution", 18000, "Aporte semanal", 0),
+        ("seed-contribution-02", 18000, "Aporte automático", 7),
+        ("seed-contribution-03", 10000, "Aporte reducido", 18),
+        ("seed-contribution-04", 18000, "Aporte semanal", 30),
+        ("seed-contribution-05", 12000, "Aporte flexible", 45),
+        ("seed-contribution-06", 18000, "Aporte semanal", 52),
+        ("seed-contribution-07", 15000, "Aporte a la meta", 67),
+    ]
+    for key, amount, description, days in seeded_contributions:
+        occurred_at = now - timedelta(days=days)
+        await database.contributions.update_one(
+            {"user_id": user_id, "idempotency_key": key},
+            {"$set": {"destination": {"type": "goal", "id": goal_id}, "amount_minor": Int64(amount), "currency": "GTQ", "description": description, "status": "posted", "occurred_at": occurred_at, "created_at": occurred_at}},
+            upsert=True,
+        )
+
+    shared_contribution_seeds = [
+        (group_plan_id, "seed-group-carlos-1", "Carlos", 15000, "Aporte semanal", 0),
+        (group_plan_id, "seed-group-ana-1", "Ana", 12500, "Aporte semanal", 1),
+        (group_plan_id, "seed-group-maria-1", "María", 10000, "Aporte semanal", 9),
+        (group_plan_id, "seed-group-user-1", "Vos", 18000, "Mi aporte semanal", 11),
+        (group_plan_id, "seed-group-carlos-2", "Carlos", 12000, "Aporte semanal", 26),
+        (group_plan_id, "seed-group-user-2", "Vos", 15000, "Mi aporte semanal", 33),
+        (family_plan_id, "seed-family-luis-1", "Luis", 25000, "Aporte al fondo", 0),
+        (family_plan_id, "seed-family-user-1", "Vos", 20000, "Mi aporte familiar", 1),
+        (family_plan_id, "seed-family-marta-1", "Marta", 15000, "Aporte al fondo", 10),
+        (family_plan_id, "seed-family-elena-1", "Elena", 20000, "Aporte al fondo", 13),
+        (family_plan_id, "seed-family-luis-2", "Luis", 18000, "Aporte al fondo", 25),
+        (family_plan_id, "seed-family-user-2", "Vos", 15000, "Mi aporte familiar", 36),
+    ]
+    contributor_ids: dict[str, ObjectId] = {
+        "Carlos": ObjectId("66c000000000000000000011"),
+        "Ana": ObjectId("66c000000000000000000012"),
+        "María": ObjectId("66c000000000000000000013"),
+        "Luis": ObjectId("66c000000000000000000014"),
+        "Marta": ObjectId("66c000000000000000000015"),
+        "Elena": ObjectId("66c000000000000000000016"),
+    }
+    for plan_id, key, member_name, amount, description, days in shared_contribution_seeds:
+        occurred_at = now - timedelta(days=days)
+        contributor_id = user_id if member_name == "Vos" else contributor_ids[member_name]
+        await database.contributions.update_one(
+            {"user_id": contributor_id, "idempotency_key": key},
+            {
+                "$set": {
+                    "destination": {"type": "shared_plan", "id": plan_id},
+                    "amount_minor": Int64(amount),
+                    "currency": "GTQ",
+                    "description": description,
+                    "member_name": member_name,
+                    "status": "posted",
+                    "occurred_at": occurred_at,
+                    "created_at": occurred_at,
+                }
+            },
+            upsert=True,
+        )
+
+    seeded_withdrawals = [
+        ("seed-withdrawal-coffee", 4500, "Café con amigos", 6),
+        ("seed-withdrawal-transport", 12000, "Transporte inesperado", 16),
+        ("seed-withdrawal-medicine", 28000, "Medicinas", 28),
+        ("seed-withdrawal-entertainment", 9000, "Salida de fin de semana", 43),
+        ("seed-withdrawal-family", 22000, "Apoyo familiar", 61),
+    ]
+    for key, amount, reason, days in seeded_withdrawals:
+        occurred_at = now - timedelta(days=days)
+        await database.withdrawal_requests.update_one(
+            {"requester_id": user_id, "approval_snapshot.seed_key": key},
+            {"$set": {"source": {"type": "goal", "id": goal_id}, "amount_minor": Int64(amount), "currency": "GTQ", "reason": reason, "approval_snapshot": {"seed_key": key, "required": 1, "approved": 1}, "status": "executed", "created_at": occurred_at, "decided_at": occurred_at, "executed_at": occurred_at}},
+            upsert=True,
+        )

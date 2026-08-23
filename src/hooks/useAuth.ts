@@ -78,7 +78,7 @@ export function useAuth() {
       setError(
         cause instanceof Error
           ? cause.message
-          : "La sesión local se cerró, pero el servidor no respondió.",
+          : "La sesión se cerró, pero no pudimos confirmar la operación.",
       );
     } finally {
       clearSession(window.localStorage);

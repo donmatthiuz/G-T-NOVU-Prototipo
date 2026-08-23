@@ -340,6 +340,39 @@
   border-radius: 20px;
   padding: 20px;
 }
+.transaction-form[aria-busy="true"] .web-form {
+  opacity: 0.72;
+}
+.transaction-error {
+  margin: 12px 0 0;
+  border: 1px solid #fecdca;
+  border-radius: 12px;
+  padding: 11px 12px;
+  background: #fef3f2;
+  color: #b42318;
+  font-size: 12px;
+  font-weight: 650;
+}
+.button-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: contribution-spin 0.75s linear infinite;
+}
+@keyframes contribution-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .button-spinner {
+    animation: none;
+    border-color: #fff;
+    opacity: 0.8;
+  }
+}
 .impact-card {
   margin-top: 16px;
   background: var(--soft-pink);
@@ -460,8 +493,8 @@
 }
 .filter-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 7px;
-  overflow: auto;
   margin-bottom: 15px;
 }
 .filter-row button {
@@ -473,9 +506,46 @@
   white-space: nowrap;
   font-size: 11px;
 }
-.filter-row .active {
+.filter-row .active,
+.filter-row button[aria-pressed="true"] {
   background: var(--dark);
   color: #fff;
+}
+.filter-row button:focus-visible,
+.member-filter button:focus-visible {
+  outline: 3px solid rgba(139, 47, 224, 0.24);
+  outline-offset: 2px;
+}
+.member-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -4px 0 15px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--soft-violet);
+}
+.member-filter button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid #d8c8eb;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+.member-filter button[aria-pressed="true"] {
+  border-color: var(--violet);
+  background: var(--violet);
+  color: #fff;
+}
+.history-result-count {
+  margin: 0 0 9px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
 }
 .history-table {
   border: 1px solid var(--border);
@@ -501,10 +571,125 @@
   color: var(--muted);
 }
 .history-table strong {
-  color: #2e7d4f;
+  color: var(--success);
 }
 .history-table small {
   color: var(--muted);
+}
+.history-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+}
+.history-summary > div {
+  min-width: 0;
+  min-height: 92px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.history-summary svg {
+  width: 22px;
+  height: 22px;
+}
+.history-summary > .contribution svg,
+.history-summary > .contribution strong {
+  color: var(--success);
+}
+.history-summary > .expense svg,
+.history-summary > .expense strong {
+  color: var(--danger);
+}
+.history-summary > div > span {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.history-summary small {
+  color: var(--muted);
+  font-size: 10px;
+}
+.history-summary strong {
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.personal-history-list {
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  background: #fff;
+  overflow: hidden;
+}
+.personal-history-list article {
+  min-height: 74px;
+  padding: 13px 15px;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+.personal-history-list article:last-child {
+  border-bottom: 0;
+}
+.personal-history-list article.contribution {
+  color: var(--success);
+}
+.personal-history-list article.expense {
+  color: var(--danger);
+}
+.history-movement-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+.contribution .history-movement-icon {
+  background: var(--soft-success);
+  color: var(--success);
+}
+.expense .history-movement-icon {
+  background: var(--soft-danger);
+  color: var(--danger);
+}
+.history-movement-icon svg {
+  width: 19px;
+  height: 19px;
+}
+.personal-history-list article > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.personal-history-list article > span:nth-child(2) small {
+  color: currentColor;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.personal-history-list b {
+  color: var(--ink);
+  font-size: 12px;
+}
+.personal-history-list time {
+  color: var(--muted);
+  font-size: 10px;
+}
+.personal-history-list article > strong {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .history-summary {
+    grid-template-columns: 1fr;
+  }
 }
 .inline-link {
   margin-top: 13px;

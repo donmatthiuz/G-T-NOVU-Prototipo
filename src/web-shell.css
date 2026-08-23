@@ -306,8 +306,16 @@ body:has(.novu-app) {
   border: 1px solid var(--plan-border);
   border-radius: 28px;
   background:
-    radial-gradient(circle at 90% 8%, rgba(255, 255, 255, 0.17), transparent 27%),
-    radial-gradient(circle at 10% 110%, rgba(233, 28, 122, 0.26), transparent 36%),
+    radial-gradient(
+      circle at 90% 8%,
+      rgba(255, 255, 255, 0.17),
+      transparent 27%
+    ),
+    radial-gradient(
+      circle at 10% 110%,
+      rgba(233, 28, 122, 0.26),
+      transparent 36%
+    ),
     linear-gradient(135deg, #3020a8 0%, #6d2ad1 52%, #c91d79 112%);
   box-shadow:
     0 24px 55px rgba(47, 25, 105, 0.23),
@@ -317,8 +325,16 @@ body:has(.novu-app) {
 .plan-overview-card.group {
   --plan-accent: #d9b7ff;
   background:
-    radial-gradient(circle at 92% 4%, rgba(232, 190, 255, 0.2), transparent 28%),
-    radial-gradient(circle at 0% 105%, rgba(79, 117, 255, 0.25), transparent 39%),
+    radial-gradient(
+      circle at 92% 4%,
+      rgba(232, 190, 255, 0.2),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 0% 105%,
+      rgba(79, 117, 255, 0.25),
+      transparent 39%
+    ),
     linear-gradient(140deg, #24115f 0%, #6030c4 55%, #a12eae 116%);
   box-shadow:
     0 24px 55px rgba(47, 25, 105, 0.24),
@@ -327,8 +343,16 @@ body:has(.novu-app) {
 .plan-overview-card.family {
   --plan-accent: #ffc1d9;
   background:
-    radial-gradient(circle at 88% 4%, rgba(255, 205, 229, 0.2), transparent 29%),
-    radial-gradient(circle at 3% 108%, rgba(154, 71, 205, 0.3), transparent 40%),
+    radial-gradient(
+      circle at 88% 4%,
+      rgba(255, 205, 229, 0.2),
+      transparent 29%
+    ),
+    radial-gradient(
+      circle at 3% 108%,
+      rgba(154, 71, 205, 0.3),
+      transparent 40%
+    ),
     linear-gradient(140deg, #49164e 0%, #9d2675 54%, #df3f78 116%);
   box-shadow:
     0 24px 55px rgba(111, 28, 84, 0.22),
@@ -707,6 +731,24 @@ button.plan-overview-card:hover {
   min-height: 58px;
   padding-inline: 22px;
   font-size: 13px;
+}
+.personal-history-page {
+  width: min(980px, 100%);
+}
+.personal-history-page .history-summary {
+  gap: 16px;
+}
+.personal-history-page .history-summary > div {
+  min-height: 112px;
+  padding: 22px;
+  border-radius: 20px;
+}
+.personal-history-page .personal-history-list {
+  border-radius: 20px;
+}
+.personal-history-page .personal-history-list article {
+  min-height: 78px;
+  padding-inline: 20px;
 }
 .summary-hero,
 .invite-hero,

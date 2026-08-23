@@ -21,9 +21,11 @@ import {
 import { SIDEBAR_STORAGE_KEY } from "@/lib/session";
 import PartnerBrand from "@/components/PartnerBrand";
 import type {
+  ActivityItem,
   CapturedMedia,
   CaptureSlot,
   CopilotMessage,
+  ContributionItem,
   IncomePattern,
   RegistrationContact,
   RegistrationContactErrors,
@@ -114,6 +116,7 @@ type Notify = (message: string) => void;
 type NavProps = { go: Go };
 type NavNotifyProps = NavProps & { notify: Notify };
 type SharedType = "group" | "family";
+type PlanType = "personal" | SharedType;
 type Complete = () => void;
 
 function Logo({ wordmark = false }: { wordmark?: boolean }) {
@@ -144,15 +147,26 @@ function Primary({
   children,
   onClick,
   disabled = false,
+  type = "button",
+  busy = false,
 }: {
   children: ReactNode;
-  onClick: MouseEventHandler<HTMLButtonElement>;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
   disabled?: boolean;
+  type?: "button" | "submit";
+  busy?: boolean;
 }) {
   return (
-    <button className="app-primary" onClick={onClick} disabled={disabled}>
+    <button
+      type={type}
+      className="app-primary"
+      onClick={onClick}
+      disabled={disabled}
+      aria-busy={busy}
+    >
+      {busy && <span className="button-spinner" aria-hidden="true" />}
       {children}
-      <ArrowRight size={17} aria-hidden="true" />
+      {!busy && <ArrowRight size={17} aria-hidden="true" />}
     </button>
   );
 }
@@ -486,7 +500,7 @@ function Wizard({
   const next = () => {
     if (step === wizard.length - 1) {
       if (newGoal) {
-        notify(`Nueva meta “${goalName}” creada en este demo.`);
+        notify(`Nueva meta “${goalName}” creada correctamente.`);
         go("metas");
       } else {
         go("capacity");
@@ -497,7 +511,9 @@ function Wizard({
     setChoice([]);
   };
   return (
-    <div className={`app-page wizard-page ${newGoal ? "goal-create-page" : ""}`}>
+    <div
+      className={`app-page wizard-page ${newGoal ? "goal-create-page" : ""}`}
+    >
       <AppHeader
         title={newGoal ? "Nueva meta personal" : ""}
         onBack={
@@ -614,7 +630,8 @@ function SavingsCapacity({
     }
     if (
       needsFixedIncome &&
-      (!draft.fixedMonthlyIncome || amountToMinor(draft.fixedMonthlyIncome) <= 0)
+      (!draft.fixedMonthlyIncome ||
+        amountToMinor(draft.fixedMonthlyIncome) <= 0)
     ) {
       nextErrors.fixedMonthlyIncome = "Ingresá tu ingreso fijo mensual.";
     }
@@ -639,9 +656,7 @@ function SavingsCapacity({
       incomePattern: draft.incomePattern as IncomePattern,
       ...(needsFixedIncome
         ? {
-            fixedMonthlyIncomeMinor: amountToMinor(
-              draft.fixedMonthlyIncome,
-            ),
+            fixedMonthlyIncomeMinor: amountToMinor(draft.fixedMonthlyIncome),
           }
         : {}),
       ...(needsVariableFrequency
@@ -867,8 +882,8 @@ function SavingsCapacity({
                   />
                 </span>
                 <small id="capacity-safe-savings-help">
-                  Elegí un monto prudente que también podrías mantener en un
-                  mes difícil.
+                  Elegí un monto prudente que también podrías mantener en un mes
+                  difícil.
                 </small>
                 {errors.safeMonthlySavings && (
                   <small
@@ -1346,7 +1361,7 @@ function ContactForm({
   );
 }
 
-function Dashboard({ go, notify }: NavNotifyProps) {
+function Dashboard({ go }: NavProps) {
   const { data } = useNovuData();
   const { profile, personalGoal, recentActivity } = data;
   return (
@@ -1384,7 +1399,9 @@ function Dashboard({ go, notify }: NavNotifyProps) {
         </div>
         <div className="quick-actions" aria-label="Accesos rápidos">
           <button onClick={() => go("personal-create")}>
-            <span className="quick-action-icon"><Target /></span>
+            <span className="quick-action-icon">
+              <Target />
+            </span>
             <span>
               <b>Nueva meta personal</b>
               <small>Creá un plan de ahorro para vos</small>
@@ -1392,7 +1409,9 @@ function Dashboard({ go, notify }: NavNotifyProps) {
             <ChevronRight aria-hidden="true" />
           </button>
           <button onClick={() => go("group-create")}>
-            <span className="quick-action-icon"><UsersRound /></span>
+            <span className="quick-action-icon">
+              <UsersRound />
+            </span>
             <span>
               <b>Nuevo reto grupal</b>
               <small>Compartí una meta con otras personas</small>
@@ -1400,7 +1419,9 @@ function Dashboard({ go, notify }: NavNotifyProps) {
             <ChevronRight aria-hidden="true" />
           </button>
           <button onClick={() => go("family-create")}>
-            <span className="quick-action-icon"><Heart /></span>
+            <span className="quick-action-icon">
+              <Heart />
+            </span>
             <span>
               <b>Nuevo fondo grupal</b>
               <small>Definí aportes, permisos y administración</small>
@@ -1408,7 +1429,9 @@ function Dashboard({ go, notify }: NavNotifyProps) {
             <ChevronRight aria-hidden="true" />
           </button>
           <button onClick={() => go("copiloto")}>
-            <span className="quick-action-icon"><Bot /></span>
+            <span className="quick-action-icon">
+              <Bot />
+            </span>
             <span>
               <b>Consultar a NOVU</b>
               <small>Recibí orientación sobre tu plan</small>
@@ -1420,9 +1443,7 @@ function Dashboard({ go, notify }: NavNotifyProps) {
       <section>
         <div className="section-row">
           <h2>Actividad reciente</h2>
-          <button onClick={() => notify("Mostrando el historial completo.")}>
-            Ver historial
-          </button>
+          <button onClick={() => go("personal-history")}>Ver historial</button>
         </div>
         <div className="activity-list">
           {recentActivity.map((item) => (
@@ -1443,21 +1464,126 @@ function Dashboard({ go, notify }: NavNotifyProps) {
   );
 }
 
+type PersonalHistoryFilter = "all" | "contribution" | "expense";
+
+function PersonalHistory({ go }: NavProps) {
+  const { data } = useNovuData();
+  const [filter, setFilter] = useState<PersonalHistoryFilter>("all");
+  const history = data.activityHistory ?? data.recentActivity;
+  const filtered = history.filter(
+    (item) => filter === "all" || item.type === filter,
+  );
+  const contributed = history.reduce(
+    (total, item) =>
+      item.type === "contribution"
+        ? total + Math.max(item.amount ?? 0, 0)
+        : total,
+    0,
+  );
+  const spent = history.reduce(
+    (total, item) =>
+      item.type === "expense" ? total + Math.abs(item.amount ?? 0) : total,
+    0,
+  );
+  const filters: Array<{ id: PersonalHistoryFilter; label: string }> = [
+    { id: "all", label: "Todos" },
+    { id: "contribution", label: "Aportes" },
+    { id: "expense", label: "Gastos" },
+  ];
+
+  return (
+    <div className="app-page personal-history-page">
+      <AppHeader title="Historial personal" onBack={() => go("home")} />
+      <p className="app-subtitle">
+        Revisá los movimientos que influyen en tu meta de ahorro.
+      </p>
+      <div className="history-summary" aria-label="Resumen de movimientos">
+        <div className="contribution">
+          <CirclePlus aria-hidden="true" />
+          <span>
+            <small>Aportes registrados</small>
+            <strong>+ Q {contributed.toLocaleString("es-GT")}</strong>
+          </span>
+        </div>
+        <div className="expense">
+          <HandCoins aria-hidden="true" />
+          <span>
+            <small>Gastos y retiros</small>
+            <strong>− Q {spent.toLocaleString("es-GT")}</strong>
+          </span>
+        </div>
+      </div>
+      <div
+        className="filter-row"
+        role="group"
+        aria-label="Filtrar historial personal"
+      >
+        {filters.map((item) => (
+          <button
+            type="button"
+            key={item.id}
+            className={filter === item.id ? "active" : ""}
+            aria-pressed={filter === item.id}
+            onClick={() => setFilter(item.id)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+      <p className="history-result-count" aria-live="polite">
+        {filtered.length} {filtered.length === 1 ? "movimiento" : "movimientos"}
+      </p>
+      <div className="personal-history-list">
+        {filtered.map((item: ActivityItem) => {
+          const contribution = item.type === "contribution";
+          return (
+            <article
+              key={item.id}
+              className={contribution ? "contribution" : "expense"}
+            >
+              <span className="history-movement-icon">
+                {contribution ? (
+                  <CirclePlus aria-hidden="true" />
+                ) : (
+                  <HandCoins aria-hidden="true" />
+                )}
+              </span>
+              <span>
+                <small>{contribution ? "Aporte" : "Gasto"}</small>
+                <b>{item.name}</b>
+                <time>{item.dateLabel}</time>
+              </span>
+              <strong>{item.amountLabel}</strong>
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Goals({ go, notify }: NavNotifyProps) {
+  const { data } = useNovuData();
+  const goal = data.personalGoal;
+  const remaining = Math.max(goal.targetAmount - goal.savedAmount, 0);
   return (
     <div className="app-page">
       <AppHeader title="Mis metas" onBack={() => go("home")} />
       <PlanOverviewCard
         variant="personal"
         eyebrow="Plan personal"
-        title="Viaje a Antigua"
+        title={goal.name}
         status="En marcha"
-        saved="Q 1,250"
-        target="Q 2,000"
+        saved={`Q ${goal.savedAmount.toLocaleString("es-GT")}`}
+        target={`Q ${goal.targetAmount.toLocaleString("es-GT")}`}
         detailLabel="Próximo aporte"
-        detailValue="Q 180 · viernes"
-        progress={62}
-        remaining="Te faltan Q 750 para completar esta meta."
+        detailValue={`Q ${goal.weeklyContribution.toLocaleString("es-GT")} · viernes`}
+        progress={goal.progress}
+        remaining={
+          remaining > 0
+            ? `Te faltan Q ${remaining.toLocaleString("es-GT")} para completar esta meta.`
+            : "¡Completaste esta meta!"
+        }
         className="tall"
         onClick={() => notify("Tu aporte sugerido es Q 180 cada viernes.")}
       />
@@ -1479,6 +1605,14 @@ function Goals({ go, notify }: NavNotifyProps) {
         </div>
       </div>
       <section className="action-list">
+        <button onClick={() => go("personal-contribute")}>
+          <CirclePlus />
+          <span>
+            <b>Aportar a mi meta</b>
+            <small>Elegí cuenta, monto y descripción</small>
+          </span>
+          <ChevronRight />
+        </button>
         <button onClick={() => go("personal-create")}>
           <CirclePlus />
           <span>
@@ -1601,13 +1735,18 @@ function Copilot({ go, notify }: NavNotifyProps) {
   useEffect(() => {
     const chat = chatRef.current;
     if (!chat) return;
-    chat.scrollTo({
-      top: chat.scrollHeight,
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
-    });
-  }, [messages]);
+    if (typeof chat.scrollTo === "function") {
+      chat.scrollTo({
+        top: chat.scrollHeight,
+        behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)")
+          .matches
+          ? "auto"
+          : "smooth",
+      });
+    } else {
+      chat.scrollTop = chat.scrollHeight;
+    }
+  }, [messages, sending]);
   return (
     <div className="app-page copilot-page">
       <AppHeader title="Copiloto NOVU" onBack={() => go("home")} />
@@ -1616,11 +1755,19 @@ function Copilot({ go, notify }: NavNotifyProps) {
           <Logo />
           <div>
             <b>Asistente financiero NOVU</b>
-            <small><i aria-hidden="true" /> Disponible para orientarte</small>
+            <small>
+              <i aria-hidden="true" /> Disponible para orientarte
+            </small>
           </div>
           <span>Contexto protegido y personalizado</span>
         </header>
-        <div className="chat" ref={chatRef} role="log" aria-live="polite">
+        <div
+          className="chat"
+          ref={chatRef}
+          role="log"
+          aria-live="polite"
+          aria-busy={loading || sending}
+        >
           {loading && <p className="chat-status">Cargando tu conversación…</p>}
           {messages.map((message) => {
             const from = message.sender === "assistant" ? "bot" : "me";
@@ -1634,6 +1781,23 @@ function Copilot({ go, notify }: NavNotifyProps) {
               </article>
             );
           })}
+          {sending && (
+            <article
+              className="chat-message bot chat-message-thinking"
+              role="status"
+              aria-label="NOVU está pensando"
+            >
+              <Logo />
+              <div aria-hidden="true">
+                <span>NOVU</span>
+                <div className="typing-indicator">
+                  <i className="typing-dot" />
+                  <i className="typing-dot" />
+                  <i className="typing-dot" />
+                </div>
+              </div>
+            </article>
+          )}
         </div>
         <div className="copilot-composer">
           <div className="quick-answers" aria-label="Preguntas sugeridas">
@@ -1678,9 +1842,6 @@ function Copilot({ go, notify }: NavNotifyProps) {
               {error}
             </small>
           )}
-          {sending && (
-            <small className="chat-status">NOVU está analizando tus datos…</small>
-          )}
           <small>
             NOVU puede equivocarse. Revisá la información antes de tomar
             decisiones.
@@ -1692,20 +1853,31 @@ function Copilot({ go, notify }: NavNotifyProps) {
 }
 
 function Group({ go }: NavProps) {
+  const { data } = useNovuData();
+  const plan = data.sharedPlans?.find(
+    (candidate) => candidate.type === "group_challenge",
+  );
+  const balance = plan?.balanceAmount ?? 2100;
+  const target = plan?.targetAmount ?? 3000;
+  const remaining = Math.max(target - balance, 0);
   return (
     <div className="app-page">
       <AppHeader title="Plan del reto" onBack={() => go("home")} />
       <PlanOverviewCard
         variant="group"
         eyebrow="Reto colaborativo"
-        title="Reto de julio"
+        title={plan?.name ?? "Reto de julio"}
         status="Reto activo"
-        saved="Q 2,100"
-        target="Q 3,000"
+        saved={`Q ${balance.toLocaleString("es-GT")}`}
+        target={`Q ${target.toLocaleString("es-GT")}`}
         detailLabel="Frecuencia"
         detailValue="Semanal"
-        progress={70}
-        remaining="El equipo está a Q 900 de completar el reto."
+        progress={Math.min(100, Math.round((balance * 100) / target))}
+        remaining={
+          remaining > 0
+            ? `El equipo está a Q ${remaining.toLocaleString("es-GT")} de completar el reto.`
+            : "¡El equipo completó el reto!"
+        }
         members={["CA", "AN", "DV", "MA"]}
         sharedLayout
       />
@@ -1770,20 +1942,31 @@ function Group({ go }: NavProps) {
 }
 
 function Family({ go }: NavProps) {
+  const { data } = useNovuData();
+  const plan = data.sharedPlans?.find(
+    (candidate) => candidate.type === "family_fund",
+  );
+  const balance = plan?.balanceAmount ?? 4850;
+  const target = plan?.targetAmount ?? 8000;
+  const remaining = Math.max(target - balance, 0);
   return (
     <div className="app-page">
       <AppHeader title="Fondo familiar" onBack={() => go("home")} />
       <PlanOverviewCard
         variant="family"
         eyebrow="Fondo familiar"
-        title="Fondo Familia Pérez"
+        title={plan?.name ?? "Fondo Familia Pérez"}
         status="Fondo activo"
-        saved="Q 4,850"
-        target="Q 8,000"
+        saved={`Q ${balance.toLocaleString("es-GT")}`}
+        target={`Q ${target.toLocaleString("es-GT")}`}
         detailLabel="Aprobación"
         detailValue="3 de 5 votos"
-        progress={60}
-        remaining="La familia está a Q 3,150 de completar el fondo."
+        progress={Math.min(100, Math.round((balance * 100) / target))}
+        remaining={
+          remaining > 0
+            ? `La familia está a Q ${remaining.toLocaleString("es-GT")} de completar el fondo.`
+            : "¡La familia completó el fondo!"
+        }
         members={["DP", "AP", "MP", "JP", "LP"]}
         sharedLayout
       />
@@ -1872,6 +2055,9 @@ function FormScreen({
   next,
   action,
   children,
+  onSubmit,
+  pending = false,
+  error,
 }: NavNotifyProps & {
   title: string;
   subtitle: string;
@@ -1880,21 +2066,38 @@ function FormScreen({
   next: string;
   action: string;
   children: ReactNode;
+  onSubmit?: () => void | Promise<void>;
+  pending?: boolean;
+  error?: string | null;
 }) {
   return (
     <div className="app-page">
       <AppHeader title={title} onBack={() => go(back)} />
       {stepLabel && <p className="overline form-step">{stepLabel}</p>}
       <p className="app-subtitle form-subtitle">{subtitle}</p>
-      <div className="web-form">{children}</div>
-      <Primary
-        onClick={() => {
-          notify(`${action}: acción guardada localmente.`);
+      <form
+        className="transaction-form"
+        aria-busy={pending}
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (onSubmit) {
+            void onSubmit();
+            return;
+          }
+          notify(`${action}: operación registrada.`);
           go(next);
         }}
       >
-        {action}
-      </Primary>
+        <div className="web-form">{children}</div>
+        {error && (
+          <p className="transaction-error" role="alert">
+            {error} Podés revisar los datos e intentar de nuevo.
+          </p>
+        )}
+        <Primary type="submit" disabled={pending} busy={pending}>
+          {pending ? "Registrando aporte…" : action}
+        </Primary>
+      </form>
     </div>
   );
 }
@@ -1959,7 +2162,9 @@ function SummaryScreen({ type, go }: NavProps & { type: SharedType }) {
             ? "El plan comenzará cuando confirmés e invites al equipo."
             : "El fondo comenzará cuando confirmés las reglas familiares."
         }
-        members={group ? ["CA", "AN", "MA", "DV"] : ["DP", "AP", "MP", "JP", "LP"]}
+        members={
+          group ? ["CA", "AN", "MA", "DV"] : ["DP", "AP", "MP", "JP", "LP"]
+        }
         className="summary-card"
       />
       <div className="summary-list">
@@ -1999,13 +2204,8 @@ function InviteScreen({
       <div className="invite-hero">
         <UsersRound />
         <h2>Invitá a quienes querés sumar</h2>
-        <p>
-          Compartí este enlace. La invitación es simulada y no sale del
-          navegador.
-        </p>
-        <button
-          onClick={() => notify("Enlace de invitación copiado localmente.")}
-        >
+        <p>Compartí este enlace con las personas que querés sumar.</p>
+        <button onClick={() => notify("Enlace de invitación copiado.")}>
           novu.gt/invitacion/8f31 <span>Copiar</span>
         </button>
       </div>
@@ -2039,24 +2239,85 @@ function MoneyFlow({
   mode,
   go,
   notify,
-}: NavNotifyProps & { type: SharedType; mode: "contribute" | "withdraw" }) {
+}: NavNotifyProps & { type: PlanType; mode: "contribute" | "withdraw" }) {
+  const { data } = useNovuData();
+  const [amount, setAmount] = useState(mode === "contribute" ? "200" : "600");
+  const [description, setDescription] = useState(
+    mode === "contribute" ? "Mi aporte de esta semana" : "Reparación de cocina",
+  );
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const personal = type === "personal";
   const group = type === "group";
   const contribute = mode === "contribute";
-  const back = group ? "group" : "family";
+  const back = personal ? "metas" : group ? "group" : "family";
+  const sharedPlanType = group ? "group_challenge" : "family_fund";
+  const destinationId = personal
+    ? data.personalGoal.id
+    : data.sharedPlans?.find((plan) => plan.type === sharedPlanType)?.id;
+
+  const submitContribution = async () => {
+    const numericAmount = Number(amount);
+    if (
+      !Number.isFinite(numericAmount) ||
+      !Number.isInteger(numericAmount) ||
+      numericAmount < 1
+    ) {
+      setError(
+        "Ingresá un monto válido en quetzales enteros, mayor o igual a Q 1.",
+      );
+      return;
+    }
+    if (!description.trim()) {
+      setError("Agregá una descripción para identificar el aporte.");
+      return;
+    }
+    if (!destinationId) {
+      setError("No se pudo identificar el plan seleccionado.");
+      return;
+    }
+    setPending(true);
+    setError(null);
+    try {
+      await novuApi.createContribution({
+        destinationType: personal ? "goal" : "shared_plan",
+        destinationId,
+        amountMinor: Math.round(numericAmount * 100),
+        description: description.trim(),
+        clientContributionId:
+          globalThis.crypto?.randomUUID?.() ?? `aporte-${Date.now()}`,
+      });
+      notify(
+        `Aporte de Q ${numericAmount.toLocaleString("es-GT")} registrado correctamente.`,
+      );
+      go(back);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "No se pudo registrar el aporte.",
+      );
+    } finally {
+      setPending(false);
+    }
+  };
+
   return (
     <FormScreen
       title={
         contribute
-          ? group
-            ? "Aportar al reto"
-            : "Aportar al fondo"
+          ? personal
+            ? "Aportar a mi meta"
+            : group
+              ? "Aportar al reto"
+              : "Aportar al fondo"
           : group
             ? "Retiro del reto"
             : "Solicitar retiro"
       }
       subtitle={
         contribute
-          ? "El aporte se refleja de inmediato en este prototipo."
+          ? "El aporte se refleja después de confirmar la operación."
           : "Contanos por qué necesitás retirar el dinero."
       }
       back={back}
@@ -2064,24 +2325,40 @@ function MoneyFlow({
       notify={notify}
       next={back}
       action={contribute ? "Confirmar aporte" : "Enviar solicitud"}
+      onSubmit={contribute ? submitContribution : undefined}
+      pending={pending}
+      error={error}
     >
-      <label>
+      <label htmlFor={`${type}-${mode}-account`}>
         Cuenta
-        <select>
+        <select id={`${type}-${mode}-account`} disabled={pending}>
           <option>Cuenta Digital G&T · 4382</option>
           <option>Cuenta monetaria · 1590</option>
         </select>
       </label>
-      <label>
+      <label htmlFor={`${type}-${mode}-amount`}>
         Monto
-        <input type="number" defaultValue={contribute ? "200" : "600"} />
+        <input
+          id={`${type}-${mode}-amount`}
+          type="number"
+          min="1"
+          step="1"
+          inputMode="decimal"
+          required
+          disabled={pending}
+          value={amount}
+          onChange={(event) => setAmount(event.target.value)}
+        />
       </label>
-      <label>
+      <label htmlFor={`${type}-${mode}-description`}>
         {contribute ? "Descripción" : "Motivo"}
         <textarea
-          defaultValue={
-            contribute ? "Mi aporte de esta semana" : "Reparación de cocina"
-          }
+          id={`${type}-${mode}-description`}
+          required
+          maxLength={160}
+          disabled={pending}
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
         />
       </label>
     </FormScreen>
@@ -2090,41 +2367,118 @@ function MoneyFlow({
 
 function HistoryScreen({ type, go }: NavProps & { type: SharedType }) {
   const group = type === "group";
-  const rows = group
-    ? [
-        ["Carlos", "Q 150", "Hoy"],
-        ["Ana", "Q 125", "Ayer"],
-        ["María", "Q 100", "14 ago"],
-        ["Vos", "Q 180", "12 ago"],
-      ]
-    : [
-        ["Luis", "Q 250", "Hoy"],
-        ["Vos", "Q 200", "Ayer"],
-        ["Marta", "Q 150", "13 ago"],
-        ["Elena", "Q 200", "10 ago"],
-      ];
+  const { data } = useNovuData();
+  const [filter, setFilter] = useState<"month" | "all" | "member">("month");
+  const [member, setMember] = useState("Vos");
+  const [rows, setRows] = useState<ContributionItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const planId = data.sharedPlans?.find(
+    (plan) => plan.type === (group ? "group_challenge" : "family_fund"),
+  )?.id;
+
+  useEffect(() => {
+    let active = true;
+    if (!planId) {
+      return () => {
+        active = false;
+      };
+    }
+    novuApi
+      .getContributions("shared_plan", planId)
+      .then((response) => {
+        if (active) setRows(response.data.items);
+      })
+      .catch((cause: unknown) => {
+        if (active) {
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : "No se pudo cargar el historial.",
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [planId]);
+
+  const historyError = planId
+    ? error
+    : "No se encontró el plan para consultar sus aportes.";
+  const historyLoading = Boolean(planId) && loading;
+  const members = Array.from(new Set(rows.map((row) => row.memberName)));
+  const filteredRows = rows.filter((row) => {
+    if (filter === "month") return row.currentMonth;
+    if (filter === "member") return row.memberName === member;
+    return true;
+  });
+  const filters = [
+    { id: "month" as const, label: "Este mes" },
+    { id: "all" as const, label: "Todos" },
+    { id: "member" as const, label: "Por miembro" },
+  ];
   return (
     <div className="app-page">
       <AppHeader
         title={group ? "Historial del reto" : "Historial de aportaciones"}
         onBack={() => go(group ? "group" : "family")}
       />
-      <div className="filter-row">
-        <button className="active">Este mes</button>
-        <button>Todos</button>
-        <button>Por miembro</button>
+      <div className="filter-row" role="group" aria-label="Filtrar historial">
+        {filters.map((item) => (
+          <button
+            type="button"
+            key={item.id}
+            className={filter === item.id ? "active" : ""}
+            aria-pressed={filter === item.id}
+            onClick={() => setFilter(item.id)}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
+      {filter === "member" && (
+        <div
+          className="member-filter"
+          role="group"
+          aria-label="Elegir integrante"
+        >
+          {members.map((name) => (
+            <button
+              type="button"
+              key={name}
+              aria-pressed={member === name}
+              onClick={() => setMember(name)}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      )}
+      <p className="history-result-count" aria-live="polite">
+        {historyLoading
+          ? "Cargando aportes…"
+          : `${filteredRows.length} ${filteredRows.length === 1 ? "aporte" : "aportes"}`}
+      </p>
+      {historyError && (
+        <p className="transaction-error" role="alert">
+          {historyError} Volvé a abrir el historial para intentar de nuevo.
+        </p>
+      )}
       <div className="history-table">
         <div>
           <b>Integrante</b>
           <b>Aporte</b>
           <b>Fecha</b>
         </div>
-        {rows.map((row) => (
-          <div key={row.join()}>
-            <span>{row[0]}</span>
-            <strong>{row[1]}</strong>
-            <small>{row[2]}</small>
+        {filteredRows.map((row) => (
+          <div key={row.id}>
+            <span>{row.memberName}</span>
+            <strong>{row.amountLabel}</strong>
+            <small>{row.dateLabel}</small>
           </div>
         ))}
       </div>
@@ -2373,9 +2727,7 @@ function MenuPage({
           </span>
           <ChevronRight />
         </button>
-        <button
-          onClick={() => notify("Tus ajustes se actualizaron localmente.")}
-        >
+        <button onClick={() => notify("Tus ajustes se actualizaron.")}>
           <WalletCards />
           <span>
             <b>Cuentas y aportes</b>
@@ -2424,6 +2776,8 @@ const pageLabels: Record<string, string> = {
   inicio: "Resumen",
   metas: "Mis metas",
   "personal-create": "Nueva meta personal",
+  "personal-contribute": "Aportar a mi meta",
+  "personal-history": "Historial personal",
   copiloto: "Copiloto NOVU",
   ritmo: "Mi ritmo",
   opportunities: "Oportunidades",
@@ -2777,11 +3131,15 @@ export default function NovuApp({ exit }: { exit: () => void }) {
         media={registrationMedia.proof ? [registrationMedia.proof] : []}
       />
     ),
-    home: <Dashboard go={go} notify={notify} />,
-    inicio: <Dashboard go={go} notify={notify} />,
+    home: <Dashboard go={go} />,
+    inicio: <Dashboard go={go} />,
     metas: <Goals go={go} notify={notify} />,
     "personal-create": <Wizard go={go} notify={notify} newGoal />,
+    "personal-contribute": (
+      <MoneyFlow type="personal" mode="contribute" go={go} notify={notify} />
+    ),
     "personal-withdraw": <PersonalWithdraw go={go} notify={notify} />,
+    "personal-history": <PersonalHistory go={go} />,
     copiloto: <Copilot go={go} notify={notify} />,
     ritmo: <Rhythm go={go} />,
     opportunities: <Opportunities go={go} notify={notify} />,
@@ -2874,7 +3232,7 @@ export default function NovuApp({ exit }: { exit: () => void }) {
             </div>
             <div className="topbar-actions">
               <span className="demo-status">
-                <i></i> Demo local · sin backend
+                <i></i> Cuenta protegida
               </span>
               <button
                 className="topbar-icon"
@@ -2898,7 +3256,7 @@ export default function NovuApp({ exit }: { exit: () => void }) {
               <ArrowLeft size={17} /> Volver a la landing
             </button>
             <span className="demo-status">
-              <i></i> Prototipo local · sin backend
+              <i></i> Acceso protegido
             </span>
           </header>
         )}

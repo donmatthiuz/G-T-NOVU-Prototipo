@@ -52,7 +52,9 @@ describe("capa API local", () => {
 
     expect(session.data.accessToken).toMatch(/^demo-/);
     expect(form.get("contact")).toContain("persona@correo.com");
-    expect(form.get("savings_capacity")).toContain('"incomePattern":"variable"');
+    expect(form.get("savings_capacity")).toContain(
+      '"incomePattern":"variable"',
+    );
     expect(form.get("selfie")).toBeInstanceOf(File);
   });
 
@@ -92,6 +94,46 @@ describe("capa API local", () => {
           content: "¿Cómo voy?",
           clientMessageId: "client-1",
         }),
+      }),
+    );
+  });
+
+  it("envía aportes tipados con autenticación e idempotencia", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          contribution: { id: "contribution-1", amount: 200 },
+          updatedBalanceAmount: 1450,
+          updatedProgress: 73,
+          duplicated: false,
+        }),
+        { status: 201, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+    const api = createNovuApi(
+      createFetchTransport({
+        baseUrl: "http://api.test",
+        getAccessToken: () => "session-token",
+      }),
+    );
+    const payload = {
+      destinationType: "goal" as const,
+      destinationId: "66c000000000000000000002",
+      amountMinor: 20000,
+      description: "Aporte semanal",
+      clientContributionId: "contribution-client-1",
+    };
+
+    await api.createContribution(payload);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://api.test/v1/contributions",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          Authorization: "Bearer session-token",
+        }),
+        body: JSON.stringify(payload),
       }),
     );
   });

@@ -1,7 +1,8 @@
 import asyncio
 import logging
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
-from typing import Any, Awaitable, Callable
+from typing import Any
 
 from bson import ObjectId
 from fastapi import HTTPException, status
@@ -20,11 +21,28 @@ from app.schemas.api import (
     MessagePage,
 )
 
-
 Provider = Callable[
     [Settings, str, dict[str, Any], list[dict[str, str]], str], Awaitable[str]
 ]
 logger = logging.getLogger(__name__)
+
+NOVU_PRODUCT_CATALOG = [
+    {
+        "id": "personal_goal",
+        "name": "Plan personal",
+        "use_when": "La persona tiene una meta individual y necesita aportes flexibles.",
+    },
+    {
+        "id": "group_challenge",
+        "name": "Reto grupal",
+        "use_when": "La motivación compartida puede ayudar a sostener la constancia.",
+    },
+    {
+        "id": "family_fund",
+        "name": "Fondo grupal",
+        "use_when": "Hay retiros por imprevistos o apoyo familiar que conviene planificar juntos.",
+    },
+]
 
 
 def parse_object_id(value: str, label: str = "identificador") -> ObjectId:
@@ -169,11 +187,23 @@ async def build_financial_context(
         {"user_id": user_id, "status": {"$in": ["posted", "reversed"]}},
         {"amount_minor": 1, "currency": 1, "description": 1, "status": 1, "occurred_at": 1, "destination": 1},
     ).sort("occurred_at", DESCENDING).limit(50).to_list(length=50)
+    withdrawals_task = database.withdrawal_requests.find(
+        {"requester_id": user_id, "status": {"$in": ["approved", "executed"]}},
+        {
+            "amount_minor": 1,
+            "currency": 1,
+            "reason": 1,
+            "status": 1,
+            "source": 1,
+            "created_at": 1,
+            "executed_at": 1,
+        },
+    ).sort("created_at", DESCENDING).limit(50).to_list(length=50)
     activities_task = database.activities.find(
         {"user_id": user_id}, {"title": 1, "type": 1, "amount_minor": 1, "occurred_at": 1}
     ).sort("occurred_at", DESCENDING).limit(30).to_list(length=30)
-    savings, goals, contributions, activities = await asyncio.gather(
-        profile_task, goals_task, contributions_task, activities_task
+    savings, goals, contributions, withdrawals, activities = await asyncio.gather(
+        profile_task, goals_task, contributions_task, withdrawals_task, activities_task
     )
     profile = user.get("profile", {})
     return {
@@ -186,9 +216,12 @@ async def build_financial_context(
         "savings_profile": savings,
         "goals": goals,
         "recent_contributions": contributions,
+        "recent_withdrawals": withdrawals,
         "recent_activity": activities,
+        "product_catalog": NOVU_PRODUCT_CATALOG,
         "context_limits": {
             "contributions_returned": len(contributions),
+            "withdrawals_returned": len(withdrawals),
             "activities_returned": len(activities),
             "history_is_recent_sample": True,
         },

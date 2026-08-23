@@ -79,7 +79,9 @@ class ActivityResponse(ApiModel):
     name: str
     date_label: str
     amount_label: str
-    tone: Literal["success", "muted"]
+    amount: int | None = None
+    type: Literal["contribution", "expense", "info"]
+    tone: Literal["success", "expense", "muted"]
 
 
 class OverviewResponse(ApiModel):
@@ -89,6 +91,40 @@ class OverviewResponse(ApiModel):
     primary_goal_id: str
     shared_plans: list[dict]
     recent_activity: list[ActivityResponse]
+    activity_history: list[ActivityResponse]
+
+
+class ContributionCreate(ApiModel):
+    destination_type: Literal["goal", "shared_plan"]
+    destination_id: str = Field(min_length=24, max_length=24)
+    amount_minor: int = Field(ge=100, le=100_000_000, multiple_of=100)
+    description: str = Field(min_length=1, max_length=160)
+    client_contribution_id: str = Field(min_length=8, max_length=80)
+
+
+class ContributionResponse(ApiModel):
+    id: str
+    destination_type: Literal["goal", "shared_plan"]
+    destination_id: str
+    member_name: str
+    description: str
+    amount: int
+    amount_label: str
+    date_label: str
+    occurred_at: datetime
+    current_month: bool
+    status: Literal["pending", "posted", "failed", "reversed"]
+
+
+class ContributionPage(ApiModel):
+    items: list[ContributionResponse]
+
+
+class ContributionCreateResponse(ApiModel):
+    contribution: ContributionResponse
+    updated_balance_amount: int
+    updated_progress: int = Field(ge=0, le=100)
+    duplicated: bool = False
 
 
 class ConversationCreate(ApiModel):
@@ -127,4 +163,3 @@ class CopilotTurnResponse(ApiModel):
     user_message: CopilotMessageResponse
     assistant_message: CopilotMessageResponse
     duplicated: bool = False
-

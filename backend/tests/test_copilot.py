@@ -13,7 +13,11 @@ from app.integrations.openai_copilot import (
     request_copilot_response,
 )
 from app.schemas.api import ConversationCreate
-from app.services.copilot import create_conversation
+from app.services.copilot import (
+    NOVU_PRODUCT_CATALOG,
+    build_financial_context,
+    create_conversation,
+)
 
 
 def test_copilot_prompt_has_financial_safety_boundaries() -> None:
@@ -21,6 +25,7 @@ def test_copilot_prompt_has_financial_safety_boundaries() -> None:
     assert "No inventés saldos" in COPILOT_INSTRUCTIONS
     assert "contraseñas" in COPILOT_INSTRUCTIONS
     assert "Guatemala" in COPILOT_INSTRUCTIONS
+    assert "product_catalog" in COPILOT_INSTRUCTIONS
 
 
 def test_financial_context_is_serialized_as_data() -> None:
@@ -45,6 +50,40 @@ def test_settings_accept_the_existing_api_gpt_name(monkeypatch: pytest.MonkeyPat
 
     assert settings.openai_api_key == "test-key"
     assert settings.openai_model == "gpt-5-mini"
+
+
+def async_cursor(items: list[dict[str, Any]]) -> MagicMock:
+    cursor = MagicMock()
+    cursor.sort.return_value.limit.return_value.to_list = AsyncMock(return_value=items)
+    return cursor
+
+
+@pytest.mark.asyncio
+async def test_financial_context_includes_withdrawals_and_product_catalog() -> None:
+    user_id = ObjectId()
+    database = MagicMock()
+    database.savings_profiles.find_one = AsyncMock(
+        return_value={"safe_monthly_savings_minor": 72_000}
+    )
+    database.goals.find.return_value = async_cursor([{"name": "Viaje"}])
+    database.contributions.find.return_value = async_cursor(
+        [{"amount_minor": 18_000, "status": "posted"}]
+    )
+    database.withdrawal_requests.find.return_value = async_cursor(
+        [{"amount_minor": 12_000, "reason": "Transporte", "status": "executed"}]
+    )
+    database.activities.find.return_value = async_cursor(
+        [{"type": "withdrawal", "amount_minor": -12_000}]
+    )
+
+    context = await build_financial_context(
+        database,
+        {"_id": user_id, "profile": {"first_name": "Diego"}, "status": "active"},
+    )
+
+    assert context["recent_withdrawals"][0]["reason"] == "Transporte"
+    assert context["context_limits"]["withdrawals_returned"] == 1
+    assert context["product_catalog"] == NOVU_PRODUCT_CATALOG
 
 
 @pytest.mark.asyncio

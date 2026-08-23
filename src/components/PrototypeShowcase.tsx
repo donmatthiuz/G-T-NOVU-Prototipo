@@ -953,8 +953,8 @@ export default function PrototypeShowcase() {
           </span>
           <h2>Ya viste el mapa. Ahora recorré la experiencia.</h2>
           <p>
-            La versión local replica los principales flujos con interacciones
-            reales, estados persistentes y navegación web responsive.
+            La experiencia reúne los principales flujos con interacciones,
+            estados persistentes y navegación web responsive.
           </p>
           <PartnerBrand
             className={styles.finalPartnerBrand}
@@ -980,7 +980,7 @@ export default function PrototypeShowcase() {
         >
           <PartnerBrand compact />
         </Link>
-        <p>Atlas local del prototipo · Figma MCP · Sin despliegue externo</p>
+        <p>Atlas de producto NOVU · Flujos y pantallas móviles</p>
         <a href="#atlas-content">Volver arriba</a>
       </footer>
     </div>
