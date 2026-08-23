@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from datetime import UTC, datetime
 from typing import Any, Awaitable, Callable
 
@@ -23,6 +24,7 @@ from app.schemas.api import (
 Provider = Callable[
     [Settings, str, dict[str, Any], list[dict[str, str]], str], Awaitable[str]
 ]
+logger = logging.getLogger(__name__)
 
 
 def parse_object_id(value: str, label: str = "identificador") -> ObjectId:
@@ -77,10 +79,11 @@ async def create_conversation(
     database: AsyncDatabase[dict[str, Any]], user: dict[str, Any], payload: ConversationCreate
 ) -> ConversationResponse:
     entity_id = parse_object_id(payload.entity_id) if payload.entity_id else None
+    context = {"type": payload.context_type, "entity_id": entity_id}
     query = {
         "user_id": user["_id"],
         "status": "active",
-        "context.type": payload.context_type,
+        "context.type": context["type"],
         "context.entity_id": entity_id,
     }
     existing = await database.copilot_conversations.find_one(query)
@@ -89,7 +92,9 @@ async def create_conversation(
 
     now = datetime.now(UTC)
     conversation = {
-        **query,
+        "user_id": user["_id"],
+        "status": "active",
+        "context": context,
         "title": "Mi orientación financiera",
         "message_count": 1,
         "last_message_at": now,
@@ -257,6 +262,10 @@ async def send_message(
             settings, str(user["_id"]), financial_context, history, user_message["content"]
         )
     except Exception as error:
+        logger.exception(
+            "Copilot provider request failed",
+            extra={"conversation_id": conversation_id, "user_id": str(user["_id"])},
+        )
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Guardamos tu mensaje, pero el Copiloto no pudo responder. Podés reintentarlo.",
@@ -287,4 +296,3 @@ async def send_message(
         user_message=message_response(user_message),
         assistant_message=message_response(assistant_message),
     )
-

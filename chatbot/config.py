@@ -60,7 +60,7 @@ def get_settings() -> Settings:
     return Settings(
         api_key=api_key,
         model=os.getenv("OPENAI_MODEL", "gpt-5-mini").strip() or "gpt-5-mini",
-        max_output_tokens=_read_positive_int("OPENAI_MAX_OUTPUT_TOKENS", 700),
+        max_output_tokens=_read_positive_int("OPENAI_MAX_OUTPUT_TOKENS", 1_600),
         allowed_origins=_read_allowed_origins(),
     )
 

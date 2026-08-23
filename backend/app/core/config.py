@@ -27,10 +27,11 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 10 * 1024 * 1024
     openai_api_key: str | None = Field(
         default=None,
-        validation_alias=AliasChoices("API_OPENAI", "OPENAI_API_KEY"),
+        validation_alias=AliasChoices("API_GPT", "API_OPENAI", "OPENAI_API_KEY"),
     )
-    openai_model: str = "gpt-5.6-luna"
+    openai_model: str = "gpt-5-mini"
     openai_timeout_seconds: float = Field(default=30, ge=5, le=120)
+    openai_max_output_tokens: int = Field(default=1_600, ge=100, le=4_000)
     seed_demo_data: bool = True
 
     @property

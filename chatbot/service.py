@@ -33,6 +33,7 @@ class ChatService:
             "instructions": NOVU_SYSTEM_PROMPT,
             "input": request.message,
             "max_output_tokens": self._settings.max_output_tokens,
+            "reasoning": {"effort": "low"},
             "store": True,
         }
         if request.previous_response_id:

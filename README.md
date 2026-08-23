@@ -2,6 +2,22 @@
 
 NOVU es un copiloto de ahorro para jóvenes guatemaltecos, respaldado por G&T Continental. El producto convierte metas personales, retos grupales y fondos familiares en acciones claras, visibles y alcanzables.
 
+## Ejecución integrada
+
+El Copiloto de la interfaz usa el backend FastAPI, que recupera el contexto financiero desde MongoDB y solicita la respuesta a OpenAI. `API_GPT` permanece únicamente en el backend.
+
+```bash
+cp .env.example .env
+# Agregá API_GPT en .env
+docker compose up --build
+```
+
+- Frontend: `http://localhost:3000`
+- API: `http://localhost:8000/v1`
+- Usuario demo: `diego@correo.com` / `novu2026`
+
+En un despliegue separado, configurá `NEXT_PUBLIC_API_URL` durante el build del frontend con la URL HTTPS pública del backend y agregá el origen del frontend a `CORS_ORIGINS`.
+
 ## Entregable principal
 
 - [Prototipo funcional: flujo original + estilo de la presentación](https://www.figma.com/design/vFm8Z8NqINCaW8YDb23hz5/NOVU?node-id=63-432)

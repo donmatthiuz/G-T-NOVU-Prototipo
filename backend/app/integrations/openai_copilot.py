@@ -48,7 +48,7 @@ async def request_copilot_response(
     message: str,
 ) -> str:
     if not settings.openai_api_key:
-        raise RuntimeError("API_OPENAI no está configurada.")
+        raise RuntimeError("API_GPT no está configurada.")
 
     client = AsyncOpenAI(api_key=settings.openai_api_key, timeout=settings.openai_timeout_seconds)
     response = await client.responses.create(
@@ -59,6 +59,9 @@ async def request_copilot_response(
             *history,
             {"role": "user", "content": message},
         ],
+        max_output_tokens=settings.openai_max_output_tokens,
+        reasoning={"effort": "low"},
+        store=False,
         text={"verbosity": "low"},
         safety_identifier=sha256(user_id.encode("utf-8")).hexdigest()[:32],
     )
@@ -66,4 +69,3 @@ async def request_copilot_response(
     if not answer:
         raise RuntimeError("OpenAI no devolvió una respuesta de texto.")
     return answer
-

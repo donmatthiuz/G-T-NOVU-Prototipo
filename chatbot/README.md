@@ -4,6 +4,10 @@ Servicio Python para el asistente conversacional de NOVU. Usa FastAPI y la
 Responses API de OpenAI. La clave se lee desde `API_GPT` en el `.env` de la
 raíz del proyecto y nunca se envía al navegador.
 
+Este servicio sirve para probar el agente de forma aislada o por terminal. La
+aplicación completa consume los endpoints de Copiloto en `backend/`, donde el
+agente también recibe el historial y el contexto financiero persistido en MongoDB.
+
 ## Instalación
 
 Ejecutá desde la raíz del repositorio:
