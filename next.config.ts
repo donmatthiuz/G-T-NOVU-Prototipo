@@ -8,14 +8,6 @@ const nextConfig: NextConfig = {
   experimental: {
     useTypeScriptCli: false,
   },
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "assets.gtc.com.gt",
-      },
-    ],
-  },
 };
 
 export default nextConfig;

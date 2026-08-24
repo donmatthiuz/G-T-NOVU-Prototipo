@@ -1,10 +1,8 @@
 import Image from "next/image";
 import styles from "./PartnerBrand.module.css";
 
-const GTC_LOGO_LIGHT =
-  "https://assets.gtc.com.gt/uploads/04805a41-8bac-48fa-a8bc-6a60789c9982/original/gyt-logo.png";
-const GTC_LOGO_DARK =
-  "https://assets.gtc.com.gt/uploads/dbb0d827-0e8d-46cb-90bc-fe03de9285b2/original/gyt-logo-white.png";
+const GTC_LOGO_LIGHT = "/brand/gtc-logo.svg";
+const GTC_LOGO_DARK = "/brand/gtc-logo-white.svg";
 
 type PartnerBrandProps = {
   className?: string;
@@ -70,8 +68,8 @@ export default function PartnerBrand({
         className={styles.gtcLogo}
         src={tone === "dark" ? GTC_LOGO_DARK : GTC_LOGO_LIGHT}
         alt=""
-        width={tone === "dark" ? 96 : 98}
-        height={41}
+        width={393}
+        height={tone === "dark" ? 168 : 167}
         priority={priority}
       />
     </span>

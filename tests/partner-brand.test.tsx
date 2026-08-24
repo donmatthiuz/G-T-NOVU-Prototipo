@@ -14,7 +14,7 @@ describe("identidad compartida NOVU y G&T Continental", () => {
     expect(lockup.querySelectorAll("img")).toHaveLength(2);
     expect(lockup.querySelector("img:last-child")).toHaveAttribute(
       "src",
-      expect.stringContaining("gyt-logo-white.png"),
+      expect.stringContaining("/brand/gtc-logo-white.svg"),
     );
   });
 
