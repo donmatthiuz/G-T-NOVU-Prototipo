@@ -6,6 +6,7 @@ import {
   type MouseEventHandler,
   type ReactNode,
 } from "react";
+import Link from "next/link";
 import NovuApp from "./NovuApp";
 import PartnerBrand from "./PartnerBrand";
 import type { LucideIcon } from "lucide-react";
@@ -22,6 +23,7 @@ import {
   Heart,
   Landmark,
   Menu,
+  Network,
   ShieldCheck,
   Sparkles,
   Target,
@@ -585,6 +587,30 @@ function LandingPage() {
           <h2>Un pequeño paso hoy puede cambiar mucho mañana.</h2>
           <Button href="/prototipo">Recorrer todas las pantallas</Button>
         </section>
+
+        <section
+          className="technical-entry"
+          aria-labelledby="technical-entry-title"
+        >
+          <div className="technical-entry-icon" aria-hidden="true">
+            <Network size={26} />
+          </div>
+          <div>
+            <span className="eyebrow">Visión técnica del prototipo</span>
+            <h2 id="technical-entry-title">
+              Conocé cómo NOVU se conectará con el ecosistema del banco.
+            </h2>
+            <p>
+              Explorá la arquitectura propuesta, los agentes y el recorrido
+              seguro que convierte señales transaccionales en recomendaciones
+              explicables.
+            </p>
+          </div>
+          <Link className="technical-entry-button" href="/tecnologia">
+            Ver arquitectura técnica
+            <ArrowUpRight size={18} aria-hidden="true" />
+          </Link>
+        </section>
       </main>
       <footer>
         <Brand />
@@ -593,6 +619,7 @@ function LandingPage() {
           <a href="#inicio">Inicio</a>
           <a href="#flujos">Flujos</a>
           <a href="#seguridad">Seguridad</a>
+          <Link href="/tecnologia">Tecnología</Link>
           <a href="/prototipo">Prototipo</a>
         </div>
       </footer>
