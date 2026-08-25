@@ -398,7 +398,7 @@ function LandingPage() {
               href="/prototipo"
               onClick={() => setMenuOpen(false)}
             >
-              Ver prototipo completo
+              Diseño app móvil
               <ArrowUpRight size={18} aria-hidden="true" />
             </a>
           </nav>
@@ -421,7 +421,7 @@ function LandingPage() {
               ver, entender y cumplir.
             </p>
             <div className="hero-actions">
-              <Button href="/prototipo">Ver prototipo completo</Button>
+              <Button href="/prototipo">Diseño app móvil</Button>
               <Button onClick={() => setViewOverride("app")} secondary>
                 Probar versión funcional
               </Button>
