@@ -702,6 +702,53 @@
   gap: 4px;
   font-size: 12px;
 }
+.request-list {
+  display: grid;
+  gap: 14px;
+}
+.request-state {
+  min-height: 92px;
+  margin: 14px 0;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.request-state.empty {
+  min-height: 170px;
+  flex-direction: column;
+  text-align: center;
+}
+.request-state.empty svg {
+  color: var(--violet);
+  width: 30px;
+  height: 30px;
+}
+.request-state.empty b {
+  color: var(--ink);
+  font-size: 15px;
+}
+.request-card.approved {
+  border-color: #a9d8b7;
+  background: #f6fcf8;
+}
+.request-card.executed,
+.request-card.rejected,
+.request-card.cancelled {
+  background: #f8f7fa;
+}
+.request-card small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+}
 .request-card,
 .request-detail {
   background: #fff;

@@ -31,6 +31,9 @@ import type {
   RegistrationContactErrors,
   RegistrationSavingsCapacity,
   VariableIncomeFrequency,
+  WithdrawalDecision,
+  WithdrawalExecutionResponse,
+  WithdrawalItem,
 } from "@/types/novu";
 import {
   ArrowLeft,
@@ -118,6 +121,24 @@ type NavNotifyProps = NavProps & { notify: Notify };
 type SharedType = "group" | "family";
 type PlanType = "personal" | SharedType;
 type Complete = () => void;
+type OpenWithdrawal = (withdrawalId: string, page?: string) => void;
+
+const withdrawalStatusLabel: Record<WithdrawalItem["status"], string> = {
+  pending: "Pendiente",
+  approved: "Aprobada",
+  rejected: "Rechazada",
+  executed: "Dinero liberado",
+  cancelled: "Cancelada",
+};
+
+function withdrawalVoteSummary(request: WithdrawalItem): string {
+  if (request.status === "executed") return "El dinero ya fue liberado.";
+  if (request.status === "approved") return "Lista para liberar el dinero.";
+  if (request.status === "rejected")
+    return "La solicitud no alcanzó la aprobación.";
+  if (request.remainingApprovals === 1) return "Falta 1 aprobación.";
+  return `Faltan ${request.remainingApprovals} aprobaciones.`;
+}
 
 function Logo({ wordmark = false }: { wordmark?: boolean }) {
   return (
@@ -1941,10 +1962,36 @@ function Group({ go }: NavProps) {
   );
 }
 
-function Family({ go }: NavProps) {
+function Family({
+  go,
+  onOpenRequest,
+}: NavProps & { onOpenRequest: OpenWithdrawal }) {
   const { data } = useNovuData();
   const plan = data.sharedPlans?.find(
     (candidate) => candidate.type === "family_fund",
+  );
+  const [requests, setRequests] = useState<WithdrawalItem[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(Boolean(plan?.id));
+  useEffect(() => {
+    let active = true;
+    if (!plan?.id) return;
+    novuApi
+      .getWithdrawals(plan.id)
+      .then((response) => {
+        if (active) setRequests(response.data.items);
+      })
+      .catch(() => {
+        if (active) setRequests([]);
+      })
+      .finally(() => {
+        if (active) setRequestsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [plan?.id]);
+  const actionableRequest = requests.find(
+    (request) => request.canVote || request.canExecute,
   );
   const balance = plan?.balanceAmount ?? 4850;
   const target = plan?.targetAmount ?? 8000;
@@ -1970,19 +2017,38 @@ function Family({ go }: NavProps) {
         members={["DP", "AP", "MP", "JP", "LP"]}
         sharedLayout
       />
-      <div className="vote-card">
-        <span className="vote-icon">
-          <FileText />
-        </span>
-        <div>
-          <span>Solicitud pendiente</span>
-          <h3>Reparación de cocina · Q 600</h3>
-          <p>Tu voto ayuda a liberar el dinero.</p>
+      {requestsLoading ? (
+        <div className="vote-card request-state" role="status">
+          <Clock3 /> Cargando solicitudes del fondo…
         </div>
-        <button className="inline-link" onClick={() => go("family-vote")}>
-          Revisar y votar <ChevronRight />
-        </button>
-      </div>
+      ) : actionableRequest ? (
+        <div className="vote-card">
+          <span className="vote-icon">
+            <FileText />
+          </span>
+          <div>
+            <span>{withdrawalStatusLabel[actionableRequest.status]}</span>
+            <h3>
+              {actionableRequest.reason} · {actionableRequest.amountLabel}
+            </h3>
+            <p>{withdrawalVoteSummary(actionableRequest)}</p>
+          </div>
+          <button
+            className="inline-link"
+            onClick={() =>
+              onOpenRequest(
+                actionableRequest.id,
+                actionableRequest.canExecute ? "family-votings" : "family-vote",
+              )
+            }
+          >
+            {actionableRequest.canExecute
+              ? "Liberar dinero"
+              : "Revisar y votar"}{" "}
+            <ChevronRight />
+          </button>
+        </div>
+      ) : null}
       <section className="action-list">
         <button onClick={() => go("family-contribute")}>
           <CirclePlus />
@@ -2095,7 +2161,7 @@ function FormScreen({
           </p>
         )}
         <Primary type="submit" disabled={pending} busy={pending}>
-          {pending ? "Registrando aporte…" : action}
+          {pending ? "Procesando…" : action}
         </Primary>
       </form>
     </div>
@@ -2239,7 +2305,12 @@ function MoneyFlow({
   mode,
   go,
   notify,
-}: NavNotifyProps & { type: PlanType; mode: "contribute" | "withdraw" }) {
+  onWithdrawalCreated,
+}: NavNotifyProps & {
+  type: PlanType;
+  mode: "contribute" | "withdraw";
+  onWithdrawalCreated?: (withdrawalId: string) => void;
+}) {
   const { data } = useNovuData();
   const [amount, setAmount] = useState(mode === "contribute" ? "200" : "600");
   const [description, setDescription] = useState(
@@ -2302,6 +2373,49 @@ function MoneyFlow({
     }
   };
 
+  const submitWithdrawal = async () => {
+    const numericAmount = Number(amount);
+    if (
+      !Number.isFinite(numericAmount) ||
+      !Number.isInteger(numericAmount) ||
+      numericAmount < 1
+    ) {
+      setError(
+        "Ingresá un monto válido en quetzales enteros, mayor o igual a Q 1.",
+      );
+      return;
+    }
+    if (!description.trim()) {
+      setError("Explicá brevemente para qué se necesita el retiro.");
+      return;
+    }
+    if (!destinationId) {
+      setError("No se pudo identificar el fondo familiar.");
+      return;
+    }
+    setPending(true);
+    setError(null);
+    try {
+      const response = await novuApi.createWithdrawal(destinationId, {
+        amountMinor: Math.round(numericAmount * 100),
+        reason: description.trim(),
+      });
+      notify(
+        `Solicitud por Q ${numericAmount.toLocaleString("es-GT")} enviada a votación.`,
+      );
+      if (onWithdrawalCreated) onWithdrawalCreated(response.data.id);
+      else go("family-requests");
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "No se pudo crear la solicitud de retiro.",
+      );
+    } finally {
+      setPending(false);
+    }
+  };
+
   return (
     <FormScreen
       title={
@@ -2325,7 +2439,13 @@ function MoneyFlow({
       notify={notify}
       next={back}
       action={contribute ? "Confirmar aporte" : "Enviar solicitud"}
-      onSubmit={contribute ? submitContribution : undefined}
+      onSubmit={
+        contribute
+          ? submitContribution
+          : type === "family"
+            ? submitWithdrawal
+            : undefined
+      }
       pending={pending}
       error={error}
     >
@@ -2526,18 +2646,107 @@ function FamilyCreate({ go, notify }: NavNotifyProps) {
   );
 }
 
-function FamilyRequests({ go }: NavProps) {
+function FamilyRequests({
+  go,
+  onOpenRequest,
+}: NavProps & { onOpenRequest: OpenWithdrawal }) {
+  const { data } = useNovuData();
+  const planId = data.sharedPlans?.find(
+    (candidate) => candidate.type === "family_fund",
+  )?.id;
+  const [requests, setRequests] = useState<WithdrawalItem[]>([]);
+  const [loading, setLoading] = useState(Boolean(planId));
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    if (!planId) return;
+    novuApi
+      .getWithdrawals(planId)
+      .then((response) => {
+        if (active) setRequests(response.data.items);
+      })
+      .catch((cause) => {
+        if (active)
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : "No se pudieron cargar las solicitudes.",
+          );
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [planId]);
+  const visibleError = planId
+    ? error
+    : "No se pudo identificar el fondo familiar.";
+
   return (
     <div className="app-page">
       <AppHeader title="Solicitudes del fondo" onBack={() => go("family")} />
-      <div className="request-card">
-        <FileText />
-        <div>
-          <span>Pendiente · Q 600</span>
-          <h2>Reparación de cocina</h2>
-          <p>Solicitada por Marta · faltan 2 votos.</p>
+      <p className="app-subtitle">
+        Cada retiro queda visible para la familia y solo se libera cuando reúne
+        las aprobaciones acordadas.
+      </p>
+      {loading && (
+        <div className="request-state" role="status">
+          <Clock3 /> Cargando solicitudes…
         </div>
-        <Primary onClick={() => go("family-vote")}>Revisar solicitud</Primary>
+      )}
+      {visibleError && (
+        <p className="transaction-error" role="alert">
+          {visibleError}
+        </p>
+      )}
+      {!loading && !visibleError && requests.length === 0 && (
+        <div className="request-state empty">
+          <FileText />
+          <b>Todavía no hay solicitudes</b>
+          <span>
+            La primera aparecerá aquí para que la familia pueda revisarla.
+          </span>
+        </div>
+      )}
+      <div className="request-list">
+        {requests.map((request) => (
+          <article
+            className={`request-card ${request.status}`}
+            key={request.id}
+          >
+            <FileText />
+            <div>
+              <span>
+                {withdrawalStatusLabel[request.status]} · {request.amountLabel}
+              </span>
+              <h2>{request.reason}</h2>
+              <p>
+                Solicitada por {request.requesterName} ·{" "}
+                {withdrawalVoteSummary(request)}
+              </p>
+              <small>
+                {request.approveVotes} de {request.requiredVotes} aprobaciones
+              </small>
+            </div>
+            <Primary
+              onClick={() =>
+                onOpenRequest(
+                  request.id,
+                  request.canExecute ? "family-votings" : "family-vote",
+                )
+              }
+            >
+              {request.canExecute
+                ? "Revisar y liberar"
+                : request.status === "pending"
+                  ? "Revisar solicitud"
+                  : "Ver detalle"}
+            </Primary>
+          </article>
+        ))}
       </div>
       <button className="create-request" onClick={() => go("family-withdraw")}>
         <CirclePlus /> Crear solicitud de retiro
@@ -2546,70 +2755,268 @@ function FamilyRequests({ go }: NavProps) {
   );
 }
 
-function FamilyVote({ go, notify }: NavNotifyProps) {
-  const [vote, setVote] = useState<"yes" | "no" | null>(null);
-  return (
-    <div className="app-page">
-      <AppHeader title="Votar solicitud" onBack={() => go("family-requests")} />
-      <div className="request-detail">
-        <span>Solicitud de Marta</span>
-        <h2>Reparación de cocina</h2>
-        <strong>Q 600</strong>
-        <p>
-          “La tubería necesita una reparación urgente. Adjunto el presupuesto
-          familiar.”
-        </p>
-        <div>
-          <span>2 votos a favor</span>
-          <Progress value={40} />
-        </div>
-      </div>
-      <div className="vote-actions large">
-        <button
-          className={vote === "yes" ? "yes active" : "yes"}
-          onClick={() => setVote("yes")}
-        >
-          <Check /> Aprobar
-        </button>
-        <button
-          className={vote === "no" ? "no active" : "no"}
-          onClick={() => setVote("no")}
-        >
-          Rechazar
-        </button>
-      </div>
-      <Primary
-        disabled={!vote}
-        onClick={() => {
-          notify(
-            `Voto ${vote === "yes" ? "aprobado" : "rechazado"} registrado.`,
+function FamilyVote({
+  go,
+  notify,
+  requestId,
+}: NavNotifyProps & { requestId: string | null }) {
+  const [request, setRequest] = useState<WithdrawalItem | null>(null);
+  const [vote, setVote] = useState<WithdrawalDecision | null>(null);
+  const [loading, setLoading] = useState(Boolean(requestId));
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    if (!requestId) return;
+    novuApi
+      .getWithdrawal(requestId)
+      .then((response) => {
+        if (active) setRequest(response.data);
+      })
+      .catch((cause) => {
+        if (active)
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : "No se pudo cargar la solicitud.",
           );
-          go("family-votings");
-        }}
-      >
-        Confirmar voto
-      </Primary>
-    </div>
-  );
-}
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [requestId]);
+  const visibleError = requestId
+    ? error
+    : "Seleccioná una solicitud para ver su detalle.";
 
-function FamilyVotings({ go }: NavProps) {
+  const confirmVote = async () => {
+    if (!request || !vote) return;
+    setPending(true);
+    setError(null);
+    try {
+      const response = await novuApi.voteWithdrawal(request.id, {
+        decision: vote,
+      });
+      setRequest(response.data);
+      notify(
+        vote === "approve"
+          ? "Tu aprobación quedó registrada."
+          : "Tu rechazo quedó registrado.",
+      );
+      go(
+        response.data.status === "approved"
+          ? "family-votings"
+          : "family-requests",
+      );
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "No se pudo registrar tu voto.",
+      );
+    } finally {
+      setPending(false);
+    }
+  };
+
   return (
     <div className="app-page">
-      <AppHeader title="Votaciones" onBack={() => go("family")} />
-      <div className="request-detail approved">
-        <Check />
-        <span>Solicitud aprobada</span>
-        <h2>Reparación de cocina</h2>
-        <strong>Q 600</strong>
-        <p>4 de 5 integrantes aprobaron la solicitud.</p>
-      </div>
-      <Primary onClick={() => go("family-released")}>Liberar el dinero</Primary>
+      <AppHeader
+        title="Revisar solicitud"
+        onBack={() => go("family-requests")}
+      />
+      {loading && (
+        <div className="request-state" role="status">
+          <Clock3 /> Cargando detalle…
+        </div>
+      )}
+      {visibleError && (
+        <p className="transaction-error" role="alert">
+          {visibleError}
+        </p>
+      )}
+      {request && (
+        <>
+          <div className="request-detail">
+            <span>
+              {withdrawalStatusLabel[request.status]} · solicitud de{" "}
+              {request.requesterName}
+            </span>
+            <h2>{request.reason}</h2>
+            <strong>{request.amountLabel}</strong>
+            <p>
+              El motivo y el avance de la votación están visibles para que cada
+              integrante decida con la misma información.
+            </p>
+            <div>
+              <span>
+                {request.approveVotes} de {request.requiredVotes} aprobaciones
+              </span>
+              <Progress
+                value={Math.round(
+                  (request.approveVotes * 100) / request.requiredVotes,
+                )}
+              />
+            </div>
+          </div>
+          {request.canVote ? (
+            <>
+              <div className="vote-actions large">
+                <button
+                  className={vote === "approve" ? "yes active" : "yes"}
+                  disabled={pending}
+                  aria-pressed={vote === "approve"}
+                  onClick={() => setVote("approve")}
+                >
+                  <Check /> Aprobar
+                </button>
+                <button
+                  className={vote === "reject" ? "no active" : "no"}
+                  disabled={pending}
+                  aria-pressed={vote === "reject"}
+                  onClick={() => setVote("reject")}
+                >
+                  Rechazar
+                </button>
+              </div>
+              <Primary
+                disabled={!vote || pending}
+                busy={pending}
+                onClick={confirmVote}
+              >
+                {pending ? "Registrando voto…" : "Confirmar voto"}
+              </Primary>
+            </>
+          ) : (
+            <Primary
+              onClick={() =>
+                go(request.canExecute ? "family-votings" : "family-requests")
+              }
+            >
+              {request.canExecute
+                ? "Continuar para liberar"
+                : "Volver a solicitudes"}
+            </Primary>
+          )}
+        </>
+      )}
     </div>
   );
 }
 
-function MoneyReleased({ go }: NavProps) {
+function FamilyVotings({
+  go,
+  notify,
+  requestId,
+  onExecuted,
+}: NavNotifyProps & {
+  requestId: string | null;
+  onExecuted: (result: WithdrawalExecutionResponse) => void;
+}) {
+  const [request, setRequest] = useState<WithdrawalItem | null>(null);
+  const [loading, setLoading] = useState(Boolean(requestId));
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    if (!requestId) return;
+    novuApi
+      .getWithdrawal(requestId)
+      .then((response) => {
+        if (active) setRequest(response.data);
+      })
+      .catch((cause) => {
+        if (active)
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : "No se pudo cargar la votación.",
+          );
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [requestId]);
+  const visibleError = requestId ? error : "Seleccioná una solicitud aprobada.";
+
+  const execute = async () => {
+    if (!request) return;
+    setPending(true);
+    setError(null);
+    try {
+      const response = await novuApi.executeWithdrawal(request.id);
+      onExecuted(response.data);
+      notify("El dinero fue liberado y el saldo del fondo se actualizó.");
+      go("family-released");
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "No se pudo liberar el dinero.",
+      );
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return (
+    <div className="app-page">
+      <AppHeader title="Resultado de la votación" onBack={() => go("family")} />
+      {loading && (
+        <div className="request-state" role="status">
+          <Clock3 /> Consultando votación…
+        </div>
+      )}
+      {visibleError && (
+        <p className="transaction-error" role="alert">
+          {visibleError}
+        </p>
+      )}
+      {request && (
+        <>
+          <div
+            className={`request-detail ${request.status === "approved" ? "approved" : ""}`}
+          >
+            {request.status === "approved" && <Check />}
+            <span>{withdrawalStatusLabel[request.status]}</span>
+            <h2>{request.reason}</h2>
+            <strong>{request.amountLabel}</strong>
+            <p>
+              {request.approveVotes} de {request.requiredVotes} aprobaciones
+              registradas.
+            </p>
+          </div>
+          {request.canExecute ? (
+            <Primary disabled={pending} busy={pending} onClick={execute}>
+              {pending ? "Liberando dinero…" : "Liberar el dinero"}
+            </Primary>
+          ) : (
+            <Primary onClick={() => go("family-requests")}>
+              Volver a solicitudes
+            </Primary>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function MoneyReleased({
+  go,
+  result,
+}: NavProps & { result: WithdrawalExecutionResponse | null }) {
+  const amountLabel = result?.withdrawal.amountLabel ?? "El monto aprobado";
+  const reference = result
+    ? `NOVU-${result.withdrawal.id.slice(-6).toUpperCase()}`
+    : "NOVU-FONDO";
   return (
     <div className="app-page success-page">
       <AppHeader title="Dinero liberado" onBack={() => go("family")} />
@@ -2617,15 +3024,19 @@ function MoneyReleased({ go }: NavProps) {
         <Check />
       </div>
       <h2>Transferencia confirmada</h2>
-      <p>Q 600 fueron enviados a la cuenta seleccionada.</p>
+      <p>{amountLabel} fue descontado del fondo familiar.</p>
       <div className="summary-list">
         <div>
           <span>Saldo restante</span>
-          <b>Q 4,250</b>
+          <b>
+            {result
+              ? `Q ${result.updatedBalanceAmount.toLocaleString("es-GT")}`
+              : "Actualizado en el fondo"}
+          </b>
         </div>
         <div>
           <span>Referencia</span>
-          <b>NOVU-0826-41</b>
+          <b>{reference}</b>
         </div>
       </div>
       <Primary onClick={() => go("family")}>Volver al fondo</Primary>
@@ -2914,6 +3325,11 @@ export default function NovuApp({ exit }: { exit: () => void }) {
       : "welcome",
   );
   const [toast, setToast] = useState("");
+  const [selectedWithdrawalId, setSelectedWithdrawalId] = useState<
+    string | null
+  >(null);
+  const [withdrawalExecution, setWithdrawalExecution] =
+    useState<WithdrawalExecutionResponse | null>(null);
   const [completed, setCompleted] = useState<string[]>([]);
   const [registrationMedia, setRegistrationMedia] = useState<
     Partial<Record<CaptureSlot, CapturedMedia>>
@@ -2943,6 +3359,13 @@ export default function NovuApp({ exit }: { exit: () => void }) {
     setPage(next);
     setNavOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const openWithdrawal: OpenWithdrawal = (
+    withdrawalId,
+    next = "family-vote",
+  ) => {
+    setSelectedWithdrawalId(withdrawalId);
+    go(next);
   };
   const complete = (label: string) =>
     setCompleted((items) =>
@@ -3154,7 +3577,7 @@ export default function NovuApp({ exit }: { exit: () => void }) {
       <MoneyFlow type="group" mode="withdraw" go={go} notify={notify} />
     ),
     "group-history": <HistoryScreen type="group" go={go} />,
-    family: <Family go={go} />,
+    family: <Family go={go} onOpenRequest={openWithdrawal} />,
     "family-create": <FamilyCreate go={go} notify={notify} />,
     "family-summary": <SummaryScreen type="family" go={go} />,
     "family-invite": <InviteScreen type="family" go={go} notify={notify} />,
@@ -3162,13 +3585,33 @@ export default function NovuApp({ exit }: { exit: () => void }) {
       <MoneyFlow type="family" mode="contribute" go={go} notify={notify} />
     ),
     "family-withdraw": (
-      <MoneyFlow type="family" mode="withdraw" go={go} notify={notify} />
+      <MoneyFlow
+        type="family"
+        mode="withdraw"
+        go={go}
+        notify={notify}
+        onWithdrawalCreated={(withdrawalId) => {
+          setSelectedWithdrawalId(withdrawalId);
+          go("family-requests");
+        }}
+      />
     ),
     "family-history": <HistoryScreen type="family" go={go} />,
-    "family-requests": <FamilyRequests go={go} />,
-    "family-vote": <FamilyVote go={go} notify={notify} />,
-    "family-votings": <FamilyVotings go={go} />,
-    "family-released": <MoneyReleased go={go} />,
+    "family-requests": (
+      <FamilyRequests go={go} onOpenRequest={openWithdrawal} />
+    ),
+    "family-vote": (
+      <FamilyVote go={go} notify={notify} requestId={selectedWithdrawalId} />
+    ),
+    "family-votings": (
+      <FamilyVotings
+        go={go}
+        notify={notify}
+        requestId={selectedWithdrawalId}
+        onExecuted={setWithdrawalExecution}
+      />
+    ),
+    "family-released": <MoneyReleased go={go} result={withdrawalExecution} />,
     menu: <MenuPage go={go} notify={notify} onLogout={handleLogout} />,
   };
   const showNav = ![

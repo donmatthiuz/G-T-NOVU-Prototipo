@@ -5,11 +5,15 @@ import {
   createRegistrationFormData,
   mockTransport,
   novuApi,
+  resetMockApiState,
 } from "@/lib/api";
 import { afterEach, vi } from "vitest";
 
 describe("capa API local", () => {
-  afterEach(() => vi.restoreAllMocks());
+  afterEach(() => {
+    vi.restoreAllMocks();
+    resetMockApiState();
+  });
   it("devuelve el resumen tipado sin compartir referencias mutables", async () => {
     const first = await novuApi.getOverview();
     const second = await novuApi.getOverview();
@@ -136,5 +140,47 @@ describe("capa API local", () => {
         body: JSON.stringify(payload),
       }),
     );
+  });
+
+  it("lista, vota y ejecuta una solicitud del fondo familiar", async () => {
+    const planId = "66c000000000000000000004";
+    const list = await novuApi.getWithdrawals(planId);
+    const request = list.data.items[0];
+
+    expect(request).toMatchObject({
+      requesterName: "Marta",
+      approveVotes: 2,
+      requiredVotes: 3,
+      status: "pending",
+    });
+
+    const vote = await novuApi.voteWithdrawal(request.id, {
+      decision: "approve",
+    });
+    expect(vote.data).toMatchObject({
+      approveVotes: 3,
+      remainingApprovals: 0,
+      status: "approved",
+      canExecute: true,
+    });
+
+    const execution = await novuApi.executeWithdrawal(request.id);
+    expect(execution.data.withdrawal.status).toBe("executed");
+    expect(execution.data.updatedBalanceAmount).toBe(4250);
+  });
+
+  it("crea una solicitud nueva usando quetzales en unidades menores", async () => {
+    const created = await novuApi.createWithdrawal("66c000000000000000000004", {
+      amountMinor: 35000,
+      reason: "Compra de medicamentos",
+    });
+
+    expect(created.status).toBe(201);
+    expect(created.data).toMatchObject({
+      amount: 350,
+      amountLabel: "Q 350",
+      status: "pending",
+      reason: "Compra de medicamentos",
+    });
   });
 });
