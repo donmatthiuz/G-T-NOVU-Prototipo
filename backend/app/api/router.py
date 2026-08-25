@@ -17,9 +17,13 @@ from app.schemas.api import (
     LoginRequest,
     MessagePage,
     OverviewResponse,
+    WithdrawalCreate,
+    WithdrawalExecutionResponse,
+    WithdrawalPage,
+    WithdrawalResponse,
+    WithdrawalVoteCreate,
 )
-from app.services import auth, contributions, copilot, overview
-
+from app.services import auth, contributions, copilot, overview, withdrawals
 
 router = APIRouter()
 
@@ -112,6 +116,68 @@ async def post_contribution(
     payload: ContributionCreate, database: Database, user: CurrentUser
 ) -> ContributionCreateResponse:
     return await contributions.create_contribution(database, user, payload)
+
+
+@router.get(
+    "/shared-plans/{plan_id}/withdrawals",
+    response_model=WithdrawalPage,
+    tags=["withdrawals"],
+)
+async def get_withdrawals(
+    plan_id: str, database: Database, user: CurrentUser
+) -> WithdrawalPage:
+    return await withdrawals.list_withdrawals(database, user, plan_id)
+
+
+@router.post(
+    "/shared-plans/{plan_id}/withdrawals",
+    response_model=WithdrawalResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["withdrawals"],
+)
+async def post_withdrawal(
+    plan_id: str,
+    payload: WithdrawalCreate,
+    database: Database,
+    user: CurrentUser,
+) -> WithdrawalResponse:
+    return await withdrawals.create_withdrawal(database, user, plan_id, payload)
+
+
+@router.get(
+    "/withdrawals/{withdrawal_id}",
+    response_model=WithdrawalResponse,
+    tags=["withdrawals"],
+)
+async def get_withdrawal(
+    withdrawal_id: str, database: Database, user: CurrentUser
+) -> WithdrawalResponse:
+    return await withdrawals.get_withdrawal(database, user, withdrawal_id)
+
+
+@router.put(
+    "/withdrawals/{withdrawal_id}/vote",
+    response_model=WithdrawalResponse,
+    tags=["withdrawals"],
+)
+async def put_withdrawal_vote(
+    withdrawal_id: str,
+    payload: WithdrawalVoteCreate,
+    database: Database,
+    user: CurrentUser,
+) -> WithdrawalResponse:
+    return await withdrawals.vote_withdrawal(database, user, withdrawal_id, payload)
+
+
+@router.post(
+    "/withdrawals/{withdrawal_id}/execute",
+    response_model=WithdrawalExecutionResponse,
+    tags=["withdrawals"],
+)
+async def post_withdrawal_execution(
+    withdrawal_id: str, database: Database, user: CurrentUser
+) -> WithdrawalExecutionResponse:
+    return await withdrawals.execute_withdrawal(database, user, withdrawal_id)
 
 
 @router.get(

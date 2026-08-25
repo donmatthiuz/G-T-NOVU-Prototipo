@@ -158,6 +158,13 @@ async def seed_demo_data(database: AsyncDatabase[dict[str, Any]]) -> None:
     goal_id = ObjectId("66c000000000000000000002")
     group_plan_id = ObjectId("66c000000000000000000003")
     family_plan_id = ObjectId("66c000000000000000000004")
+    family_request_id = ObjectId("66c00000000000000000000a")
+    family_member_ids = [
+        ObjectId("66c000000000000000000006"),
+        ObjectId("66c000000000000000000007"),
+        ObjectId("66c000000000000000000008"),
+        ObjectId("66c000000000000000000009"),
+    ]
     now = datetime.now(UTC)
     await database.users.update_one(
         {"_id": user_id},
@@ -221,6 +228,21 @@ async def seed_demo_data(database: AsyncDatabase[dict[str, Any]]) -> None:
             {
                 "$setOnInsert": {
                     "role": "owner",
+                    "status": "active",
+                    "invitation_id": None,
+                    "joined_at": now,
+                    "created_at": now,
+                    "updated_at": now,
+                }
+            },
+            upsert=True,
+        )
+    for member_id in family_member_ids:
+        await database.memberships.update_one(
+            {"shared_plan_id": family_plan_id, "user_id": member_id},
+            {
+                "$setOnInsert": {
+                    "role": "member",
                     "status": "active",
                     "invitation_id": None,
                     "joined_at": now,
@@ -323,5 +345,41 @@ async def seed_demo_data(database: AsyncDatabase[dict[str, Any]]) -> None:
         await database.withdrawal_requests.update_one(
             {"requester_id": user_id, "approval_snapshot.seed_key": key},
             {"$set": {"source": {"type": "goal", "id": goal_id}, "amount_minor": Int64(amount), "currency": "GTQ", "reason": reason, "approval_snapshot": {"seed_key": key, "required": 1, "approved": 1}, "status": "executed", "created_at": occurred_at, "decided_at": occurred_at, "executed_at": occurred_at}},
+            upsert=True,
+        )
+
+    await database.withdrawal_requests.update_one(
+        {"_id": family_request_id},
+        {
+            "$setOnInsert": {
+                "requester_id": family_member_ids[0],
+                "source": {"type": "shared_plan", "id": family_plan_id},
+                "amount_minor": Int64(60000),
+                "currency": "GTQ",
+                "reason": "Reparación urgente de la tubería de la cocina.",
+                "approval_snapshot": {
+                    "seed_key": "seed-family-kitchen-repair",
+                    "requester_name": "Marta",
+                    "required_votes": 3,
+                    "eligible_voter_ids": [user_id, *family_member_ids],
+                },
+                "status": "pending",
+                "created_at": now - timedelta(days=2),
+                "decided_at": None,
+                "executed_at": None,
+            }
+        },
+        upsert=True,
+    )
+    for voter_id in family_member_ids[1:3]:
+        await database.votes.update_one(
+            {"withdrawal_request_id": family_request_id, "voter_id": voter_id},
+            {
+                "$setOnInsert": {
+                    "decision": "approve",
+                    "comment": None,
+                    "created_at": now - timedelta(days=1),
+                }
+            },
             upsert=True,
         )
