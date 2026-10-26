@@ -27,7 +27,7 @@ describe("cambios de presentación y experiencia móvil", () => {
       expect.stringContaining("63-432.png"),
     );
     fireEvent.click(
-      within(header).getByRole("button", { name: "Probar versión funcional" }),
+      within(header).getByRole("button", { name: "Probar NOVU" }),
     );
     expect(
       screen.getByRole("button", { name: "Ya tengo cuenta" }),

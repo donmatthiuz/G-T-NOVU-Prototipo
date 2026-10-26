@@ -330,7 +330,7 @@ function LandingPage() {
       <PresentationHeader
         navigationLabel="Navegación principal"
         homeHref="#inicio"
-        launchLabel="Probar versión funcional"
+        launchLabel="Probar NOVU"
         onLaunch={() => setViewOverride("app")}
         links={[
           { href: "#como-funciona", label: "Cómo funciona" },
@@ -361,7 +361,7 @@ function LandingPage() {
               </p>
               <div className={presentationStyles.heroActions}>
                 <Button onClick={() => setViewOverride("app")}>
-                  Probar versión funcional
+                  Probar NOVU
                 </Button>
               </div>
               <div className="trust-row">

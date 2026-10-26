@@ -786,7 +786,7 @@ export default function PrototypeShowcase() {
               <div className={styles.infoActions}>
                 <Link href="/?view=app">
                   <Play size={16} fill="currentColor" aria-hidden="true" />{" "}
-                  Probar versión funcional
+                  Probar NOVU
                 </Link>
                 <a
                   href={figmaNodeUrl(selectedScreen.id)}
