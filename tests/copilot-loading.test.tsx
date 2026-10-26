@@ -9,6 +9,10 @@ describe("estado de espera del Copiloto", () => {
     window.history.replaceState({}, "", "/?page=copiloto");
     window.localStorage.clear();
     vi.restoreAllMocks();
+    vi.spyOn(novuApi, "listCopilotConversations").mockResolvedValue({
+      status: 200,
+      data: [],
+    });
   });
 
   it("muestra tres burbujas mientras NOVU prepara la respuesta", async () => {
@@ -60,6 +64,14 @@ describe("estado de espera del Copiloto", () => {
     ).toBeInTheDocument();
     expect(container.querySelectorAll(".typing-dot")).toHaveLength(3);
     expect(screen.getByRole("log")).toHaveAttribute("aria-busy", "true");
+    expect(
+      screen.getByRole("button", { name: "Nueva conversación" }),
+    ).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Historial" }));
+    expect(
+      screen.getByRole("button", { name: /Mi orientación financiera/ }),
+    ).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Volver al chat" }));
 
     completeTurn({
       status: 200,

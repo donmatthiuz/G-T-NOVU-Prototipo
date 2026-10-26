@@ -26,6 +26,7 @@ import type {
   ActivityItem,
   CapturedMedia,
   CaptureSlot,
+  CopilotConversation,
   CopilotMessage,
   ContributionItem,
   IncomePattern,
@@ -1642,14 +1643,140 @@ function Goals({ go, notify }: NavNotifyProps) {
 }
 
 function Copilot({ go, notify }: NavNotifyProps) {
+  const [conversations, setConversations] = useState<CopilotConversation[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [hasMoreConversations, setHasMoreConversations] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<CopilotMessage[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retry, setRetry] = useState<{ id: string; text: string } | null>(null);
+  const [loadVersion, setLoadVersion] = useState(0);
   const chatRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const focusComposerRef = useRef(false);
+  const busyRef = useRef(true);
+  const aliveRef = useRef(true);
+  const scrollRestore = useRef<{ top: number; height: number } | null>(null);
+  const draftsRef = useRef<
+    Record<string, { draft: string; retry: typeof retry }>
+  >({});
+  const busy = loading || sending || loadingHistory || loadingOlder;
+  const activeConversation = conversations.find(
+    (item) => item.id === conversationId,
+  );
+  const rememberDraft = () => {
+    if (conversationId) draftsRef.current[conversationId] = { draft, retry };
+  };
+  const openConversation = async (selected?: CopilotConversation) => {
+    if (busyRef.current) return;
+    if (selected?.id === conversationId) {
+      focusComposerRef.current = true;
+      setHistoryOpen(false);
+      return;
+    }
+    busyRef.current = true;
+    rememberDraft();
+    setLoading(true);
+    setError(null);
+    let target = selected;
+    try {
+      if (!target) {
+        target = (await novuApi.createCopilotConversation(true)).data;
+        const created = target;
+        if (aliveRef.current) {
+          setConversations((current) => [
+            created,
+            ...current.filter((item) => item.id !== created.id),
+          ]);
+        }
+      }
+      const history = await novuApi.getCopilotMessages(target.id);
+      if (!aliveRef.current) return;
+      setConversationId(target.id);
+      setMessages(history.data.items);
+      setNextCursor(history.data.nextCursor);
+      setDraft(draftsRef.current[target.id]?.draft ?? "");
+      setRetry(draftsRef.current[target.id]?.retry ?? null);
+      focusComposerRef.current = true;
+      setHistoryOpen(false);
+    } catch (cause) {
+      if (aliveRef.current)
+        setError(
+          cause instanceof Error
+            ? cause.message
+            : "No pudimos abrir la conversación.",
+        );
+    } finally {
+      busyRef.current = false;
+      if (aliveRef.current) setLoading(false);
+    }
+  };
+  const loadMoreConversations = async () => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setLoadingHistory(true);
+    setError(null);
+    try {
+      const result = await novuApi.listCopilotConversations(historyPage + 1);
+      if (!aliveRef.current) return;
+      setConversations((current) => [
+        ...current,
+        ...result.data.filter(
+          (item) => !current.some((existing) => existing.id === item.id),
+        ),
+      ]);
+      setHistoryPage((current) => current + 1);
+      setHasMoreConversations(result.data.length === 20);
+    } catch (cause) {
+      if (aliveRef.current)
+        setError(
+          cause instanceof Error
+            ? cause.message
+            : "No pudimos cargar el historial.",
+        );
+    } finally {
+      busyRef.current = false;
+      if (aliveRef.current) setLoadingHistory(false);
+    }
+  };
+  const loadOlderMessages = async () => {
+    if (busyRef.current || !conversationId || !nextCursor) return;
+    busyRef.current = true;
+    setLoadingOlder(true);
+    setError(null);
+    try {
+      const result = await novuApi.getCopilotMessages(
+        conversationId,
+        nextCursor,
+      );
+      if (!aliveRef.current) return;
+      const chat = chatRef.current;
+      if (chat)
+        scrollRestore.current = {
+          top: chat.scrollTop,
+          height: chat.scrollHeight,
+        };
+      setMessages((current) => [...result.data.items, ...current]);
+      setNextCursor(result.data.nextCursor);
+    } catch (cause) {
+      if (aliveRef.current)
+        setError(
+          cause instanceof Error
+            ? cause.message
+            : "No pudimos cargar los mensajes anteriores.",
+        );
+    } finally {
+      busyRef.current = false;
+      if (aliveRef.current) setLoadingOlder(false);
+    }
+  };
   const answers = [
     "¿Cómo voy?",
     "Quiero ahorrar más",
@@ -1657,7 +1784,8 @@ function Copilot({ go, notify }: NavNotifyProps) {
   ];
   const reply = async (text: string) => {
     const cleanText = text.trim();
-    if (!cleanText || !conversationId || sending) return;
+    if (!cleanText || !conversationId || busyRef.current) return;
+    busyRef.current = true;
     const clientMessageId =
       retry?.text === cleanText ? retry.id : crypto.randomUUID();
     const optimistic: CopilotMessage = {
@@ -1679,6 +1807,7 @@ function Copilot({ go, notify }: NavNotifyProps) {
         cleanText,
         clientMessageId,
       );
+      if (!aliveRef.current) return;
       setMessages((current) => [
         ...current.filter(
           (item) =>
@@ -1689,8 +1818,29 @@ function Copilot({ go, notify }: NavNotifyProps) {
         response.data.assistantMessage,
       ]);
       setRetry(null);
+      setConversations((current) => {
+        const conversation = current.find((item) => item.id === conversationId);
+        if (!conversation) return current;
+        const title = cleanText.replace(/\s+/g, " ");
+        return [
+          {
+            ...conversation,
+            title:
+              conversation.messageCount <= 1
+                ? title.length <= 80
+                  ? title
+                  : `${title.slice(0, 79)}…`
+                : conversation.title,
+            messageCount:
+              conversation.messageCount + (response.data.duplicated ? 0 : 2),
+            lastMessageAt: response.data.assistantMessage.createdAt,
+          },
+          ...current.filter((item) => item.id !== conversationId),
+        ];
+      });
       notify("NOVU analizó tu información financiera actualizada.");
     } catch (cause) {
+      if (!aliveRef.current) return;
       const message =
         cause instanceof Error
           ? cause.message
@@ -1699,20 +1849,32 @@ function Copilot({ go, notify }: NavNotifyProps) {
       setRetry({ id: clientMessageId, text: cleanText });
       setDraft(cleanText);
     } finally {
-      setSending(false);
+      busyRef.current = false;
+      if (aliveRef.current) setSending(false);
     }
   };
   useEffect(() => {
     let active = true;
+    aliveRef.current = true;
+    busyRef.current = true;
     const load = async () => {
       setLoading(true);
       setError(null);
       try {
-        const conversation = await novuApi.createCopilotConversation();
-        const history = await novuApi.getCopilotMessages(conversation.data.id);
+        const result = await novuApi.listCopilotConversations();
+        if (!active) return;
+        let conversation = result.data[0];
+        if (!conversation)
+          conversation = (await novuApi.createCopilotConversation()).data;
+        if (!active) return;
+        setConversations(result.data.length ? result.data : [conversation]);
+        setHistoryPage(1);
+        setHasMoreConversations(result.data.length === 20);
+        const history = await novuApi.getCopilotMessages(conversation.id);
         if (active) {
-          setConversationId(conversation.data.id);
+          setConversationId(conversation.id);
           setMessages(history.data.items);
+          setNextCursor(history.data.nextCursor);
         }
       } catch (cause) {
         if (active) {
@@ -1723,17 +1885,35 @@ function Copilot({ go, notify }: NavNotifyProps) {
           );
         }
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+          busyRef.current = false;
+        }
       }
     };
     void load();
     return () => {
       active = false;
+      aliveRef.current = false;
     };
-  }, []);
+  }, [loadVersion]);
+  useEffect(() => {
+    if (!historyOpen && !loading && focusComposerRef.current) {
+      inputRef.current?.focus();
+      focusComposerRef.current = false;
+    }
+  }, [historyOpen, loading, conversationId]);
   useEffect(() => {
     const chat = chatRef.current;
     if (!chat) return;
+    if (scrollRestore.current) {
+      chat.scrollTop =
+        scrollRestore.current.top +
+        chat.scrollHeight -
+        scrollRestore.current.height;
+      scrollRestore.current = null;
+      return;
+    }
     if (typeof chat.scrollTo === "function") {
       chat.scrollTo({
         top: chat.scrollHeight,
@@ -1749,104 +1929,209 @@ function Copilot({ go, notify }: NavNotifyProps) {
   return (
     <div className="app-page copilot-page">
       <AppHeader title="Copiloto NOVU" onBack={() => go("home")} />
-      <section className="copilot-workspace" aria-label="Conversación con NOVU">
-        <header className="coach-title">
-          <Logo />
-          <div>
-            <b>Asistente financiero NOVU</b>
-            <small>
-              <i aria-hidden="true" /> Disponible para orientarte
-            </small>
-          </div>
-          <span>Contexto protegido y personalizado</span>
-        </header>
-        <div
-          className="chat"
-          ref={chatRef}
-          role="log"
-          aria-live="polite"
-          aria-busy={loading || sending}
+      <div className="copilot-toolbar">
+        <button
+          type="button"
+          aria-expanded={historyOpen}
+          aria-controls="copilot-history"
+          onClick={() => setHistoryOpen((open) => !open)}
         >
-          {loading && <p className="chat-status">Cargando tu conversación…</p>}
-          {messages.map((message) => {
-            const from = message.sender === "assistant" ? "bot" : "me";
-            return (
-              <article key={message.id} className={`chat-message ${from}`}>
-                {from === "bot" && <Logo />}
-                <div>
-                  <span>{from === "bot" ? "NOVU" : "Vos"}</span>
-                  <p>{message.content}</p>
-                </div>
-              </article>
-            );
-          })}
-          {sending && (
-            <article
-              className="chat-message bot chat-message-thinking"
-              role="status"
-              aria-label="NOVU está pensando"
-            >
-              <Logo />
-              <div aria-hidden="true">
-                <span>NOVU</span>
-                <div className="typing-indicator">
-                  <i className="typing-dot" />
-                  <i className="typing-dot" />
-                  <i className="typing-dot" />
-                </div>
-              </div>
-            </article>
-          )}
-        </div>
-        <div className="copilot-composer">
-          <div className="quick-answers" aria-label="Preguntas sugeridas">
-            {answers.map((answer) => (
+          <Clock3 size={17} aria-hidden="true" />{" "}
+          {historyOpen ? "Volver al chat" : "Historial"}
+        </button>
+        <button
+          type="button"
+          className="copilot-new"
+          disabled={busy}
+          onClick={() => void openConversation()}
+        >
+          <CirclePlus size={17} aria-hidden="true" /> Nueva conversación
+        </button>
+      </div>
+      <div className={`copilot-layout${historyOpen ? " history-open" : ""}`}>
+        <section
+          id="copilot-history"
+          className="copilot-history"
+          aria-label="Historial de conversaciones"
+          hidden={!historyOpen}
+        >
+          <h2>Tus conversaciones</h2>
+          <p>Retomá una consulta o empezá otra.</p>
+          <nav aria-label="Conversaciones anteriores">
+            {conversations.map((conversation) => (
               <button
                 type="button"
-                key={answer}
-                onClick={() => void reply(answer)}
-                disabled={loading || sending}
+                key={conversation.id}
+                disabled={busy}
+                aria-current={
+                  conversation.id === conversationId ? "true" : undefined
+                }
+                onClick={() => void openConversation(conversation)}
               >
-                {answer}
+                <MessageCircle size={17} aria-hidden="true" />
+                <span>
+                  <b>{conversation.title}</b>
+                  <time dateTime={conversation.lastMessageAt}>
+                    {new Date(conversation.lastMessageAt).toLocaleString(
+                      "es-GT",
+                      {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      },
+                    )}
+                  </time>
+                </span>
               </button>
             ))}
-          </div>
-          <form
-            className="chat-input"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void reply(draft);
-            }}
-          >
-            <label htmlFor="copilot-message" className="sr-only">
-              Escribí un mensaje para NOVU
-            </label>
-            <input
-              id="copilot-message"
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              placeholder="Escribí tu consulta"
-              autoComplete="off"
-            />
-            <button
-              type="submit"
-              disabled={!draft.trim() || loading || sending || !conversationId}
-              aria-label="Enviar mensaje"
-            >
-              <Send size={18} aria-hidden="true" />
-            </button>
-          </form>
-          {error && (
-            <small className="field-error" role="alert">
-              {error}
-            </small>
+          </nav>
+          {loading && <p role="status">Cargando conversaciones…</p>}
+          {!loading && !conversations.length && (
+            <p>Todavía no tenés conversaciones.</p>
           )}
-          <small>
-            NOVU puede equivocarse. Revisá la información antes de tomar
-            decisiones.
-          </small>
-        </div>
-      </section>
+          {hasMoreConversations && (
+            <button
+              type="button"
+              className="copilot-load-more"
+              disabled={busy}
+              onClick={() => void loadMoreConversations()}
+            >
+              {loadingHistory ? "Cargando…" : "Ver más conversaciones"}
+            </button>
+          )}
+          {error && (
+            <p role="alert" className="field-error">
+              {error}
+            </p>
+          )}
+        </section>
+        <section
+          className="copilot-workspace"
+          aria-label="Conversación con NOVU"
+        >
+          <header className="coach-title">
+            <Logo />
+            <div>
+              <b>{activeConversation?.title ?? "Asistente financiero NOVU"}</b>
+              <small>
+                <i aria-hidden="true" /> Disponible para orientarte
+              </small>
+            </div>
+            <span>Contexto protegido y personalizado</span>
+          </header>
+          <div
+            className="chat"
+            ref={chatRef}
+            role="log"
+            aria-live="polite"
+            aria-busy={loading || sending}
+          >
+            {loading && (
+              <p className="chat-status">Cargando tu conversación…</p>
+            )}
+            {nextCursor && (
+              <button
+                type="button"
+                className="copilot-load-more"
+                disabled={busy}
+                onClick={() => void loadOlderMessages()}
+              >
+                {loadingOlder ? "Cargando…" : "Ver mensajes anteriores"}
+              </button>
+            )}
+            {messages.map((message) => {
+              const from = message.sender === "assistant" ? "bot" : "me";
+              return (
+                <article key={message.id} className={`chat-message ${from}`}>
+                  {from === "bot" && <Logo />}
+                  <div>
+                    <span>{from === "bot" ? "NOVU" : "Vos"}</span>
+                    <p>{message.content}</p>
+                  </div>
+                </article>
+              );
+            })}
+            {sending && (
+              <article
+                className="chat-message bot chat-message-thinking"
+                role="status"
+                aria-label="NOVU está pensando"
+              >
+                <Logo />
+                <div aria-hidden="true">
+                  <span>NOVU</span>
+                  <div className="typing-indicator">
+                    <i className="typing-dot" />
+                    <i className="typing-dot" />
+                    <i className="typing-dot" />
+                  </div>
+                </div>
+              </article>
+            )}
+          </div>
+          <div className="copilot-composer">
+            <div className="quick-answers" aria-label="Preguntas sugeridas">
+              {answers.map((answer) => (
+                <button
+                  type="button"
+                  key={answer}
+                  onClick={() => void reply(answer)}
+                  disabled={busy || !conversationId}
+                >
+                  {answer}
+                </button>
+              ))}
+            </div>
+            <form
+              className="chat-input"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void reply(draft);
+              }}
+            >
+              <label htmlFor="copilot-message" className="sr-only">
+                Escribí un mensaje para NOVU
+              </label>
+              <input
+                id="copilot-message"
+                ref={inputRef}
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder="Escribí tu consulta"
+                autoComplete="off"
+                disabled={loading}
+                maxLength={2000}
+              />
+              <button
+                type="submit"
+                disabled={!draft.trim() || busy || !conversationId}
+                aria-label="Enviar mensaje"
+              >
+                <Send size={18} aria-hidden="true" />
+              </button>
+            </form>
+            {error && (
+              <small className="field-error" role="alert">
+                {error}
+              </small>
+            )}
+            {!loading && !conversationId && (
+              <button
+                type="button"
+                className="copilot-load-more"
+                onClick={() => setLoadVersion((current) => current + 1)}
+              >
+                Reintentar carga
+              </button>
+            )}
+            <small>
+              NOVU puede equivocarse. Revisá la información antes de tomar
+              decisiones.
+            </small>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

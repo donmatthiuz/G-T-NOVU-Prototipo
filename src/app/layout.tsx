@@ -4,6 +4,7 @@ import "../styles.css";
 import "../novu-app.css";
 import "../web-shell.css";
 import "../mobile-app.css";
+import "../copilot-history.css";
 
 const poppins = localFont({
   src: [

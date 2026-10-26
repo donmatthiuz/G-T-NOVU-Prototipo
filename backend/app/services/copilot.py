@@ -85,11 +85,13 @@ async def verify_conversation(
 
 
 async def list_conversations(
-    database: AsyncDatabase[dict[str, Any]], user_id: ObjectId
+    database: AsyncDatabase[dict[str, Any]], user_id: ObjectId, page: int = 1
 ) -> list[ConversationResponse]:
     items = await database.copilot_conversations.find(
         {"user_id": user_id, "status": "active"}
-    ).sort("last_message_at", DESCENDING).limit(20).to_list(length=20)
+    ).sort([("last_message_at", DESCENDING), ("_id", DESCENDING)]).skip(
+        (page - 1) * 20
+    ).limit(20).to_list(length=20)
     return [conversation_response(item) for item in items]
 
 
@@ -104,16 +106,19 @@ async def create_conversation(
         "context.type": context["type"],
         "context.entity_id": entity_id,
     }
-    existing = await database.copilot_conversations.find_one(query)
-    if existing:
-        return conversation_response(existing)
+    if not payload.force_new:
+        existing = await database.copilot_conversations.find_one(
+            query, sort=[("last_message_at", DESCENDING), ("_id", DESCENDING)]
+        )
+        if existing:
+            return conversation_response(existing)
 
     now = datetime.now(UTC)
     conversation = {
         "user_id": user["_id"],
         "status": "active",
         "context": context,
-        "title": "Mi orientación financiera",
+        "title": "Nueva conversación",
         "message_count": 1,
         "last_message_at": now,
         "summary": {"text": None, "through_message_id": None, "updated_at": None},
@@ -276,6 +281,12 @@ async def send_message(
             await database.copilot_conversations.update_one(
                 {"_id": conversation["_id"]},
                 {"$inc": {"message_count": 1}, "$set": {"last_message_at": now, "updated_at": now}},
+            )
+            # Only the first user message names the conversation, including older chats.
+            title = " ".join(user_message["content"].split())
+            await database.copilot_conversations.update_one(
+                {"_id": conversation["_id"], "message_count": 2},
+                {"$set": {"title": title if len(title) <= 80 else f"{title[:79]}…"}},
             )
         except DuplicateKeyError:
             return await send_message(database, settings, conversation_id, user, payload, provider)

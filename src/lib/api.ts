@@ -610,16 +610,24 @@ export function createNovuApi(transport: ApiTransport = mockTransport) {
       }),
     logout: () =>
       transport.request<void>({ method: "POST", path: "/v1/auth/logout" }),
-    createCopilotConversation: () =>
-      transport.request<CopilotConversation, { contextType: "general" }>({
+    listCopilotConversations: (page = 1) =>
+      transport.request<CopilotConversation[]>({
+        method: "GET",
+        path: `/v1/copilot/conversations?page=${page}`,
+      }),
+    createCopilotConversation: (forceNew = false) =>
+      transport.request<
+        CopilotConversation,
+        { contextType: "general"; forceNew: boolean }
+      >({
         method: "POST",
         path: "/v1/copilot/conversations",
-        body: { contextType: "general" },
+        body: { contextType: "general", forceNew },
       }),
-    getCopilotMessages: (conversationId: string) =>
+    getCopilotMessages: (conversationId: string, cursor?: string | null) =>
       transport.request<CopilotMessagePage>({
         method: "GET",
-        path: `/v1/copilot/conversations/${conversationId}/messages?limit=50`,
+        path: `/v1/copilot/conversations/${conversationId}/messages?limit=50${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`,
       }),
     sendCopilotMessage: (
       conversationId: string,

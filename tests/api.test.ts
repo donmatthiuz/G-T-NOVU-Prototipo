@@ -102,6 +102,52 @@ describe("capa API local", () => {
     );
   });
 
+  it("envía los contratos de historial, conversación nueva y mensajes anteriores", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(
+        async () =>
+          new Response("{}", {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+      );
+    const api = createNovuApi(
+      createFetchTransport({
+        baseUrl: "http://api.test",
+        getAccessToken: () => "session-token",
+      }),
+    );
+
+    await api.listCopilotConversations(2);
+    await api.createCopilotConversation(true);
+    await api.getCopilotMessages("conversation-1", "older-cursor");
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      "http://api.test/v1/copilot/conversations?page=2",
+      expect.objectContaining({ method: "GET" }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "http://api.test/v1/copilot/conversations",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ contextType: "general", forceNew: true }),
+      }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      "http://api.test/v1/copilot/conversations/conversation-1/messages?limit=50&cursor=older-cursor",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({
+          Authorization: "Bearer session-token",
+        }),
+      }),
+    );
+  });
+
   it("envía aportes tipados con autenticación e idempotencia", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(

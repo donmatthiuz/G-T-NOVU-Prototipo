@@ -173,6 +173,7 @@ class WithdrawalExecutionResponse(ApiModel):
 class ConversationCreate(ApiModel):
     context_type: Literal["general", "goal", "shared_plan"] = "general"
     entity_id: str | None = None
+    force_new: bool = False
 
 
 class ConversationResponse(ApiModel):

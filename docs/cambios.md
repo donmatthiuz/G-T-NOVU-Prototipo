@@ -51,4 +51,13 @@ EL punto no es duplicar las pesta;as una por una sino que sean como parte de est
 - Sin errores de JavaScript, desbordamiento horizontal ni superposición de la barra inferior sobre el campo de escritura del chat en esas vistas.
 - La revisión en navegador utilizó respuestas de API simuladas; no creó usuarios ni movimientos en Atlas.
 
+### Historial de conversaciones del Copiloto
+
+- Se agregó «Historial» para abrir conversaciones anteriores y «Nueva conversación» para iniciar un chat independiente.
+- Las conversaciones y los mensajes permanecen en MongoDB, asociados al usuario autenticado. Se abre la conversación más reciente al entrar al Copiloto.
+- Cada conversación nueva toma su título de la primera consulta. Los borradores se conservan al cambiar de conversación durante la sesión.
+- El historial carga más conversaciones por páginas; los chats largos permiten recuperar mensajes anteriores. En celular, el historial ocupa el espacio del chat y permite volver a él.
+- No requiere nuevas variables de entorno, secretos ni colecciones. Para publicarlo se deben desplegar los cambios de frontend y backend.
+- Verificación: 48 pruebas del frontend y 39 del backend aprobadas; ESLint, TypeScript y compilación de producción aprobados. Se revisaron 24 vistas en seis tamaños de pantalla con API simulada, sin errores de JavaScript ni desbordamientos o superposición de la navegación sobre el campo de escritura.
+
 

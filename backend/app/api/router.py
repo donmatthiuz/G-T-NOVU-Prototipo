@@ -183,8 +183,10 @@ async def post_withdrawal_execution(
 @router.get(
     "/copilot/conversations", response_model=list[ConversationResponse], tags=["copilot"]
 )
-async def get_conversations(database: Database, user: CurrentUser) -> list[ConversationResponse]:
-    return await copilot.list_conversations(database, user["_id"])
+async def get_conversations(
+    database: Database, user: CurrentUser, page: Annotated[int, Query(ge=1)] = 1
+) -> list[ConversationResponse]:
+    return await copilot.list_conversations(database, user["_id"], page)
 
 
 @router.post(
