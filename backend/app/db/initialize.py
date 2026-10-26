@@ -159,9 +159,11 @@ async def seed_demo_data(database: AsyncDatabase[dict[str, Any]]) -> None:
     group_plan_id = ObjectId("66c000000000000000000003")
     family_plan_id = ObjectId("66c000000000000000000004")
     now = datetime.now(UTC)
+    # Teléfono ficticio distinto del ejemplo precargado en el registro.
+    demo_phone = "+50200000000"
     await database.users.update_one(
         {"_id": user_id},
-        {"$setOnInsert": {"email": "diego@correo.com", "email_normalized": "diego@correo.com", "phone": "+50255123456", "phone_normalized": "+50255123456", "password_hash": hash_password("novu2026"), "profile": {"first_name": "Diego", "last_name": "López", "locale": "es-GT", "timezone": "America/Guatemala"}, "preferences": {"primary_goal_id": goal_id}, "status": "active", "kyc_status": "approved", "created_at": now, "updated_at": now, "last_login_at": None}},
+        {"$setOnInsert": {"email": "diego@correo.com", "email_normalized": "diego@correo.com", "phone": demo_phone, "phone_normalized": demo_phone, "password_hash": hash_password("novu2026"), "profile": {"first_name": "Diego", "last_name": "López", "locale": "es-GT", "timezone": "America/Guatemala"}, "preferences": {"primary_goal_id": goal_id}, "status": "active", "kyc_status": "approved", "created_at": now, "updated_at": now, "last_login_at": None}},
         upsert=True,
     )
     await database.savings_profiles.update_one(

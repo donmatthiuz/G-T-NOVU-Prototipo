@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 
 from app.api.router import router
 from app.core.config import get_settings
-from app.db.client import create_mongo_client
+from app.db.client import create_mongo_client, wait_for_mongo
 from app.db.initialize import initialize_database
 
 
@@ -21,11 +21,13 @@ def create_app(initialize: bool = True) -> FastAPI:
         database = client[settings.mongodb_database]
         app.state.mongo_client = client
         app.state.database = database
-        await database.command("ping")
-        if initialize:
-            await initialize_database(database, settings.seed_demo_data)
-        yield
-        await client.close()
+        try:
+            await wait_for_mongo(database)
+            if initialize:
+                await initialize_database(database, settings.seed_demo_data)
+            yield
+        finally:
+            await client.close()
 
     application = FastAPI(
         title=settings.app_name,

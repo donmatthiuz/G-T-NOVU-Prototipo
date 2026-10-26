@@ -572,7 +572,7 @@ function LandingPage() {
               <FileCheck2 size={19} /> Verificación guiada
             </span>
             <span>
-              <UserRoundCheck size={19} /> Biometría simulada
+              <UserRoundCheck size={19} /> Acceso con contraseña
             </span>
             <span>
               <Landmark size={19} /> Respaldo G&T

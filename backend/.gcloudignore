@@ -1,0 +1,12 @@
+.gcloudignore
+.git
+.env
+.env.*
+.venv/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+tests/
+gha-creds-*.json

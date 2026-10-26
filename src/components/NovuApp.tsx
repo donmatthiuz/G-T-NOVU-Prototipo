@@ -367,18 +367,31 @@ function Login({
   };
   return (
     <div className="entry-screen">
-      <div className="login-card">
-        <button className="entry-back" onClick={() => go("welcome")}>
+      <form
+        className="login-card"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!loading && identifier.trim() && password) void submit();
+        }}
+      >
+        <button
+          type="button"
+          className="entry-back"
+          onClick={() => go("welcome")}
+        >
           <ArrowLeft size={20} /> Volver
         </button>
         <PartnerBrand className="entry-partner-brand" tone="dark" />
         <h1>Qué bueno verte de nuevo.</h1>
         <p>Ingresá para seguir construyendo tu futuro.</p>
+        <p>Cuenta demo: diego@correo.com · Contraseña: novu2026</p>
         <label>
           Correo o teléfono
           <input
             value={identifier}
             onChange={(event) => setIdentifier(event.target.value)}
+            name="username"
+            required
             autoComplete="username"
           />
         </label>
@@ -389,6 +402,8 @@ function Login({
               type={shown ? "text" : "password"}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
+              name="password"
+              required
               autoComplete="current-password"
             />
             <button
@@ -406,75 +421,12 @@ function Login({
           </div>
         )}
         <Primary
-          onClick={submit}
+          type="submit"
           disabled={loading || !identifier.trim() || !password}
         >
           {loading ? "Ingresando…" : "Ingresar"}
         </Primary>
-        <div className="bio-row">
-          <button onClick={() => go("bio-fingerprint")}>
-            <ShieldCheck /> Huella
-          </button>
-          <button onClick={() => go("bio-face")}>
-            <Camera /> Rostro
-          </button>
-          <button onClick={() => go("bio-faceid")}>
-            <UserRound /> Face ID
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function BiometricScan({
-  type,
-  go,
-  onVerify,
-}: NavProps & {
-  type: "fingerprint" | "face" | "faceid";
-  onVerify: () => Promise<boolean>;
-}) {
-  const labels: Record<
-    "fingerprint" | "face" | "faceid",
-    [string, LucideIcon]
-  > = {
-    fingerprint: ["Huella", ShieldCheck],
-    face: ["Reconocimiento facial", Camera],
-    faceid: ["Face ID", UserRound],
-  };
-  const [label, Icon] = labels[type];
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    const timer = window.setTimeout(() => setReady(true), 1400);
-    return () => window.clearTimeout(timer);
-  }, []);
-  return (
-    <div className="capture-page biometric-page">
-      <button className="capture-back" onClick={() => go("login")}>
-        <ArrowLeft /> Volver
-      </button>
-      <div className={`scan-ring ${ready ? "ready" : ""}`}>
-        <Icon />
-      </div>
-      <span className="capture-overline">VERIFICACIÓN BIOMÉTRICA</span>
-      <h1>
-        {ready ? `${label} verificada` : `Verificando ${label.toLowerCase()}`}
-      </h1>
-      <p>
-        {ready
-          ? "Tu identidad se confirmó correctamente."
-          : "Mantenete frente al dispositivo por un momento."}
-      </p>
-      {ready && (
-        <Primary
-          onClick={async () => {
-            if (await onVerify()) go("home");
-          }}
-        >
-          Continuar
-        </Primary>
-      )}
+      </form>
     </div>
   );
 }
@@ -2950,8 +2902,6 @@ export default function NovuApp({ exit }: { exit: () => void }) {
     );
   const handleLogin = (identifier: string, password: string) =>
     login({ identifier, password });
-  const handleBiometricLogin = () =>
-    login({ identifier: "diego@correo.com", password: "biometric-demo" });
   const handleRegistration = async () => {
     if (!registrationSavingsCapacity) {
       notify("Completá tu capacidad de ahorro antes de crear la cuenta.");
@@ -3007,8 +2957,15 @@ export default function NovuApp({ exit }: { exit: () => void }) {
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, []);
+  const requestedPage = ["bio-fingerprint", "bio-face", "bio-faceid"].includes(
+    page,
+  )
+    ? "login"
+    : page;
   const currentPage =
-    authenticated && ["welcome", "login"].includes(page) ? "home" : page;
+    authenticated && ["welcome", "login"].includes(requestedPage)
+      ? "home"
+      : requestedPage;
   const mainRef = useRef<HTMLElement>(null);
   useEffect(() => {
     mainRef.current?.focus({ preventScroll: true });
@@ -3025,19 +2982,6 @@ export default function NovuApp({ exit }: { exit: () => void }) {
         value={registrationSavingsCapacity}
         onComplete={setRegistrationSavingsCapacity}
       />
-    ),
-    "bio-fingerprint": (
-      <BiometricScan
-        type="fingerprint"
-        go={go}
-        onVerify={handleBiometricLogin}
-      />
-    ),
-    "bio-face": (
-      <BiometricScan type="face" go={go} onVerify={handleBiometricLogin} />
-    ),
-    "bio-faceid": (
-      <BiometricScan type="faceid" go={go} onVerify={handleBiometricLogin} />
     ),
     kyc: (
       <Kyc
@@ -3177,9 +3121,6 @@ export default function NovuApp({ exit }: { exit: () => void }) {
     "wizard",
     "capacity",
     "kyc",
-    "bio-fingerprint",
-    "bio-face",
-    "bio-faceid",
     "dpi-front",
     "dpi-back",
     "dpi-review",

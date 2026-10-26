@@ -19,3 +19,10 @@ chatbot/.venv/
 
 # Local Netlify folder
 .netlify
+
+# Configuración local de Google Cloud y respaldos de migración
+infra/google-cloud/env.local.yaml
+backups/
+
+# Credenciales temporales de Google Cloud generadas por GitHub Actions
+gha-creds-*.json

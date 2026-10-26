@@ -18,6 +18,10 @@ docker compose up --build
 
 En un despliegue separado, configurá `NEXT_PUBLIC_API_URL` durante el build del frontend con la URL HTTPS pública del backend y agregá el origen del frontend a `CORS_ORIGINS`.
 
+Para alojar sólo FastAPI en Google Cloud Run, usar MongoDB Atlas y mantener el frontend en Netlify, seguí la [guía de conexión y despliegue](docs/google-cloud-backend.md). Incluye migración de datos, archivos privados en Cloud Storage, secretos y el cambio de variable en Netlify. El script de despliegue está en `infra/google-cloud/deploy.sh`.
+
+Para publicar frontend y backend con cada push a `produ`, seguí la [activación de despliegues automáticos](docs/automatic-deploys.md). Netlify usa su integración Git existente y Cloud Run usa GitHub Actions con OIDC, sin secretos de GitHub. La configuración pública del backend para CI está en `infra/google-cloud/env.production.yaml`.
+
 ## Entregable principal
 
 - [Prototipo funcional: flujo original + estilo de la presentación](https://www.figma.com/design/vFm8Z8NqINCaW8YDb23hz5/NOVU?node-id=63-432)
@@ -34,6 +38,7 @@ En un despliegue separado, configurá `NEXT_PUBLIC_API_URL` durante el build del
 - [`plan/figma-progress.md`](plan/figma-progress.md): bitácora recuperable de lo construido en Figma.
 - [`errors/figma-lessons.md`](errors/figma-lessons.md): errores encontrados y soluciones.
 - [`docs/functional-prototype.md`](docs/functional-prototype.md): funcionalidades, acciones y destinos del prototipo navegable.
+- [`docs/google-cloud-backend.md`](docs/google-cloud-backend.md): Google Cloud Run, MongoDB Atlas y conexión del frontend existente en Netlify.
 
 ## Dirección visual
 

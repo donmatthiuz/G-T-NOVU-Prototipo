@@ -1,7 +1,8 @@
+import os
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import AliasChoices, Field
+from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -24,6 +25,7 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000"
     session_hours: int = Field(default=24, ge=1, le=720)
     kyc_storage_path: Path = Path("/data/kyc")
+    kyc_gcs_bucket: str | None = None
     max_upload_bytes: int = 10 * 1024 * 1024
     openai_api_key: str | None = Field(
         default=None,
@@ -33,6 +35,12 @@ class Settings(BaseSettings):
     openai_timeout_seconds: float = Field(default=30, ge=5, le=120)
     openai_max_output_tokens: int = Field(default=1_600, ge=100, le=4_000)
     seed_demo_data: bool = True
+
+    @model_validator(mode="after")
+    def require_persistent_storage_on_cloud_run(self) -> "Settings":
+        if os.environ.get("K_SERVICE") and not self.kyc_gcs_bucket:
+            raise ValueError("Configurá KYC_GCS_BUCKET: Cloud Run requiere almacenamiento persistente.")
+        return self
 
     @property
     def allowed_origins(self) -> list[str]:

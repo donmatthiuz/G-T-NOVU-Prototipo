@@ -1,0 +1,12 @@
+[build]
+  command = "npm run lint && npm run typecheck && npm test && npm run build"
+  publish = ".next"
+  # Publicar también los pushes que sólo cambian el backend o la documentación.
+  ignore = "exit 1"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+[context.production.environment]
+  # Dirección pública y estable del servicio; la app agrega /v1 a cada endpoint.
+  NEXT_PUBLIC_API_URL = "https://novu-api-gfr6cqd5yq-uc.a.run.app"

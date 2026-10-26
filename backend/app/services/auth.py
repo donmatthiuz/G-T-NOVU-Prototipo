@@ -8,7 +8,6 @@ from uuid import uuid4
 
 from bson import Int64, ObjectId
 from fastapi import HTTPException, UploadFile, status
-from pymongo import ASCENDING
 from pymongo.asynchronous.database import AsyncDatabase
 from pymongo.errors import DuplicateKeyError
 
@@ -21,6 +20,7 @@ from app.schemas.api import (
     SavingsCapacity,
     UserProfileResponse,
 )
+from app.services.kyc_storage import cleanup_uploads, create_kyc_storage
 
 
 ALLOWED_UPLOAD_TYPES = {
@@ -159,16 +159,16 @@ async def register(
         "last_login_at": None,
     }
     asset_docs: list[dict[str, Any]] = []
-    written_paths: list[Path] = []
-    settings.kyc_storage_path.mkdir(parents=True, exist_ok=True)
+    written_keys: list[str] = []
+    storage_backend = create_kyc_storage(settings)
     try:
         for slot, (upload, content) in file_data.items():
             extension = Path(upload.filename or "asset").suffix.lower()[:10]
             storage_key = f"kyc/{user_id}/{uuid4().hex}{extension}"
-            target = settings.kyc_storage_path / storage_key
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(content)
-            written_paths.append(target)
+            await storage_backend.save(
+                storage_key, content, upload.content_type or "application/octet-stream"
+            )
+            written_keys.append(storage_key)
             asset_docs.append(
                 {
                     "_id": ObjectId(),
@@ -181,6 +181,8 @@ async def register(
                         "proof": "proof",
                     }[slot],
                     "storage_key": storage_key,
+                    "storage_provider": "gcs" if settings.kyc_gcs_bucket else "local",
+                    "storage_bucket": settings.kyc_gcs_bucket,
                     "mime_type": upload.content_type,
                     "size_bytes": len(content),
                     "sha256": sha256(content).hexdigest(),
@@ -191,8 +193,8 @@ async def register(
                 }
             )
 
-        async with await database.client.start_session() as session:
-            async with session.start_transaction():
+        async with database.client.start_session() as session:
+            async with await session.start_transaction():
                 await database.users.insert_one(user, session=session)
                 await database.savings_profiles.insert_one(
                     {
@@ -243,12 +245,10 @@ async def register(
                     session=session,
                 )
     except DuplicateKeyError as error:
-        for path in written_paths:
-            path.unlink(missing_ok=True)
+        await cleanup_uploads(storage_backend, written_keys)
         raise HTTPException(status_code=409, detail="El correo o teléfono ya está registrado.") from error
     except Exception:
-        for path in written_paths:
-            path.unlink(missing_ok=True)
+        await cleanup_uploads(storage_backend, written_keys)
         raise
 
     return await create_session(database, settings, user, user_agent, ip)
