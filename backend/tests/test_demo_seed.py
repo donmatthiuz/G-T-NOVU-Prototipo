@@ -33,7 +33,7 @@ async def test_demo_can_be_seeded_repeatedly_beside_a_registered_example_phone()
     database.users.update_one = AsyncMock(side_effect=upsert_user)
     for name in [
         "savings_profiles", "goals", "shared_plans", "memberships",
-        "activities", "contributions", "withdrawal_requests",
+        "activities", "contributions", "withdrawal_requests", "votes",
     ]:
         getattr(database, name).update_one = AsyncMock()
 
