@@ -14,6 +14,11 @@ import type {
   LoginCredentials,
   NovuOverview,
   RegistrationSubmission,
+  WithdrawalCreate,
+  WithdrawalExecutionResponse,
+  WithdrawalItem,
+  WithdrawalPage,
+  WithdrawalVoteCreate,
 } from "@/types/novu";
 
 export class ApiError extends Error {
@@ -198,10 +203,37 @@ const initialMockContributions: Record<string, ContributionItem[]> = {
   ],
 };
 let mockContributions = structuredClone(initialMockContributions);
+const familyPlanId = "66c000000000000000000004";
+const initialMockWithdrawals: Record<string, WithdrawalItem[]> = {
+  [familyPlanId]: [
+    {
+      id: "66c00000000000000000000a",
+      sharedPlanId: familyPlanId,
+      requesterId: "66c000000000000000000006",
+      requesterName: "Marta",
+      amount: 600,
+      amountLabel: "Q 600",
+      reason: "Reparación urgente de la tubería de la cocina.",
+      requiredVotes: 3,
+      approveVotes: 2,
+      rejectVotes: 0,
+      remainingApprovals: 1,
+      currentUserVote: null,
+      status: "pending",
+      createdAt: "2026-08-23T12:00:00Z",
+      decidedAt: null,
+      executedAt: null,
+      canVote: true,
+      canExecute: false,
+    },
+  ],
+};
+let mockWithdrawals = structuredClone(initialMockWithdrawals);
 
 export function resetMockApiState(): void {
   mockOverviewState = structuredClone(novuOverview);
   mockContributions = structuredClone(initialMockContributions);
+  mockWithdrawals = structuredClone(initialMockWithdrawals);
 }
 
 function createDemoSession(email = demoUser.email): AuthSession {
@@ -312,6 +344,134 @@ export const mockTransport: ApiTransport = {
       };
     }
 
+    const withdrawalListMatch = path.match(
+      /^\/v1\/shared-plans\/([^/]+)\/withdrawals$/,
+    );
+    if (method === "GET" && withdrawalListMatch) {
+      return {
+        data: {
+          items: structuredClone(
+            mockWithdrawals[decodeURIComponent(withdrawalListMatch[1])] || [],
+          ),
+        } as TData,
+        status: 200,
+      };
+    }
+
+    if (method === "POST" && withdrawalListMatch) {
+      const planId = decodeURIComponent(withdrawalListMatch[1]);
+      const payload = body as WithdrawalCreate | undefined;
+      if (!payload) throw new ApiError("La solicitud no contiene datos.", 422);
+      const plan = mockOverviewState.sharedPlans?.find(
+        (candidate) => candidate.id === planId,
+      );
+      if (!plan || payload.amountMinor > plan.balanceAmount * 100) {
+        throw new ApiError(
+          "El monto solicitado supera el saldo disponible del fondo.",
+          409,
+        );
+      }
+      const amount = Math.round(payload.amountMinor / 100);
+      const item: WithdrawalItem = {
+        id: globalThis.crypto?.randomUUID?.() ?? `retiro-${Date.now()}`,
+        sharedPlanId: planId,
+        requesterId: demoUser.id,
+        requesterName: "Vos",
+        amount,
+        amountLabel: `Q ${amount.toLocaleString("es-GT")}`,
+        reason: payload.reason,
+        requiredVotes: 3,
+        approveVotes: 0,
+        rejectVotes: 0,
+        remainingApprovals: 3,
+        currentUserVote: null,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        decidedAt: null,
+        executedAt: null,
+        canVote: true,
+        canExecute: false,
+      };
+      mockWithdrawals[planId] = [item, ...(mockWithdrawals[planId] || [])];
+      return { data: structuredClone(item) as TData, status: 201 };
+    }
+
+    const withdrawalDetailMatch = path.match(/^\/v1\/withdrawals\/([^/]+)$/);
+    if (method === "GET" && withdrawalDetailMatch) {
+      const item = Object.values(mockWithdrawals)
+        .flat()
+        .find(
+          (candidate) =>
+            candidate.id === decodeURIComponent(withdrawalDetailMatch[1]),
+        );
+      if (!item) throw new ApiError("La solicitud de retiro no existe.", 404);
+      return { data: structuredClone(item) as TData, status: 200 };
+    }
+
+    const withdrawalVoteMatch = path.match(
+      /^\/v1\/withdrawals\/([^/]+)\/vote$/,
+    );
+    if (method === "PUT" && withdrawalVoteMatch) {
+      const id = decodeURIComponent(withdrawalVoteMatch[1]);
+      const payload = body as WithdrawalVoteCreate | undefined;
+      const item = Object.values(mockWithdrawals)
+        .flat()
+        .find((candidate) => candidate.id === id);
+      if (!item || !payload) {
+        throw new ApiError("La solicitud de retiro no existe.", 404);
+      }
+      if (!item.canVote) {
+        throw new ApiError("Esta solicitud ya no admite votos.", 409);
+      }
+      item.currentUserVote = payload.decision;
+      item.canVote = false;
+      if (payload.decision === "approve") item.approveVotes += 1;
+      else item.rejectVotes += 1;
+      item.remainingApprovals = Math.max(
+        item.requiredVotes - item.approveVotes,
+        0,
+      );
+      if (item.approveVotes >= item.requiredVotes) {
+        item.status = "approved";
+        item.decidedAt = new Date().toISOString();
+        item.canExecute = true;
+      }
+      return { data: structuredClone(item) as TData, status: 200 };
+    }
+
+    const withdrawalExecuteMatch = path.match(
+      /^\/v1\/withdrawals\/([^/]+)\/execute$/,
+    );
+    if (method === "POST" && withdrawalExecuteMatch) {
+      const id = decodeURIComponent(withdrawalExecuteMatch[1]);
+      const item = Object.values(mockWithdrawals)
+        .flat()
+        .find((candidate) => candidate.id === id);
+      if (!item || item.status !== "approved") {
+        throw new ApiError(
+          "La solicitud debe estar aprobada antes de liberar el dinero.",
+          409,
+        );
+      }
+      const plan = mockOverviewState.sharedPlans?.find(
+        (candidate) => candidate.id === item.sharedPlanId,
+      );
+      if (!plan || plan.balanceAmount < item.amount) {
+        throw new ApiError("El fondo ya no tiene saldo suficiente.", 409);
+      }
+      plan.balanceAmount -= item.amount;
+      item.status = "executed";
+      item.executedAt = new Date().toISOString();
+      item.canExecute = false;
+      return {
+        data: {
+          withdrawal: structuredClone(item),
+          updatedBalanceAmount: plan.balanceAmount,
+        } as TData,
+        status: 200,
+      };
+    }
+
     if (method === "POST" && path === "/v1/auth/login") {
       return { data: createDemoSession() as TData, status: 200 };
     }
@@ -408,6 +568,33 @@ export function createNovuApi(transport: ApiTransport = mockTransport) {
         method: "POST",
         path: "/v1/contributions",
         body: contribution,
+      }),
+    getWithdrawals: (planId: string) =>
+      transport.request<WithdrawalPage>({
+        method: "GET",
+        path: `/v1/shared-plans/${encodeURIComponent(planId)}/withdrawals`,
+      }),
+    getWithdrawal: (withdrawalId: string) =>
+      transport.request<WithdrawalItem>({
+        method: "GET",
+        path: `/v1/withdrawals/${encodeURIComponent(withdrawalId)}`,
+      }),
+    createWithdrawal: (planId: string, withdrawal: WithdrawalCreate) =>
+      transport.request<WithdrawalItem, WithdrawalCreate>({
+        method: "POST",
+        path: `/v1/shared-plans/${encodeURIComponent(planId)}/withdrawals`,
+        body: withdrawal,
+      }),
+    voteWithdrawal: (withdrawalId: string, vote: WithdrawalVoteCreate) =>
+      transport.request<WithdrawalItem, WithdrawalVoteCreate>({
+        method: "PUT",
+        path: `/v1/withdrawals/${encodeURIComponent(withdrawalId)}/vote`,
+        body: vote,
+      }),
+    executeWithdrawal: (withdrawalId: string) =>
+      transport.request<WithdrawalExecutionResponse>({
+        method: "POST",
+        path: `/v1/withdrawals/${encodeURIComponent(withdrawalId)}/execute`,
       }),
     login: (credentials: LoginCredentials) =>
       transport.request<AuthSession, LoginCredentials>({

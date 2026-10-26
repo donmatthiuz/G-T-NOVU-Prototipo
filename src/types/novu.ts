@@ -87,6 +87,51 @@ export interface ContributionCreateResponse {
   duplicated: boolean;
 }
 
+export type WithdrawalStatus =
+  "pending" | "approved" | "rejected" | "executed" | "cancelled";
+
+export type WithdrawalDecision = "approve" | "reject";
+
+export interface WithdrawalItem {
+  id: string;
+  sharedPlanId: string;
+  requesterId: string;
+  requesterName: string;
+  amount: number;
+  amountLabel: string;
+  reason: string;
+  requiredVotes: number;
+  approveVotes: number;
+  rejectVotes: number;
+  remainingApprovals: number;
+  currentUserVote: WithdrawalDecision | null;
+  status: WithdrawalStatus;
+  createdAt: string;
+  decidedAt: string | null;
+  executedAt: string | null;
+  canVote: boolean;
+  canExecute: boolean;
+}
+
+export interface WithdrawalPage {
+  items: WithdrawalItem[];
+}
+
+export interface WithdrawalCreate {
+  amountMinor: number;
+  reason: string;
+}
+
+export interface WithdrawalVoteCreate {
+  decision: WithdrawalDecision;
+  comment?: string;
+}
+
+export interface WithdrawalExecutionResponse {
+  withdrawal: WithdrawalItem;
+  updatedBalanceAmount: number;
+}
+
 export interface CopilotConversation {
   id: string;
   title: string;

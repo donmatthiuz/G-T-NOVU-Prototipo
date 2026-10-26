@@ -3,8 +3,15 @@ from bson import ObjectId
 from fastapi import HTTPException
 from pydantic import ValidationError
 
-from app.schemas.api import ActivityResponse, ContributionCreate, SavingsCapacity
+from app.schemas.api import (
+    ActivityResponse,
+    ContributionCreate,
+    SavingsCapacity,
+    WithdrawalCreate,
+    WithdrawalVoteCreate,
+)
 from app.services.contributions import ensure_same_request
+from app.services.withdrawals import resolved_status
 
 
 def test_variable_income_discards_fixed_amount() -> None:
@@ -117,6 +124,30 @@ def test_idempotency_key_cannot_be_reused_with_other_contribution_data() -> None
 
     ensure_same_request(existing, payload, destination_id)
     with pytest.raises(HTTPException) as error:
-        ensure_same_request(existing, payload.model_copy(update={"amount_minor": 30_000}), destination_id)
+        ensure_same_request(
+            existing, payload.model_copy(update={"amount_minor": 30_000}), destination_id
+        )
 
     assert error.value.status_code == 409
+
+
+def test_withdrawal_contract_uses_minor_units_and_valid_votes() -> None:
+    withdrawal = WithdrawalCreate.model_validate(
+        {"amountMinor": 60_000, "reason": "Reparación de cocina"}
+    )
+    vote = WithdrawalVoteCreate.model_validate({"decision": "approve"})
+
+    assert withdrawal.amount_minor == 60_000
+    assert vote.decision == "approve"
+    assert withdrawal.model_dump(by_alias=True)["amountMinor"] == 60_000
+
+
+def test_withdrawal_rejects_fractional_quetzal_amounts() -> None:
+    with pytest.raises(ValidationError):
+        WithdrawalCreate.model_validate({"amountMinor": 60_050, "reason": "Monto inválido"})
+
+
+def test_vote_resolution_uses_the_family_approval_threshold() -> None:
+    assert resolved_status(3, 5, 2, 0) == "pending"
+    assert resolved_status(3, 5, 3, 0) == "approved"
+    assert resolved_status(3, 5, 1, 3) == "rejected"

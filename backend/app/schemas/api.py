@@ -127,6 +127,49 @@ class ContributionCreateResponse(ApiModel):
     duplicated: bool = False
 
 
+WithdrawalStatus = Literal["pending", "approved", "rejected", "executed", "cancelled"]
+
+
+class WithdrawalCreate(ApiModel):
+    amount_minor: int = Field(ge=100, le=100_000_000, multiple_of=100)
+    reason: str = Field(min_length=3, max_length=160)
+
+
+class WithdrawalVoteCreate(ApiModel):
+    decision: Literal["approve", "reject"]
+    comment: str | None = Field(default=None, max_length=300)
+
+
+class WithdrawalResponse(ApiModel):
+    id: str
+    shared_plan_id: str
+    requester_id: str
+    requester_name: str
+    amount: int
+    amount_label: str
+    reason: str
+    required_votes: int = Field(ge=1)
+    approve_votes: int = Field(ge=0)
+    reject_votes: int = Field(ge=0)
+    remaining_approvals: int = Field(ge=0)
+    current_user_vote: Literal["approve", "reject"] | None = None
+    status: WithdrawalStatus
+    created_at: datetime
+    decided_at: datetime | None = None
+    executed_at: datetime | None = None
+    can_vote: bool
+    can_execute: bool
+
+
+class WithdrawalPage(ApiModel):
+    items: list[WithdrawalResponse]
+
+
+class WithdrawalExecutionResponse(ApiModel):
+    withdrawal: WithdrawalResponse
+    updated_balance_amount: int
+
+
 class ConversationCreate(ApiModel):
     context_type: Literal["general", "goal", "shared_plan"] = "general"
     entity_id: str | None = None
