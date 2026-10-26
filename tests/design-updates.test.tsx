@@ -40,19 +40,19 @@ describe("cambios de presentación y experiencia móvil", () => {
     const nav = screen.getByRole("navigation", { name: "Navegación móvil" });
     expect(within(nav).getAllByRole("button")).toHaveLength(5);
     expect(
-      within(nav).getByRole("button", { name: "Inicio", exact: true }),
+      within(nav).getByRole("button", { name: "Inicio" }),
     ).toHaveAttribute("aria-current", "page");
     fireEvent.click(
-      within(nav).getByRole("button", { name: "Metas", exact: true }),
+      within(nav).getByRole("button", { name: "Metas" }),
     );
     expect(
       screen.getByRole("heading", { name: "Mis metas" }),
     ).toBeInTheDocument();
     expect(
-      within(nav).getByRole("button", { name: "Metas", exact: true }),
+      within(nav).getByRole("button", { name: "Metas" }),
     ).toHaveAttribute("aria-current", "page");
     fireEvent.click(
-      within(nav).getByRole("button", { name: "Menú", exact: true }),
+      within(nav).getByRole("button", { name: "Menú" }),
     );
     fireEvent.click(
       within(screen.getByRole("main")).getByRole("button", {
@@ -63,7 +63,7 @@ describe("cambios de presentación y experiencia móvil", () => {
       screen.getByRole("heading", { name: "Fondo familiar" }),
     ).toBeInTheDocument();
     expect(
-      within(nav).getByRole("button", { name: "Metas", exact: true }),
+      within(nav).getByRole("button", { name: "Metas" }),
     ).toHaveAttribute("aria-current", "page");
   });
 
@@ -80,10 +80,10 @@ describe("cambios de presentación y experiencia móvil", () => {
   it("explica cómo JEV separa la parte atendible de una solicitud", () => {
     render(<ChatbotArchitecture />);
     fireEvent.click(
-      screen.getByRole("button", { name: "Solicitud parcial", exact: true }),
+      screen.getByRole("button", { name: "Solicitud parcial" }),
     );
     expect(
-      screen.getByRole("button", { name: "Solicitud parcial", exact: true }),
+      screen.getByRole("button", { name: "Solicitud parcial" }),
     ).toHaveAttribute("aria-pressed", "true");
     expect(
       screen.getByText(
@@ -98,7 +98,7 @@ describe("cambios de presentación y experiencia móvil", () => {
   it("termina las consultas fuera de alcance sin pasar por datos ni por el LLM", () => {
     render(<ChatbotArchitecture />);
     fireEvent.click(
-      screen.getByRole("button", { name: "Fuera de alcance", exact: true }),
+      screen.getByRole("button", { name: "Fuera de alcance" }),
     );
     expect(screen.queryByRole("heading", { name: "Obtener datos" })).toBeNull();
     expect(
