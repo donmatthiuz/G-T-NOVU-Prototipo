@@ -4,6 +4,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type CSSProperties,
   type MouseEventHandler,
   type ReactNode,
 } from "react";
@@ -20,6 +21,7 @@ import {
 } from "@/lib/registration";
 import { SIDEBAR_STORAGE_KEY } from "@/lib/session";
 import PartnerBrand from "@/components/PartnerBrand";
+import MobileAppNav from "@/components/MobileAppNav";
 import type {
   ActivityItem,
   CapturedMedia,
@@ -279,6 +281,22 @@ function PlanOverviewCard({
         <strong className="plan-card-percentage">{progress}%</strong>
       </header>
 
+      {variant === "personal" && (
+        <div
+          className="mobile-progress-ring"
+          style={
+            {
+              "--progress": `${Math.min(100, Math.max(0, progress))}%`,
+            } as CSSProperties
+          }
+          aria-hidden="true"
+        >
+          <span>
+            <b>{progress}%</b>
+            <small>de tu meta</small>
+          </span>
+        </div>
+      )}
       <div className="plan-card-heading">
         <h2>{title}</h2>
         <p>{remaining}</p>
@@ -346,16 +364,24 @@ function Welcome({ go }: NavProps) {
         <p>Convertí tus metas en un plan hecho para vos.</p>
         <div className="entry-features">
           <span>
-            <Target /> Metas
+            <Target />
+            <b>Metas</b>
+            <small>Definí lo que querés lograr.</small>
           </span>
           <span>
-            <FileText /> Plan
+            <FileText />
+            <b>Plan</b>
+            <small>Creamos tu plan personalizado.</small>
           </span>
           <span>
-            <TrendingUp /> Progreso
+            <TrendingUp />
+            <b>Progreso</b>
+            <small>Seguí y celebrá tu avance.</small>
           </span>
           <span>
-            <Bot /> Coach
+            <Bot />
+            <b>Coach inteligente</b>
+            <small>Te acompaña en cada paso.</small>
           </span>
         </div>
         <Primary onClick={() => go("wizard")}>Empezar</Primary>
@@ -3082,6 +3108,30 @@ function MenuPage({
         </div>
       </div>
       <section className="action-list">
+        <button onClick={() => go("group")}>
+          <UsersRound />
+          <span>
+            <b>Retos grupales</b>
+            <small>Compartí una meta y seguí los aportes</small>
+          </span>
+          <ChevronRight />
+        </button>
+        <button onClick={() => go("family")}>
+          <Heart />
+          <span>
+            <b>Fondo familiar</b>
+            <small>Aportes, solicitudes y votaciones</small>
+          </span>
+          <ChevronRight />
+        </button>
+        <button onClick={() => go("opportunities")}>
+          <Award />
+          <span>
+            <b>Oportunidades</b>
+            <small>Conocé los beneficios de tu progreso</small>
+          </span>
+          <ChevronRight />
+        </button>
         <button onClick={() => go("kyc")}>
           <ShieldCheck />
           <span>
@@ -3597,6 +3647,18 @@ export default function NovuApp({ exit }: { exit: () => void }) {
         ></button>
       )}
       <div className="web-app-frame">
+        {showNav && (
+          <div className="mobile-app-brand">
+            <PartnerBrand compact />
+            <button
+              type="button"
+              onClick={exit}
+              aria-label="Volver al inicio de NOVU"
+            >
+              <ArrowLeft size={18} aria-hidden="true" />
+            </button>
+          </div>
+        )}
         {showNav ? (
           <header className="app-topbar">
             <div className="topbar-title-group">
@@ -3637,7 +3699,7 @@ export default function NovuApp({ exit }: { exit: () => void }) {
         ) : (
           <header className="app-topbar focus-topbar">
             <button className="focus-back" onClick={exit}>
-              <ArrowLeft size={17} /> Volver a la landing
+              <ArrowLeft size={17} /> Volver al inicio
             </button>
             <span className="demo-status">
               <i></i> Acceso protegido
@@ -3655,6 +3717,7 @@ export default function NovuApp({ exit }: { exit: () => void }) {
           </div>
         </main>
       </div>
+      {showNav && <MobileAppNav page={currentPage} onNavigate={go} />}
       {toast && (
         <div className="app-toast" role="status" aria-live="polite">
           <Check size={18} />

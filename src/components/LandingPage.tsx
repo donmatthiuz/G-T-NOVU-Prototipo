@@ -9,6 +9,11 @@ import {
 import Link from "next/link";
 import NovuApp from "./NovuApp";
 import PartnerBrand from "./PartnerBrand";
+import {
+  PresentationHeader,
+  PrototypePhoneDeck,
+} from "./PrototypePresentation";
+import presentationStyles from "./PrototypeShowcase.module.css";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
@@ -17,12 +22,9 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
-  Clock3,
   FileCheck2,
-  Flag,
   Heart,
   Landmark,
-  Menu,
   Network,
   ShieldCheck,
   Sparkles,
@@ -30,7 +32,6 @@ import {
   TrendingUp,
   UserRoundCheck,
   UsersRound,
-  X,
 } from "lucide-react";
 
 const flows = {
@@ -319,7 +320,6 @@ function LandingPage() {
     getServerView,
   );
   const [viewOverride, setViewOverride] = useState<AppView | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
   const view = viewOverride ?? urlView;
 
   if (view === "app") {
@@ -327,164 +327,54 @@ function LandingPage() {
   }
   return (
     <>
-      <header className="site-header" id="inicio">
-        <div className="nav">
-          <div className="nav-brand-group">
-            <Brand />
-            <span className="nav-brand-divider" aria-hidden="true" />
-            <span className="nav-brand-context">
-              <strong>Tu futuro, en movimiento</strong>
-              <small>Planificación financiera simple</small>
-            </span>
-          </div>
-
-          <nav className="nav-links" aria-label="Navegación principal">
-            <a href="#como-funciona">
-              <span aria-hidden="true">01</span>
-              Cómo funciona
-            </a>
-            <a href="#flujos">
-              <span aria-hidden="true">02</span>
-              Flujos
-            </a>
-            <a href="#seguridad">
-              <span aria-hidden="true">03</span>
-              Seguridad
-            </a>
-          </nav>
-
-          <div className="nav-actions">
-            <a className="nav-cta" href="/prototipo">
-              Ver prototipo
-              <span className="nav-cta-icon">
-                <ArrowUpRight size={17} aria-hidden="true" />
-              </span>
-            </a>
-            <button
-              className="nav-menu-toggle"
-              type="button"
-              aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
-              aria-expanded={menuOpen}
-              aria-controls="mobile-navigation"
-              onClick={() => setMenuOpen((open) => !open)}
-            >
-              {menuOpen ? (
-                <X size={22} aria-hidden="true" />
-              ) : (
-                <Menu size={22} aria-hidden="true" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        {menuOpen && (
-          <nav
-            className="mobile-navigation"
-            id="mobile-navigation"
-            aria-label="Navegación principal móvil"
-          >
-            <a href="#como-funciona" onClick={() => setMenuOpen(false)}>
-              <span aria-hidden="true">01</span>
-              Cómo funciona
-            </a>
-            <a href="#flujos" onClick={() => setMenuOpen(false)}>
-              <span aria-hidden="true">02</span>
-              Flujos
-            </a>
-            <a href="#seguridad" onClick={() => setMenuOpen(false)}>
-              <span aria-hidden="true">03</span>
-              Seguridad
-            </a>
-            <a
-              className="mobile-navigation-cta"
-              href="/prototipo"
-              onClick={() => setMenuOpen(false)}
-            >
-              Diseño app móvil
-              <ArrowUpRight size={18} aria-hidden="true" />
-            </a>
-          </nav>
-        )}
-      </header>
+      <PresentationHeader
+        navigationLabel="Navegación principal"
+        homeHref="#inicio"
+        launchLabel="Probar versión funcional"
+        onLaunch={() => setViewOverride("app")}
+        links={[
+          { href: "#como-funciona", label: "Cómo funciona" },
+          { href: "#flujos", label: "Flujos" },
+          { href: "#seguridad", label: "Seguridad" },
+        ]}
+      />
       <main id="contenido">
-        <section className="hero">
-          <div className="hero-copy">
-            <div className="hero-cobrand">
-              <span>
-                <ShieldCheck size={16} aria-hidden="true" /> Una experiencia
-              </span>
-              <PartnerBrand compact priority tone="dark" />
-            </div>
-            <h1>
-              Tu futuro empieza con <em>un paso.</em>
-            </h1>
-            <p>
-              Convertí tus metas, retos y sueños familiares en un plan que podés
-              ver, entender y cumplir.
-            </p>
-            <div className="hero-actions">
-              <Button href="/prototipo">Diseño app móvil</Button>
-              <Button onClick={() => setViewOverride("app")} secondary>
-                Probar versión funcional
-              </Button>
-            </div>
-            <div className="trust-row">
-              <span>
-                <Check size={16} aria-hidden="true" /> Sin fórmulas complicadas
-              </span>
-              <span>
-                <Check size={16} aria-hidden="true" /> Hecho para vos
-              </span>
-            </div>
-          </div>
-          <div className="hero-visual" aria-label="Vista previa de NOVU">
-            <div className="orb orb-one"></div>
-            <div className="orb orb-two"></div>
-            <div className="hero-phone">
-              <div className="phone-top">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-              <div className="mini-brand">
-                <Brand compact />
-              </div>
-              <p className="mini-overline">Tu meta personal</p>
-              <h2>Viaje a Antigua</h2>
-              <div className="goal-card">
-                <div className="goal-icon">
-                  <Flag size={22} aria-hidden="true" />
-                </div>
-                <div>
-                  <span>Ahorraste</span>
-                  <strong>Q 1,250</strong>
-                </div>
-                <b>62%</b>
-              </div>
-              <div className="progress-track">
-                <span></span>
-              </div>
-              <div className="month-card">
-                <Clock3 size={19} aria-hidden="true" />
-                <div>
-                  <span>Próximo aporte</span>
-                  <strong>Q 180 este viernes</strong>
-                </div>
-              </div>
-              <button>
-                Ver mi plan <ArrowRight size={16} aria-hidden="true" />
-              </button>
-            </div>
-            <div className="floating-note">
-              <div className="note-icon">
-                <Sparkles size={18} />
-              </div>
+        <section
+          className={presentationStyles.hero}
+          id="inicio"
+          aria-labelledby="landing-title"
+        >
+          <div className={presentationStyles.heroGlow} aria-hidden="true" />
+          <div className={presentationStyles.heroInner}>
+            <div className={presentationStyles.heroCopy}>
+              <PartnerBrand
+                className="landing-hero-brand"
+                priority
+                tone="dark"
+              />
+              <h1 id="landing-title">
+                Tu futuro empieza con <em>un paso.</em>
+              </h1>
               <p>
-                <strong>Vas muy bien</strong>
-                <br />
-                Llevás 4 semanas seguidas.
+                Convertí tus metas, retos y sueños familiares en un plan que
+                podés ver, entender y cumplir.
               </p>
+              <div className={presentationStyles.heroActions}>
+                <Button onClick={() => setViewOverride("app")}>
+                  Probar versión funcional
+                </Button>
+              </div>
+              <div className="trust-row">
+                <span>
+                  <Check size={16} aria-hidden="true" /> Sin fórmulas
+                  complicadas
+                </span>
+                <span>
+                  <Check size={16} aria-hidden="true" /> Hecho para vos
+                </span>
+              </div>
             </div>
+            <PrototypePhoneDeck note="Un plan para cada forma de ahorrar" />
           </div>
         </section>
 
@@ -601,9 +491,9 @@ function LandingPage() {
               Conocé cómo NOVU se conectará con el ecosistema del banco.
             </h2>
             <p>
-              Explorá la arquitectura propuesta, los agentes y el recorrido
-              seguro que convierte señales transaccionales en recomendaciones
-              explicables.
+              Explorá la arquitectura propuesta del banco y del chatbot: cómo
+              JEV clasifica cada solicitud, el código consulta datos y el modelo
+              construye una respuesta clara.
             </p>
           </div>
           <Link className="technical-entry-button" href="/tecnologia">

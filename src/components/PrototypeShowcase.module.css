@@ -107,9 +107,23 @@
 
 .launchButton,
 .primaryAction {
+  border: 0;
   color: #fff;
   background: var(--gradient);
   box-shadow: 0 10px 26px rgba(111, 38, 210, 0.3);
+}
+
+.launchMobile {
+  display: none;
+}
+
+@media (max-width: 580px) {
+  .launchDesktop {
+    display: none;
+  }
+  .launchMobile {
+    display: inline;
+  }
 }
 
 .launchButton:hover,

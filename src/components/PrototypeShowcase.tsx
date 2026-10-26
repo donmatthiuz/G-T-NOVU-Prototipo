@@ -31,6 +31,10 @@ import {
 } from "react";
 import PartnerBrand, { NovuSymbol } from "./PartnerBrand";
 import styles from "./PrototypeShowcase.module.css";
+import {
+  PresentationHeader,
+  PrototypePhoneDeck,
+} from "./PrototypePresentation";
 
 type FlowId = "onboarding" | "access" | "personal" | "group" | "family" | "kyc";
 type PrototypeGroupId =
@@ -511,26 +515,14 @@ export default function PrototypeShowcase() {
         Saltar al contenido
       </a>
 
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <Link
-            className={styles.brand}
-            href="/"
-            aria-label="Volver a NOVU by G&T Continental"
-          >
-            <PartnerBrand compact priority tone="dark" />
-          </Link>
-          <nav className={styles.headerNav} aria-label="Navegación del atlas">
-            <a href="#recorridos">Recorridos</a>
-            <a href="#explorador">Explorador</a>
-            <a href="#galeria">45 pantallas</a>
-          </nav>
-          <Link className={styles.launchButton} href="/?view=app">
-            <Play size={16} fill="currentColor" aria-hidden="true" />
-            Probar NOVU
-          </Link>
-        </div>
-      </header>
+      <PresentationHeader
+        navigationLabel="Navegación del atlas"
+        links={[
+          { href: "#recorridos", label: "Recorridos" },
+          { href: "#explorador", label: "Explorador" },
+          { href: "#galeria", label: "45 pantallas" },
+        ]}
+      />
 
       <main id="atlas-content">
         <section className={styles.hero}>
@@ -583,52 +575,7 @@ export default function PrototypeShowcase() {
               </dl>
             </div>
 
-            <div
-              className={styles.phoneDeck}
-              aria-label="Vistas destacadas del prototipo NOVU"
-            >
-              <div
-                className={`${styles.deckPhone} ${styles.deckPhoneLeft}`}
-                aria-hidden="true"
-              >
-                <Image
-                  src="/figma-flows/63-1101.png"
-                  alt=""
-                  width={375}
-                  height={812}
-                  sizes="250px"
-                />
-              </div>
-              <div className={`${styles.deckPhone} ${styles.deckPhoneMain}`}>
-                <Image
-                  src="/figma-flows/63-432.png"
-                  alt="Portada del prototipo NOVU"
-                  width={375}
-                  height={812}
-                  sizes="300px"
-                  priority
-                />
-              </div>
-              <div
-                className={`${styles.deckPhone} ${styles.deckPhoneRight}`}
-                aria-hidden="true"
-              >
-                <Image
-                  src="/figma-flows/63-1368.png"
-                  alt=""
-                  width={375}
-                  height={812}
-                  sizes="250px"
-                />
-              </div>
-              <span className={styles.deckBrandSeal} aria-hidden="true">
-                <NovuSymbol className={styles.deckBrandMark} size={64} />
-              </span>
-              <span className={styles.deckNote}>
-                <MousePointerClick size={17} aria-hidden="true" />
-                Navegá pantalla por pantalla
-              </span>
-            </div>
+            <PrototypePhoneDeck />
           </div>
           <div className={styles.sourceBar}>
             <span>

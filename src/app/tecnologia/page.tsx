@@ -26,12 +26,13 @@ import {
   WalletCards,
 } from "lucide-react";
 import PartnerBrand from "@/components/PartnerBrand";
+import ChatbotArchitecture from "@/components/ChatbotArchitecture";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
   title: "Arquitectura técnica | NOVU",
   description:
-    "Visión técnica de la integración de NOVU con réplicas transaccionales, agentes y catálogo de productos bancarios.",
+    "Arquitectura híbrida del chatbot NOVU: JEV, código determinista y LLM, conectados a contexto y fuentes bancarias autorizadas.",
 };
 
 type Agent = {
@@ -261,6 +262,8 @@ export default function TechnologyPage() {
             </p>
           </div>
         </section>
+
+        <ChatbotArchitecture />
 
         <section
           className={styles.agentsSection}

@@ -37,12 +37,15 @@ body {
   margin: 0;
   background: var(--canvas);
   color: var(--ink);
-  font-family: Poppins, Arial, sans-serif;
+  font-family: var(--font-poppins), Poppins, Arial, sans-serif;
   font-size: 16px;
   line-height: 1.55;
 }
 button,
-a {
+a,
+input,
+select,
+textarea {
   font: inherit;
 }
 a {
